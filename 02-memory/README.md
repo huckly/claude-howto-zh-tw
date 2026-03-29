@@ -5,6 +5,10 @@
 
 # Memory 指南
 
+🧠 Memory（記憶）
+用途: 跨會話持久化上下文
+難度: ⭐ 初級 | 時間: 45 分鐘
+
 Memory 使 Claude 能夠在不同工作階段和對話中保留上下文。它以兩種形式存在：claude.ai 中的自動合成，以及 Claude Code 中基於檔案系統的 CLAUDE.md。
 
 ## 概述
