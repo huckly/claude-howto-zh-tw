@@ -3,7 +3,10 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# Slash Commands
+# 📍 Slash Commands（斜線命令）
+
+> **用戶觸發的快捷指令** | ⭐ 初級 | 30 分鐘
+> 學習如何建立和使用自訂 slash commands 來快速執行重複任務。包含 optimize、pr、commit 等實用範本。
 
 ## 概述
 
