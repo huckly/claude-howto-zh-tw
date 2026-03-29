@@ -1297,3 +1297,4 @@ chmod +x ~/.claude/hooks/*.sh
 - **[CLI 參考](https://code.claude.com/docs/en/cli-reference)** - 命令列介面文件
 - **[Memory 指南](../02-memory/)** - 持久上下文組態
 
+
