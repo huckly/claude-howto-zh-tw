@@ -943,3 +943,4 @@ uv run scripts/build_epub.py
 **最後更新**：2026 年 3 月
 **Claude Code 版本**：2.1+
 **相容模型**：Claude Sonnet 4.6、Claude Opus 4.6、Claude Haiku 4.5
+
