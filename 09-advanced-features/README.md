@@ -5,6 +5,10 @@
 
 # 進階功能
 
+🚀 Advanced Features（進階功能）
+用途: Planning Mode、Extended Thinking、Background Tasks
+難度: ⭐⭐⭐⭐ 進階 | 時間: 2-3 小時
+
 Claude Code 進階能力的完整指南，包括規劃模式、延伸思考、自動模式、背景任務、權限模式、列印模式（非互動）、工作階段管理、互動功能、頻道、語音輸入、遠端控制、Web 工作階段、桌面應用程式、任務清單、提示建議、git worktree、沙盒、託管設定和配置。
 
 ## 目錄

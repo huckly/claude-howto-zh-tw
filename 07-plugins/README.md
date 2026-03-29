@@ -5,6 +5,10 @@
 
 # Claude Code Plugins
 
+📦 Plugins（外掛）
+用途: 功能集合套件
+難度: ⭐⭐⭐ 進階 | 時間: 2 小時
+
 本資料夾包含完整的 plugin 範例，將多個 Claude Code 功能捆綁成一致的、可安裝的套件。
 
 ## 概述
