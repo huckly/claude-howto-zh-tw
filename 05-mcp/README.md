@@ -5,6 +5,10 @@
 
 # MCP (Model Context Protocol)
 
+🔌 MCP Protocol（Model Context Protocol）
+用途: 外部工具和 API 整合
+難度: ⭐⭐ 中級 | 時間: 1 小時
+
 此資料夾包含 MCP 伺服器組態與 Claude Code 搭配使用的完整文件與範例。
 
 ## 概述
