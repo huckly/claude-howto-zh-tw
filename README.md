@@ -93,6 +93,25 @@
 
 ---
 
+## 📚 10 個核心章節一覽
+
+| # | 章節 | 說明 | 級別 | 時間 |
+|---|------|------|------|------|
+| 📍 | **[01-slash-commands/](01-slash-commands/)** | 用戶觸發的快捷指令<br>`optimize` `pr` `commit` `doc-refactor` `generate-api-docs` | ⭐ 初級 | 30 分 |
+| 🧠 | **[02-memory/](02-memory/)** | 跨會話持久化上下文<br>`project-CLAUDE.md` `directory-api-CLAUDE.md` `personal-CLAUDE.md` | ⭐ 初級 | 45 分 |
+| 🔧 | **[03-skills/](03-skills/)** | 可復用的自動化工作流<br>`code-review` `brand-voice` `doc-generator` `refactor` | ⭐⭐ 中級 | 1 小時 |
+| 🤖 | **[04-subagents/](04-subagents/)** | 專門化的 AI 助手<br>`code-reviewer` `test-engineer` `secure-reviewer` `implementation-agent` | ⭐⭐ 中級 | 1.5 小時 |
+| 🔌 | **[05-mcp/](05-mcp/)** | 外部工具和 API 整合<br>Model Context Protocol 配置 | ⭐⭐ 中級 | 1 小時 |
+| ⚡ | **[06-hooks/](06-hooks/)** | 事件驅動自動化<br>Pre/Post Tool Use、Pre/Post Bash、Notification | ⭐⭐ 中級 | 1 小時 |
+| 📦 | **[07-plugins/](07-plugins/)** | 功能集合套件<br>`pr-review` `devops-automation` `documentation` | ⭐⭐⭐ 進階 | 2 小時 |
+| 📍 | **[08-checkpoints/](08-checkpoints/)** | 會話快照和回放<br>探索多個實現方式、A/B 測試 | ⭐⭐ 中級 | 45 分 |
+| 🚀 | **[09-advanced-features/](09-advanced-features/)** | 進階功能<br>Planning Mode、Extended Thinking、Background Tasks、Permission Modes | ⭐⭐⭐⭐ 進階 | 2-3 小時 |
+| 💻 | **[10-cli/](10-cli/)** | 命令行介面完全參考<br>所有命令、標籤、選項和 CI/CD 用法 | ⭐⭐⭐ 進階 | 1 小時 |
+
+**[📚 檢視詳細目錄 →](TABLE_OF_CONTENTS.md)**
+
+---
+
 ## 受到 3,900+ 開發者信賴
 
 - **3,900+ GitHub 星標**，來自日常使用 Claude Code 的開發者
