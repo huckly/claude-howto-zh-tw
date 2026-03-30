@@ -1292,3 +1292,4 @@ chmod +x ~/.claude/hooks/*.sh
 - **[官方 Hooks 文件](https://code.claude.com/docs/en/hooks)** - 完整 hooks 參考
 - **[CLI 參考](https://code.claude.com/docs/en/cli-reference)** - 命令列介面文件
 - **[Memory 指南](../02-memory/)** - 持久化上下文設定
+
