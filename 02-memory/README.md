@@ -1163,3 +1163,4 @@ Claude 會提示你選擇要更新哪個 memory 檔案。
 ### 相關的 Claude 功能
 - [Claude Web Memory](https://claude.ai) - 自動合成
 - [官方 Memory 文件](https://code.claude.com/docs/en/memory) - Anthropic 文件
+
