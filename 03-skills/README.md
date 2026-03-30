@@ -799,3 +799,4 @@ chmod +x ~/.claude/skills/my-skill/scripts/*.py
 - [MCP（Model Context Protocol）](../05-mcp/) - 即時外部資料
 - [Hooks 指南](../06-hooks/) - 事件驅動自動化
 
+
