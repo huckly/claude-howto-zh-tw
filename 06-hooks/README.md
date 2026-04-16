@@ -3,30 +3,30 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# Hooks（鉤子）
+# 鉤子
 
-Hooks 是在 Claude Code 工作階段中，針對特定事件自動執行的腳本。它們可用於自動化、驗證、權限管理及自訂工作流程。
+鉤子是自動化腳本，會在 Claude Code 工作階段中的特定事件發生時執行。它們支援自動化、驗證、權限管理和自訂工作流程。
 
-## 概覽
+## 總覽
 
-Hooks 是自動化動作（shell 指令、HTTP webhook、LLM 提示或子代理評估），會在 Claude Code 中特定事件發生時自動執行。它們透過 JSON 接收輸入，並以退出碼和 JSON 輸出回傳結果。
+鉤子是自動動作（shell 命令、HTTP webhook、LLM 提示詞或子代理評估），會在 Claude Code 中特定事件發生時自動執行。它們接收 JSON 輸入，並透過結束碼和 JSON 輸出傳達結果。
 
-**主要特色：**
-- 事件驅動的自動化
-- 以 JSON 為基礎的輸入/輸出
-- 支援 command、prompt、HTTP 和 agent 四種 hook 類型
-- 可針對特定工具進行模式比對
+**主要功能：**
+- 驅動事件的自動化
+- 基於 JSON 的輸入/輸出
+- 支援命令、提示詞、HTTP 和代理鉤子類型
+- 工具特定的鉤子模式匹配
 
 ## 設定
 
-Hooks 在設定檔中以特定結構進行配置：
+鉤子是在具有特定結構的設定檔案中設定的：
 
-- `~/.claude/settings.json` - 使用者設定（適用於所有專案）
-- `.claude/settings.json` - 專案設定（可共享、可提交）
-- `.claude/settings.local.json` - 本地專案設定（不提交）
-- Managed policy - 組織層級設定
-- Plugin `hooks/hooks.json` - 外掛範圍的 hooks
-- Skill/Agent frontmatter - 元件生命週期 hooks
+- `~/.claude/settings.json` - 用戶設定 (所有專案)
+- `.claude/settings.json` - 專案設定 (可分享，已提交)
+- `.claude/settings.local.json` - 本地專案設定 (未提交)
+- 託管策略 - 組織範圍內的設定
+- 外掛 `hooks/hooks.json` - 外掛範圍內的鉤子
+- 技能/代理前置詞 - 元件生命週期鉤子
 
 ### 基本設定結構
 
@@ -51,31 +51,39 @@ Hooks 在設定檔中以特定結構進行配置：
 
 **主要欄位：**
 
-| 欄位 | 說明 | 範例 |
+| 欄位 | 描述 | 範例 |
 |-------|-------------|---------|
-| `matcher` | 比對工具名稱的模式（區分大小寫） | `"Write"`, `"Edit\|Write"`, `"*"` |
-| `hooks` | Hook 定義陣列 | `[{ "type": "command", ... }]` |
-| `type` | Hook 類型：`"command"`（bash）、`"prompt"`（LLM）、`"http"`（webhook）或 `"agent"`（子代理） | `"command"` |
-| `command` | 要執行的 shell 指令 | `"$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh"` |
-| `timeout` | 選填的逾時秒數（預設 60） | `30` |
-| `once` | 若為 `true`，每個工作階段只執行一次 | `true` |
+| `matcher` | 用於匹配工具名稱的模式（區分大小寫） | `"Write"`, `"Edit\|Write"`, `"*"` |
+| `hooks` | 鉤子定義的陣列 | `[{ "type": "command", ... }]` |
+| `type` | 鉤子類型：「command」（bash）、「prompt」（LLM）、「http」（webhook）或「agent」（子代理） | `"command"` |
+| `command` | 要執行的 shell 命令 | `"$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh"` |
+| `timeout` | 可選的逾時時間（秒），預設值為 60 | `30` |
+| `once` | 如果為 `true`，則僅在每個工作階段中執行一次鉤子 | `true` |
 
-### 比對器模式
+### 模式匹配器
 
-| 模式 | 說明 | 範例 |
+| 模式 | 描述 | 範例 |
 |---------|-------------|---------|
-| 精確字串 | 比對特定工具 | `"Write"` |
-| Regex 模式 | 比對多個工具 | `"Edit\|Write"` |
-| 萬用字元 | 比對所有工具 | `"*"` 或 `""` |
-| MCP 工具 | 伺服器與工具模式 | `"mcp__memory__.*"` |
+| 精確字串 | 匹配特定工具 | `"Write"` |
+| 正則表達式模式 | 匹配多個工具 | `"Edit\|Write"` |
+| 通配符 | 匹配所有工具 | `"*"` 或 `""` |
+| MCP 工具 | 伺服器和工具模式 | `"mcp__memory__.*"` |
 
-## Hook 類型
+**InstructionsLoaded 模式匹配器值：**
 
-Claude Code 支援四種 hook 類型：
+| 匹配器值 | 描述 |
+|---------------|-------------|
+| `session_start` | 工作階段啟動時載入指令 |
+| `nested_traversal` | 巢狀目錄瀏覽期間載入指令 |
+| `path_glob_match` | 透過路徑全域模式匹配載入指令 |
 
-### Command Hooks
+## 鉤子類型
 
-預設的 hook 類型。執行 shell 指令，並透過 JSON stdin/stdout 和退出碼進行溝通。
+Claude Code 支援四種鉤子類型：
+
+### 命令鉤子
+
+預設的鉤子類型。執行 shell 命令並透過 JSON 標準輸入/標準輸出和結束代碼進行通訊。
 
 ```json
 {
@@ -85,11 +93,11 @@ Claude Code 支援四種 hook 類型：
 }
 ```
 
-### HTTP Hooks
+### HTTP 鉤子
 
-> 於 v2.1.63 新增。
+> 在 v2.1.63 中新增。
 
-遠端 webhook 端點，接收與 command hooks 相同的 JSON 輸入。HTTP hooks 會以 POST 方式傳送 JSON 至指定 URL 並接收 JSON 回應。啟用沙箱時，HTTP hooks 會透過沙箱路由。在 URL 中使用環境變數插值時，需提供明確的 `allowedEnvVars` 清單以確保安全。
+遠端 webhook 端點，接收與命令鉤子相同的 JSON 輸入。HTTP 鉤子將 JSON POST 至 URL 並接收 JSON 回應。HTTP 鉤子在啟用沙盒時會經過沙盒。URL 中的環境變數插補需要明確的 `allowedEnvVars` 清單，以確保安全性。
 
 ```json
 {
@@ -104,80 +112,81 @@ Claude Code 支援四種 hook 類型：
 ```
 
 **主要屬性：**
-- `"type": "http"` -- 標識此為 HTTP hook
+- `"type": "http"` -- 識別此為 HTTP 鉤子
 - `"url"` -- webhook 端點 URL
-- 啟用沙箱時透過沙箱路由
-- 在 URL 中進行環境變數插值時，需提供明確的 `allowedEnvVars` 清單
+- 在啟用沙盒時會經過沙盒
+- URL 中的任何環境變數插補需要明確的 `allowedEnvVars` 清單
 
-### Prompt Hooks
+### 提示詞鉤子
 
-以 LLM 評估的提示型 hooks，hook 內容為 Claude 評估的提示語。主要用於 `Stop` 和 `SubagentStop` 事件，以智慧型方式檢查任務是否完成。
+LLM 評估的提示詞，其中鉤子內容是 Claude 評估的提示詞。主要用於 `Stop` 和 `SubagentStop` 事件，用於智慧型任務完成檢查。
 
 ```json
 {
   "type": "prompt",
-  "prompt": "Evaluate if Claude completed all requested tasks.",
+  "prompt": "評估 Claude 是否已完成所有要求的任務。",
   "timeout": 30
 }
 ```
 
-LLM 會評估提示並回傳結構化決策（詳見 [Prompt-Based Hooks](#以提示為基礎的-hooks)）。
+LLM 評估提示詞並回應用於結構化的決策（請參閱 [基於提示詞的鉤子](#prompt-based-hooks) 以取得詳細資訊）。
 
-### Agent Hooks
+### 代理鉤子
 
-以子代理為基礎的驗證 hooks，會生成專屬代理來評估條件或執行複雜檢查。與 prompt hooks（單輪 LLM 評估）不同，agent hooks 可使用工具並進行多步驟推理。
+基於子代理的驗證鉤子，會啟動專用的代理來評估條件或執行複雜的檢查。與提示詞鉤子（單回合 LLM 評估）不同，代理鉤子可以使用工具並執行多步驟推理。
 
 ```json
 {
   "type": "agent",
-  "prompt": "Verify the code changes follow our architecture guidelines. Check the relevant design docs and compare.",
+  "prompt": "驗證程式碼變更是否符合我們的架構指南。檢查相關的設計文件並進行比較。",
   "timeout": 120
 }
 ```
 
 **主要屬性：**
-- `"type": "agent"` -- 標識此為 agent hook
+- `"type": "agent"` -- 識別此為代理鉤子
 - `"prompt"` -- 子代理的任務描述
-- 代理可使用工具（Read、Grep、Bash 等）進行評估
-- 回傳與 prompt hooks 類似的結構化決策
+- 代理可以使用工具（Read、Grep、Bash 等）進行評估
+- 回應用於結構化的決策，類似於提示詞鉤子
 
-## Hook 事件
+## 鉤子事件
 
-Claude Code 支援 **25 個 hook 事件**：
+Claude Code 支援 **26 個鉤子事件**：
 
-| 事件 | 觸發時機 | 比對器輸入 | 可阻擋 | 常見用途 |
+| 事件 | 觸發時機 | 比對輸入 | 是否可阻斷 | 常用用途 |
 |-------|---------------|---------------|-----------|------------|
-| **SessionStart** | 工作階段開始/恢復/清除/壓縮 | startup/resume/clear/compact | 否 | 環境設置 |
-| **InstructionsLoaded** | CLAUDE.md 或規則檔案載入後 | （無） | 否 | 修改/過濾指令 |
-| **UserPromptSubmit** | 使用者提交提示 | （無） | 是 | 驗證提示 |
-| **PreToolUse** | 工具執行前 | 工具名稱 | 是（allow/deny/ask） | 驗證、修改輸入 |
-| **PermissionRequest** | 顯示權限對話框 | 工具名稱 | 是 | 自動核准/拒絕 |
-| **PostToolUse** | 工具執行成功後 | 工具名稱 | 否 | 新增上下文、回饋 |
-| **PostToolUseFailure** | 工具執行失敗後 | 工具名稱 | 否 | 錯誤處理、記錄 |
+| **SessionStart** | 工作階段開始/恢復/清除/壓縮 | startup/resume/clear/compact | 否 | 環境設定 |
+| **InstructionsLoaded** | 在 CLAUDE.md 或規則檔案載入後 | (無) | 否 | 修改/篩選指令 |
+| **UserPromptSubmit** | 用戶提交提示詞 | (無) | 是 | 驗證提示詞 |
+| **PreToolUse** | 工具執行前 | 工具名稱 | 是 (允許/拒絕/詢問) | 驗證、修改輸入 |
+| **PermissionRequest** | 權限對話框顯示 | 工具名稱 | 是 | 自動批准/拒絕 |
+| **PermissionDenied** | 用戶拒絕權限提示 | 工具名稱 | 否 | 記錄、分析、策略執行 |
+| **PostToolUse** | 工具成功執行後 | 工具名稱 | 否 | 增加上下文、回饋 |
+| **PostToolUseFailure** | 工具執行失敗 | 工具名稱 | 否 | 錯誤處理、記錄 |
 | **Notification** | 發送通知 | 通知類型 | 否 | 自訂通知 |
-| **SubagentStart** | 子代理啟動 | 代理類型名稱 | 否 | 子代理初始化 |
+| **SubagentStart** | 子代理啟動 | 代理類型名稱 | 否 | 子代理設定 |
 | **SubagentStop** | 子代理完成 | 代理類型名稱 | 是 | 子代理驗證 |
-| **Stop** | Claude 完成回應 | （無） | 是 | 任務完成確認 |
-| **StopFailure** | API 錯誤結束輪次 | （無） | 否 | 錯誤恢復、記錄 |
-| **TeammateIdle** | 代理團隊成員閒置 | （無） | 是 | 成員協調 |
-| **TaskCompleted** | 任務標記為完成 | （無） | 是 | 任務後處理 |
-| **TaskCreated** | 透過 TaskCreate 建立任務 | （無） | 否 | 任務追蹤、記錄 |
-| **ConfigChange** | 設定檔變更 | （無） | 是（policy 除外） | 回應設定變更 |
-| **CwdChanged** | 工作目錄變更 | （無） | 否 | 目錄專屬設置 |
-| **FileChanged** | 監看的檔案變更 | （無） | 否 | 檔案監控、重建 |
+| **Stop** | Claude 完成回應 | (無) | 是 | 任務完成檢查 |
+| **StopFailure** | API 錯誤結束回合 | (無) | 否 | 錯誤恢復、記錄 |
+| **TeammateIdle** | 代理團隊成員閒置 | (無) | 是 | 團隊成員協調 |
+| **TaskCompleted** | 任務標記為完成 | (無) | 是 | 任務後動作 |
+| **TaskCreated** | 透過 TaskCreate 建立任務 | (無) | 否 | 任務追蹤、記錄 |
+| **ConfigChange** | 配置文件變更 | (無) | 是 (除了策略) | 響應配置更新 |
+| **CwdChanged** | 工作目錄變更 | (無) | 否 | 目錄特定的設定 |
+| **FileChanged** | 監控檔案變更 | (無) | 否 | 檔案監控、重建 |
 | **PreCompact** | 上下文壓縮前 | manual/auto | 否 | 壓縮前動作 |
-| **PostCompact** | 壓縮完成後 | （無） | 否 | 壓縮後動作 |
-| **WorktreeCreate** | 建立 worktree | （無） | 是（路徑回傳） | Worktree 初始化 |
-| **WorktreeRemove** | 移除 worktree | （無） | 否 | Worktree 清理 |
-| **Elicitation** | MCP 伺服器請求使用者輸入 | （無） | 是 | 輸入驗證 |
-| **ElicitationResult** | 使用者回應問詢 | （無） | 是 | 回應處理 |
-| **SessionEnd** | 工作階段結束 | （無） | 否 | 清理、最終記錄 |
+| **PostCompact** | 壓縮完成後 | (無) | 否 | 壓縮後動作 |
+| **WorktreeCreate** | 工作樹正在建立 | (無) | 是 (路徑回傳) | 工作樹初始化 |
+| **WorktreeRemove** | 工作樹正在移除 | (無) | 否 | 工作樹清理 |
+| **Elicitation** | MCP 伺服器請求使用者輸入 | (無) | 是 | 輸入驗證 |
+| **ElicitationResult** | 用戶回應請求 | (無) | 是 | 回應處理 |
+| **SessionEnd** | 工作階段終止 | (無) | 否 | 清理、最終記錄 |
 
 ### PreToolUse
 
-在 Claude 建立工具參數後、開始處理前執行。用於驗證或修改工具輸入。
+在 Claude 建立工具參數且處理之前執行。 用於驗證或修改工具輸入。
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -196,18 +205,18 @@ Claude Code 支援 **25 個 hook 事件**：
 }
 ```
 
-**常用比對器：** `Task`, `Bash`, `Glob`, `Grep`, `Read`, `Edit`, `Write`, `WebFetch`, `WebSearch`
+**常見比對器:** `Task`, `Bash`, `Glob`, `Grep`, `Read`, `Edit`, `Write`, `WebFetch`, `WebSearch`
 
-**輸出控制：**
-- `permissionDecision`：`"allow"`、`"deny"` 或 `"ask"`
-- `permissionDecisionReason`：決策說明
-- `updatedInput`：修改後的工具輸入參數
+**輸出控制:**
+- `permissionDecision`: `"allow"`, `"deny"` 或 `"ask"`
+- `permissionDecisionReason`: 決定的說明
+- `updatedInput`: 修改後的工具輸入參數
 
 ### PostToolUse
 
-在工具完成後立即執行。用於驗證、記錄或向 Claude 提供上下文。
+在工具完成後立即執行。用於驗證、記錄或將上下文回饋給 Claude。
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -226,15 +235,15 @@ Claude Code 支援 **25 個 hook 事件**：
 }
 ```
 
-**輸出控制：**
-- `"block"` 決策會以回饋提示 Claude
-- `additionalContext`：為 Claude 新增的上下文
+**輸出控制:**
+- `"block"` 決定提示 Claude 提供回饋
+- `additionalContext`: 為 Claude 增加的上下文
 
 ### UserPromptSubmit
 
-在使用者提交提示後、Claude 處理前執行。
+當使用者提交提示詞時執行，在 Claude 處理提示詞之前執行。
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -252,18 +261,18 @@ Claude Code 支援 **25 個 hook 事件**：
 }
 ```
 
-**輸出控制：**
-- `decision`：`"block"` 可阻止處理
-- `reason`：阻擋時的說明
-- `additionalContext`：新增至提示的上下文
+**輸出控制:**
+- `decision`: `"block"` 以防止處理
+- `reason`: 如果被阻止的說明
+- `additionalContext`: 為提示詞增加的上下文
 
-### Stop 與 SubagentStop
+### Stop and SubagentStop
 
-在 Claude 完成回應（Stop）或子代理完成任務（SubagentStop）時執行。支援以提示為基礎的評估，用於智慧型任務完成確認。
+當 Claude 完成回應 (Stop) 或子代理完成 (SubagentStop) 時執行。支援基於提示詞的評估，用於智慧型任務完成檢查。
 
-**額外輸入欄位：** `Stop` 和 `SubagentStop` hooks 均會在 JSON 輸入中收到 `last_assistant_message` 欄位，包含 Claude 或子代理停止前的最後訊息。這對評估任務完成情況非常有用。
+**額外輸入欄位:** 兩個 `Stop` 和 `SubagentStop` 鉤子都會在其 JSON 輸入中接收一個 `last_assistant_message` 欄位，其中包含停止之前的 Claude 或子代理的最後訊息。這對於評估任務完成非常有用。
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -272,7 +281,7 @@ Claude Code 支援 **25 個 hook 事件**：
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Evaluate if Claude completed all requested tasks.",
+            "prompt": "評估 Claude 是否已完成所有要求的任務。",
             "timeout": 30
           }
         ]
@@ -284,9 +293,9 @@ Claude Code 支援 **25 個 hook 事件**：
 
 ### SubagentStart
 
-在子代理開始執行時運行。比對器輸入為代理類型名稱，允許 hooks 針對特定子代理類型。
+當子代理開始執行時執行。 matcher 輸入是代理類型名稱，允許鉤子針對特定的子代理類型。
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -307,11 +316,11 @@ Claude Code 支援 **25 個 hook 事件**：
 
 ### SessionStart
 
-在工作階段啟動或恢復時執行。可持久化環境變數。
+當會話開始或恢復時執行。可以持久化環境變數。
 
-**比對器：** `startup`, `resume`, `clear`, `compact`
+**匹配器:** `startup`, `resume`, `clear`, `compact`
 
-**特殊功能：** 使用 `CLAUDE_ENV_FILE` 來持久化環境變數（在 `CwdChanged` 和 `FileChanged` hooks 中同樣可用）：
+**特殊功能:** 使用 `CLAUDE_ENV_FILE` 持久化環境變數 (也可用於 `CwdChanged` 和 `FileChanged` 鉤子)：
 
 ```bash
 #!/bin/bash
@@ -323,84 +332,65 @@ exit 0
 
 ### SessionEnd
 
-在工作階段結束時執行，用於清理或最終記錄。無法阻擋終止。
+當會話結束時執行，以進行清理或最終記錄。不能阻止終止。
 
-**Reason 欄位值：**
-- `clear` - 使用者清除了工作階段
-- `logout` - 使用者登出
-- `prompt_input_exit` - 使用者透過提示輸入退出
-- `other` - 其他原因
+**Reason 欄位值:**
+- `clear` - 使用者已清除會話
+- `logout` - 使用者已登出
+- `prompt_input_exit` - 使用者透過提示詞輸入退出
 
-**設定：**
-```json
-{
-  "hooks": {
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/session-cleanup.sh\""
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+### 通知事件
 
-### Notification 事件
-
-通知事件的更新比對器：
+更新了通知事件的匹配器：
 - `permission_prompt` - 權限請求通知
 - `idle_prompt` - 閒置狀態通知
 - `auth_success` - 驗證成功
-- `elicitation_dialog` - 顯示給使用者的對話框
+- `elicitation_dialog` - 顯示給使用者的對話
 
-## 元件範圍的 Hooks
+## 元件範圍的鉤子
 
-Hooks 可透過 frontmatter 附加至特定元件（skills、agents、commands）：
+鉤子可以附加到特定的元件（技能、代理、命令）的 frontmatter 中：
 
 **在 SKILL.md、agent.md 或 command.md 中：**
 
 ```yaml
 ---
 name: secure-operations
-description: Perform operations with security checks
+description: 執行安全性檢查的作業
 hooks:
   PreToolUse:
     - matcher: "Bash"
       hooks:
         - type: command
           command: "./scripts/check.sh"
-          once: true  # Only run once per session
+          once: true  # 每一個會話僅執行一次
 ---
 ```
 
-**元件 hooks 支援的事件：** `PreToolUse`, `PostToolUse`, `Stop`
+## 元件鉤子支援的事件：`PreToolUse`、`PostToolUse`、`Stop`
 
-這樣可以直接在使用 hooks 的元件中定義，讓相關程式碼保持在一起。
+這允許在直接在需要它們的元件中定義鉤子，將相關程式碼放在一起。
 
-### 子代理 Frontmatter 中的 Hooks
+### 子代理 Frontmatter 中的鉤子
 
-當子代理的 frontmatter 中定義了 `Stop` hook 時，它會自動轉換為限定在該子代理範圍內的 `SubagentStop` hook。這確保了停止 hook 只在該特定子代理完成時觸發，而非在主工作階段停止時觸發。
+當子代理的 frontmatter 中定義了 `Stop` 鉤子時，它會自動轉換為作用域為該子代理的 `SubagentStop` 鉤子。這確保了停止鉤子僅在該特定子代理完成時才觸發，而不是當主要會話停止時。
 
 ```yaml
 ---
 name: code-review-agent
-description: Automated code review subagent
+description: 自動程式碼審查子代理
 hooks:
   Stop:
     - hooks:
         - type: prompt
-          prompt: "Verify the code review is thorough and complete."
-  # The above Stop hook auto-converts to SubagentStop for this subagent
+          prompt: "驗證程式碼審查是否徹底且完整。"
+  # 上方的 Stop 鉤子會自動轉換為該子代理的 SubagentStop
 ---
 ```
 
 ## PermissionRequest 事件
 
-以自訂輸出格式處理權限請求：
+處理權限請求，使用自訂輸出格式：
 
 ```json
 {
@@ -409,18 +399,18 @@ hooks:
     "decision": {
       "behavior": "allow|deny",
       "updatedInput": {},
-      "message": "Custom message",
+      "message": "自訂訊息",
       "interrupt": false
     }
   }
 }
 ```
 
-## Hook 輸入與輸出
+## 鉤子輸入與輸出
 
-### JSON 輸入（透過 stdin）
+### JSON 輸入 (透過 stdin)
 
-所有 hooks 均透過 stdin 接收 JSON 輸入：
+所有鉤子都透過 stdin 接收 JSON 輸入：
 
 ```json
 {
@@ -441,38 +431,38 @@ hooks:
 }
 ```
 
-**常用欄位：**
+**通用欄位：**
 
-| 欄位 | 說明 |
+| 欄位 | 描述 |
 |-------|-------------|
-| `session_id` | 唯一的工作階段識別碼 |
+| `session_id` | 唯一的會話識別碼 |
 | `transcript_path` | 對話記錄檔案的路徑 |
 | `cwd` | 目前工作目錄 |
-| `hook_event_name` | 觸發此 hook 的事件名稱 |
-| `agent_id` | 執行此 hook 的代理識別碼 |
-| `agent_type` | 代理類型（`"main"`、子代理類型名稱等） |
-| `worktree` | 代理若在 git worktree 中執行，則為其路徑 |
+| `hook_event_name` | 觸發鉤子的事件名稱 |
+| `agent_id` | 執行此鉤子的代理識別碼 |
+| `agent_type` | 代理類型 (`"main"`, 子代理類型名稱等) |
+| `worktree` | 如果代理在其中執行，則為 git worktree 的路徑 |
 
-### 退出碼
+### 退出代碼
 
-| 退出碼 | 意義 | 行為 |
+| 退出代碼 | 意義 | 行為 |
 |-----------|---------|----------|
 | **0** | 成功 | 繼續，解析 JSON stdout |
-| **2** | 阻擋性錯誤 | 阻擋操作，stderr 顯示為錯誤 |
-| **其他** | 非阻擋性錯誤 | 繼續，stderr 在詳細模式下顯示 |
+| **2** | 阻斷錯誤 | 阻斷操作，stderr 顯示為錯誤 |
+| **其他** | 非阻斷錯誤 | 繼續，stderr 顯示在詳細模式下 |
 
-### JSON 輸出（stdout，退出碼 0）
+### JSON 輸出 (stdout, 退出代碼 0)
 
 ```json
 {
   "continue": true,
-  "stopReason": "Optional message if stopping",
+  "stopReason": "停止時的選填訊息",
   "suppressOutput": false,
-  "systemMessage": "Optional warning message",
+  "systemMessage": "選填警告訊息",
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow",
-    "permissionDecisionReason": "File is in allowed directory",
+    "permissionDecisionReason": "檔案位於允許目錄中",
     "updatedInput": {
       "file_path": "/modified/path.js"
     }
@@ -482,18 +472,18 @@ hooks:
 
 ## 環境變數
 
-| 變數 | 可用範圍 | 說明 |
+| 變數 | 適用範圍 | 描述 |
 |----------|-------------|-------------|
-| `CLAUDE_PROJECT_DIR` | 所有 hooks | 專案根目錄的絕對路徑 |
-| `CLAUDE_ENV_FILE` | SessionStart, CwdChanged, FileChanged | 用於持久化環境變數的檔案路徑 |
-| `CLAUDE_CODE_REMOTE` | 所有 hooks | 若在遠端環境中執行，則為 `"true"` |
-| `${CLAUDE_PLUGIN_ROOT}` | Plugin hooks | 外掛目錄的路徑 |
-| `${CLAUDE_PLUGIN_DATA}` | Plugin hooks | 外掛資料目錄的路徑 |
-| `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | SessionEnd hooks | SessionEnd hooks 的可設定逾時毫秒數（覆寫預設值） |
+| `CLAUDE_PROJECT_DIR` | 所有鉤子 | 專案根目錄的絕對路徑 |
+| `CLAUDE_ENV_FILE` | SessionStart, CwdChanged, FileChanged | 持續保存環境變數的檔案路徑 |
+| `CLAUDE_CODE_REMOTE` | 所有鉤子 | 如果在遠端環境中執行，則為 `"true"` |
+| `${CLAUDE_PLUGIN_ROOT}` | 外掛鉤子 | 外掛目錄的路徑 |
+| `${CLAUDE_PLUGIN_DATA}` | 外掛鉤子 | 外掛資料目錄的路徑 |
+| `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | SessionEnd 鉤子 | SessionEnd 鉤子的可配置逾時時間（毫秒），覆蓋預設值 |
 
-## 以提示為基礎的 Hooks
+## 基於提示詞的鉤子
 
-對於 `Stop` 和 `SubagentStop` 事件，可使用基於 LLM 的評估：
+對於 `Stop` 和 `SubagentStop` 事件，您可以使用基於 LLM 的評估：
 
 ```json
 {
@@ -513,7 +503,7 @@ hooks:
 }
 ```
 
-**LLM 回應結構：**
+**LLM 回應 Schema:**
 ```json
 {
   "decision": "approve",
@@ -525,9 +515,9 @@ hooks:
 
 ## 範例
 
-### 範例 1：Bash 指令驗證器（PreToolUse）
+### 範例 1：Bash 命令驗證器 (PreToolUse)
 
-**檔案：** `.claude/hooks/validate-bash.py`
+**檔案:** `.claude/hooks/validate-bash.py`
 
 ```python
 #!/usr/bin/env python3
@@ -560,7 +550,7 @@ if __name__ == "__main__":
     main()
 ```
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -579,9 +569,9 @@ if __name__ == "__main__":
 }
 ```
 
-### 範例 2：資安掃描器（PostToolUse）
+### 範例 2：安全掃描器 (PostToolUse)
 
-**檔案：** `.claude/hooks/security-scan.py`
+**檔案:** `.claude/hooks/security-scan.py`
 
 ```python
 #!/usr/bin/env python3
@@ -608,31 +598,16 @@ def main():
     warnings = []
     for pattern, message in SECRET_PATTERNS:
         if re.search(pattern, content, re.IGNORECASE):
-            warnings.append(message)
-
-    if warnings:
-        output = {
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": f"Security warnings for {file_path}: " + "; ".join(warnings)
-            }
-        }
-        print(json.dumps(output))
-
-    sys.exit(0)
-
-if __name__ == "__main__":
-    main()
 ```
 
-### 範例 3：自動格式化程式碼（PostToolUse）
+### 範例 3：自動格式化程式碼 (PostToolUse)
 
 **檔案：** `.claude/hooks/format-code.sh`
 
 ```bash
 #!/bin/bash
 
-# Read JSON from stdin
+# 從 stdin 讀取 JSON
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | python3 -c "import sys, json; print(json.load(sys.stdin).get('tool_name', ''))")
 FILE_PATH=$(echo "$INPUT" | python3 -c "import sys, json; print(json.load(sys.stdin).get('tool_input', {}).get('file_path', ''))")
@@ -641,7 +616,7 @@ if [ "$TOOL_NAME" != "Write" ] && [ "$TOOL_NAME" != "Edit" ]; then
     exit 0
 fi
 
-# Format based on file extension
+# 根據檔案副檔名進行格式化
 case "$FILE_PATH" in
     *.js|*.jsx|*.ts|*.tsx|*.json)
         command -v prettier &>/dev/null && prettier --write "$FILE_PATH" 2>/dev/null
@@ -657,7 +632,7 @@ esac
 exit 0
 ```
 
-### 範例 4：提示驗證器（UserPromptSubmit）
+### 範例 4：提示詞驗證器 (UserPromptSubmit)
 
 **檔案：** `.claude/hooks/validate-prompt.py`
 
@@ -691,7 +666,7 @@ if __name__ == "__main__":
     main()
 ```
 
-### 範例 5：智慧型停止 Hook（以提示為基礎）
+### 範例 5：智慧型停止鉤子 (基於提示詞)
 
 ```json
 {
@@ -701,7 +676,7 @@ if __name__ == "__main__":
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Review if Claude completed all requested tasks. Check: 1) Were all files created/modified? 2) Were there unresolved errors? If incomplete, explain what's missing.",
+            "prompt": "檢查 Claude 是否已完成所有要求的任務。檢查：1) 是否已建立/修改所有檔案？ 2) 是否有未解決的錯誤？ 如果不完整，請說明缺少什麼。",
             "timeout": 30
           }
         ]
@@ -711,24 +686,26 @@ if __name__ == "__main__":
 }
 ```
 
-### 範例 6：上下文使用量追蹤器（Hook 配對）
+### 範例 6：上下文使用情況追蹤器 (鉤子配對)
 
-使用 `UserPromptSubmit`（訊息前）和 `Stop`（回應後）hooks 配對，追蹤每次請求的 token 消耗量。
+使用 `UserPromptSubmit`（預先訊息）和 `Stop`（後續回覆）鉤子共同追蹤每個請求的 token 消耗量。
 
 **檔案：** `.claude/hooks/context-tracker.py`
 
 ```python
 #!/usr/bin/env python3
 """
-Context Usage Tracker - Tracks token consumption per request.
+上下文使用情況追蹤器 - 追蹤每個請求的 token 消耗量。
 
-Uses UserPromptSubmit as "pre-message" hook and Stop as "post-response" hook
-to calculate the delta in token usage for each request.
+使用 UserPromptSubmit 作為 "預先訊息" 鉤子和 Stop 作為 "後續回覆" 鉤子
+來計算每個請求的 token 使用量差異。
 
-Token Counting Methods:
-1. Character estimation (default): ~4 chars per token, no dependencies
-2. tiktoken (optional): More accurate (~90-95%), requires: pip install tiktoken
-"""
+Token 統計方法：
+1. 字元估計（預設）：~4 個字元每 token，沒有相依性
+2. tiktoken（可選）：~90-95% 準確，需要：pip install tiktoken
+```
+
+```python
 import json
 import os
 import sys
@@ -816,17 +793,24 @@ def handle_stop(data: dict) -> None:
     if os.path.exists(state_file):
         try:
             with open(state_file, "r") as f:
+```
+
+**狀態追蹤器鉤子**
+
+此鉤子會追蹤每個會話的 token 使用量，並將其記錄到檔案中。
+
+```python
                 state = json.load(f)
                 pre_tokens = state.get("pre_tokens", 0)
         except (json.JSONDecodeError, IOError):
             pass
 
-    # Calculate delta
+    # 計算增量
     delta_tokens = current_tokens - pre_tokens
     remaining = CONTEXT_LIMIT - current_tokens
     percentage = (current_tokens / CONTEXT_LIMIT) * 100
 
-    # Report usage
+    # 報告使用量
     method = "tiktoken" if USE_TIKTOKEN else "estimated"
     print(f"Context ({method}): ~{current_tokens:,} tokens ({percentage:.1f}% used, ~{remaining:,} remaining)", file=sys.stderr)
     if delta_tokens > 0:
@@ -849,7 +833,7 @@ if __name__ == "__main__":
     main()
 ```
 
-**設定：**
+**配置:**
 ```json
 {
   "hooks": {
@@ -877,192 +861,59 @@ if __name__ == "__main__":
 }
 ```
 
-**運作方式：**
-1. `UserPromptSubmit` 在您的提示被處理前觸發，儲存目前的 token 數量
-2. `Stop` 在 Claude 回應後觸發，計算差值並回報使用量
-3. 每個工作階段透過暫存檔案名稱中的 `session_id` 進行隔離
+**運作方式:**
+1. `UserPromptSubmit` 在您的提示詞被處理之前觸發 - 儲存目前的 token 數量
+2. `Stop` 在 Claude 回應後觸發 - 計算增量並報告使用量
+3. 每個會話透過暫存檔案中的 `session_id` 隔離
 
-**Token 計算方法：**
+**Token 數量方法:**
 
-| 方法 | 精確度 | 相依套件 | 速度 |
+| 方法 | 準確度 | 依賴 | 速度 |
 |--------|----------|--------------|-------|
-| 字元估算 | ~80-90% | 無 | <1ms |
+| 字元估計 | ~80-90% | 無 | <1ms |
 | tiktoken (p50k_base) | ~90-95% | `pip install tiktoken` | <10ms |
 
-> **注意：** Anthropic 尚未發布官方的離線 tokenizer。兩種方法均為估算。記錄包含使用者提示、Claude 的回應和工具輸出，但**不包含**系統提示或內部上下文。
+> **注意:** Anthropic 尚未發布官方的離線 tokenizer。這兩種方法都是近似值。記錄包含使用者提示、Claude 的回應和工具輸出，但不包含系統提示或內部上下文。
 
-### 範例 7：自動適應模式（PostToolUse）
+### 範例 7：Seed Auto-Mode 權限 (一次性設定腳本)
 
-自動從您的工具核准記錄中學習，並更新 `~/.claude/settings.json` 的權限設定。每次您核准工具執行後，hook 會將指令泛化為可重用的權限規則，讓您再也不需要核准同類型的指令。危險/破壞性的指令**永遠不會**被記憶。
+一個一次性設定腳本，將 `~/.claude/settings.json` 設定為 ~67 個安全的權限規則，相當於 Claude Code 的 auto-mode 基準線 — 而沒有任何鉤子，也沒有記住未來的選擇。執行一次；安全地重新執行 (略過已存在的規則)。
 
-首次執行時，會以自動模式等效的基準權限進行初始設定（讀寫檔案、git 操作、套件管理工具、常用 CLI 工具）。
+**檔案:** `09-advanced-features/setup-auto-mode-permissions.py`
 
-**檔案：** `.claude/hooks/auto-adapt-mode.py`
+```bash
+# 預覽將會新增的內容
+python3 09-advanced-features/setup-auto-mode-permissions.py --dry-run
 
-```python
-#!/usr/bin/env python3
-"""
-auto-adapt-mode: Learn from user's tool approvals and update Claude config.
-
-Hook Type: PostToolUse
-Event: Fires after a tool is successfully executed (meaning user approved it)
-"""
-
-import json
-import os
-import sys
-import re
-from pathlib import Path
-
-SETTINGS_PATH = Path.home() / ".claude" / "settings.json"
-LOG_PATH = Path.home() / ".claude" / "auto-adapt-mode.log"
-
-# Auto-mode baseline: safe, local, reversible operations
-AUTO_MODE_BASELINE = [
-    "Read(*)", "Edit(*)", "Write(*)", "Glob(*)", "Grep(*)",
-    "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)",
-    "Bash(git add:*)", "Bash(git commit:*)", "Bash(git checkout:*)",
-    "Bash(npm install:*)", "Bash(npm test:*)", "Bash(npm run:*)",
-    "Bash(pip install:*)", "Bash(pytest:*)",
-    "Bash(ls:*)", "Bash(cat:*)", "Bash(find:*)", "Bash(mkdir:*)",
-    "Bash(cp:*)", "Bash(mv:*)", "Bash(chmod:*)",
-    "Bash(gh pr view:*)", "Bash(gh issue list:*)",
-    "Agent(*)", "Skill(*)", "WebSearch(*)", "WebFetch(*)",
-    # ... (full list includes 70+ safe patterns)
-]
-
-# Commands that are NEVER auto-remembered
-DANGEROUS_PATTERNS = [
-    r"rm\s+(-[a-zA-Z]*r[a-zA-Z]*|--recursive)",   # rm -rf
-    r"git\s+push\s+(-[a-zA-Z]*f|--force)",          # force push
-    r"git\s+reset\s+--hard",                         # hard reset
-    r"DROP\s+(TABLE|DATABASE)",                       # SQL destructive
-    r"curl\s+.*\|\s*(bash|sh)",                       # pipe to shell
-    r"sudo\b",                                        # privilege escalation
-    r"docker\s+(rm|rmi|system\s+prune)",              # container destructive
-    r"kubectl\s+delete",                              # k8s destructive
-    r"terraform\s+destroy",                           # infra destructive
-    r"npm\s+publish",                                 # irreversible publish
-    r"deploy\s+.*prod",                               # production deploy
-    # ... (full list includes 25+ patterns)
-]
-
-
-def is_dangerous_command(command: str) -> bool:
-    """Check if a bash command matches any dangerous pattern."""
-    return any(re.search(p, command, re.IGNORECASE) for p in DANGEROUS_PATTERNS)
-
-
-def generalize_tool_permission(tool_name: str, tool_input: dict) -> str | None:
-    """Convert a specific tool invocation into a generalized permission rule."""
-    if tool_name == "Bash":
-        command = tool_input.get("command", "")
-        if not command or is_dangerous_command(command):
-            return None
-        parts = command.strip().split()
-        base = parts[0]
-        # Compound commands: "git push" -> "Bash(git push:*)"
-        compound = ["git", "npm", "npx", "pip", "cargo", "go", "gh", "python3"]
-        if base in compound and len(parts) > 1:
-            sub = parts[1]
-            if sub.lower() in {"rm", "delete", "destroy", "publish"}:
-                return None
-            return f"Bash({base} {sub}:*)"
-        return f"Bash({base}:*)"
-    elif tool_name == "Bash":  # Never allow generic Bash(*)
-        return None
-    else:
-        return f"{tool_name}(*)"
-
-
-def main():
-    try:
-        hook_input = json.load(sys.stdin)
-    except (json.JSONDecodeError, EOFError):
-        sys.exit(0)
-
-    tool_name = hook_input.get("tool_name", "")
-    tool_input = hook_input.get("tool_input", {})
-    if not tool_name:
-        sys.exit(0)
-
-    # Load settings, ensure baseline, add new rule if safe
-    settings = json.load(open(SETTINGS_PATH)) if SETTINGS_PATH.exists() else {}
-    allow = settings.setdefault("permissions", {}).setdefault("allow", [])
-
-    # Seed baseline on first run
-    marker = Path.home() / ".claude" / ".auto-adapt-mode-initialized"
-    if not marker.exists():
-        existing = set(allow)
-        for rule in AUTO_MODE_BASELINE:
-            if rule not in existing:
-                allow.append(rule)
-        marker.touch()
-
-    # Generalize and add the new rule
-    rule = generalize_tool_permission(tool_name, tool_input)
-    if rule and rule not in allow:
-        allow.append(rule)
-        with open(SETTINGS_PATH, "w") as f:
-            json.dump(settings, f, indent=2)
-            f.write("\n")
-
-    sys.exit(0)
-
-if __name__ == "__main__":
-    main()
+# 應用
+python3 09-advanced-features/setup-auto-mode-permissions.py
 ```
 
-**設定：**
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-adapt-mode.py\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+**新增的內容:**
 
-**運作方式：**
-1. `PostToolUse` 在**每次**成功工具執行後觸發（表示您已核准）
-2. Hook 提取工具名稱和輸入，然後泛化為權限規則
-3. 複合指令如 `git push origin main` 會變成 `Bash(git push:*)` — 可比對任何 `git push` 變體
-4. 若規則尚未存在，則新增至 `~/.claude/settings.json` → `permissions.allow`
-5. 首次執行時，設置約 70 條自動模式等效的基準權限
+| 類別 | 範例 |
+|----------|---------|
+| 內建工具 | `Read(*)`, `Edit(*)`, `Write(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)` |
+| Git 讀取 | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)` |
+| Git 寫入 (本機) | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
 
-**安全保證：**
-- 危險指令（force push、rm -rf、sudo、DROP TABLE 等）**永遠不會**被記憶
-- 不可逆操作（npm publish、terraform destroy、production 部署）**永遠阻擋**
-- `deny` 清單中的指令永不被覆寫
-- Hook 永不阻擋工具執行（始終以 exit 0 退出）
-- `~/.claude/auto-adapt-mode.log` 記錄所有決策以供稽核
+## 套件管理工具
 
-**泛化範例：**
+| 套件管理工具 | `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(cargo build:*)` |
+|---|---|
+| 建置 & 測試 | `Bash(make:*)`, `Bash(pytest:*)`, `Bash(go test:*)` |
+| 常用 Shell | `Bash(ls:*)`, `Bash(cat:*)`, `Bash(find:*)`, `Bash(cp:*)`, `Bash(mv:*)` |
+| GitHub CLI | `Bash(gh pr view:*)`, `Bash(gh pr create:*)`, `Bash(gh issue list:*)` |
 
-| 您核准的指令 | 新增的規則 | 涵蓋範圍 |
-|-------------|-----------|--------|
-| `git push origin main` | `Bash(git push:*)` | 所有 git push 變體 |
-| `npm run build` | `Bash(npm run:*)` | 所有 npm scripts |
-| `ls -la src/` | `Bash(ls:*)` | 所有 ls 呼叫 |
-| `rm -rf /tmp/test` | *（阻擋）* | 永不記憶 |
-| `git push --force` | *（阻擋）* | 永不記憶 |
-| `Write` 工具 | `Write(*)` | 所有檔案寫入 |
+## 排除項目 (此腳本永遠不會新增)：
 
-> **提示：** 刪除 `~/.claude/.auto-adapt-mode-initialized` 可重新設置基準權限。查看 `~/.claude/auto-adapt-mode.log` 稽核新增了哪些規則以及哪些被阻擋。
+- `rm -rf`, `sudo`, 強制推送, `git reset --hard`
+- `DROP TABLE`, `kubectl delete`, `terraform destroy`
+- `npm publish`, `curl | bash`, 產品部署
 
-## 外掛 Hooks
+## 外掛鉤
 
-外掛可在其 `hooks/hooks.json` 檔案中包含 hooks：
+外掛程式可以在其 `hooks/hooks.json` 檔案中包含鉤子：
 
 **檔案：** `plugins/hooks/hooks.json`
 
@@ -1084,15 +935,15 @@ if __name__ == "__main__":
 }
 ```
 
-**外掛 Hooks 中的環境變數：**
-- `${CLAUDE_PLUGIN_ROOT}` - 外掛目錄的路徑
-- `${CLAUDE_PLUGIN_DATA}` - 外掛資料目錄的路徑
+**外掛鉤中的環境變數：**
+- `${CLAUDE_PLUGIN_ROOT}` - 外掛程式目錄的路徑
+- `${CLAUDE_PLUGIN_DATA}` - 外掛程式資料目錄的路徑
 
-這讓外掛可以包含自訂的驗證和自動化 hooks。
+這允許外掛程式包含自訂驗證和自動化鉤子。
 
-## MCP 工具 Hooks
+## MCP 工具鉤子
 
-MCP 工具遵循 `mcp__<server>__<tool>` 的命名模式：
+MCP 工具遵循 `mcp__<server>__<tool>` 模式：
 
 ```json
 {
@@ -1114,37 +965,37 @@ MCP 工具遵循 `mcp__<server>__<tool>` 的命名模式：
 
 ## 安全考量
 
-### 免責聲明
+### 聲明
 
-**使用時請自行承擔風險**：Hooks 可執行任意 shell 指令。您需獨自承擔以下責任：
-- 您設定的指令
+**自行承擔風險使用**: 鉤子會執行任意的 shell 命令。您獨自負責：
+- 您配置的命令
 - 檔案存取/修改權限
-- 潛在的資料遺失或系統損壞
-- 在正式環境使用前於安全環境中測試 hooks
+- 可能發生的資料遺失或系統損壞
+- 在生產環境中使用前，先在安全環境中測試鉤子
 
 ### 安全注意事項
 
-- **需要工作區信任：** `statusLine` 和 `fileSuggestion` hook 輸出指令現在需要在工作區信任確認後才生效。
-- **HTTP hooks 與環境變數：** HTTP hooks 需提供明確的 `allowedEnvVars` 清單，才能在 URL 中使用環境變數插值。這可防止敏感環境變數意外洩露至遠端端點。
-- **Managed 設定階層：** `disableAllHooks` 設定現在遵循 managed 設定階層，表示組織層級設定可強制停用 hooks，而個別使用者無法覆寫。
+- **工作區信任必要**: `statusLine` 和 `fileSuggestion` 鉤子的輸出命令現在需要工作區信任的確認才能生效。
+- **HTTP 鉤子和環境變數**: HTTP 鉤子需要明確的 `allowedEnvVars` 清單才能在 URL 中使用環境變數的內插。這有助於防止敏感環境變數意外洩露到遠端端點。
+- **管理的設定層級結構**: `disableAllHooks` 設定現在會尊重管理的設定層級結構，這表示組織層級的設定可以強制鉤子停用，而個別使用者無法覆寫。
 
-### 最佳實踐
+### 最佳實務
 
-| 應做 | 不應做 |
+| 執行 | 不要執行 |
 |-----|-------|
 | 驗證並清理所有輸入 | 盲目信任輸入資料 |
-| 為 shell 變數加引號：`"$VAR"` | 使用未加引號的：`$VAR` |
-| 阻擋路徑穿越（`..`） | 允許任意路徑 |
-| 使用 `$CLAUDE_PROJECT_DIR` 的絕對路徑 | 硬式編碼路徑 |
-| 跳過敏感檔案（`.env`、`.git/`、密鑰） | 處理所有檔案 |
-| 先在隔離環境中測試 hooks | 部署未測試的 hooks |
-| 為 HTTP hooks 使用明確的 `allowedEnvVars` | 將所有環境變數暴露給 webhook |
+| 引用 shell 變數: `"$VAR"` | 使用未引用: `$VAR` |
+| 阻止路徑穿越 (`..`) | 允許任意路徑 |
+| 使用 `$CLAUDE_PROJECT_DIR` 的絕對路徑 | 硬編碼路徑 |
+| 略過敏感檔案 (`.env`, `.git/`, keys) | 處理所有檔案 |
+| 首次在隔離環境中測試鉤子 | 部署未測試的鉤子 |
+| 對於 HTTP 鉤子，使用明確的 `allowedEnvVars` | 將所有環境變數暴露給 webhook |
 
 ## 除錯
 
 ### 啟用除錯模式
 
-以除錯旗標執行 Claude 以查看詳細的 hook 記錄：
+使用除錯 flag 執行 Claude，以取得詳細的鉤子記錄：
 
 ```bash
 claude --debug
@@ -1152,19 +1003,19 @@ claude --debug
 
 ### 詳細模式
 
-在 Claude Code 中使用 `Ctrl+O` 啟用詳細模式，查看 hook 執行進度。
+在 Claude Code 中使用 `Ctrl+O` 啟用詳細模式，並查看鉤子執行進度。
 
-### 獨立測試 Hooks
+### 獨立測試鉤子
 
 ```bash
-# Test with sample JSON input
+# 使用範例 JSON 輸入進行測試
 echo '{"tool_name": "Bash", "tool_input": {"command": "ls -la"}}' | python3 .claude/hooks/validate-bash.py
 
-# Check exit code
+# 檢查退出代碼
 echo $?
 ```
 
-## 完整設定範例
+## 完整配置範例
 
 ```json
 {
@@ -1234,62 +1085,74 @@ echo $?
 }
 ```
 
-## Hook 執行細節
+## 鉤子執行細節
 
-| 面向 | 行為 |
+| 方面 | 行為 |
 |--------|----------|
-| **逾時** | 預設 60 秒，可依指令設定 |
-| **平行化** | 所有符合的 hooks 並行執行 |
-| **去重** | 相同的 hook 指令會去重 |
-| **環境** | 在目前目錄以 Claude Code 的環境執行 |
+| **逾時** | 預設 60 秒，每個命令可配置 |
+| **並行處理** | 所有符合條件的鉤子並行執行 |
+| **去重** | 相同的鉤子命令會去重 |
+| **環境** | 在 Claude Code 的環境中當前目錄中執行 |
 
-## 疑難排解
+## 故障排除
 
-### Hook 未執行
-- 確認 JSON 設定語法正確
-- 確認比對器模式符合工具名稱
+### 鉤子未執行
+
+- 驗證 JSON 設定語法是否正確
+- 檢查比對模式是否符合工具名稱
 - 確保腳本存在且可執行：`chmod +x script.sh`
-- 執行 `claude --debug` 查看 hook 執行記錄
-- 確認 hook 從 stdin 讀取 JSON（非命令列參數）
+- 執行 `claude --debug` 以查看鉤子執行記錄
+- 驗證鉤子是否從標準輸入讀取 JSON (而不是命令參數)
 
-### Hook 意外阻擋
-- 以範例 JSON 測試 hook：`echo '{"tool_name": "Write", ...}' | ./hook.py`
-- 檢查退出碼：允許應為 0，阻擋應為 2
-- 查看 stderr 輸出（在退出碼 2 時顯示）
+### 鉤子意外停止
+
+- 使用範例 JSON 測試鉤子：`echo '{"tool_name": "Write", ...}' | ./hook.py`
+- 檢查退出代碼：allow 應為 0，block 應為 2
+- 檢查標準錯誤輸出 (在退出代碼 2 時顯示)
 
 ### JSON 解析錯誤
-- 始終從 stdin 讀取，而非命令列參數
-- 使用正確的 JSON 解析（非字串操作）
-- 優雅地處理缺少的欄位
+
+- 務必從標準輸入讀取，而不是命令參數
+- 使用正確的 JSON 解析 (而不是字串操作)
+- 妥善處理遺漏的欄位
 
 ## 安裝
 
-### 步驟一：建立 Hooks 目錄
+### 第一步：建立鉤子目錄
+
 ```bash
 mkdir -p ~/.claude/hooks
 ```
 
-### 步驟二：複製範例 Hooks
+### 第二步：複製範例鉤子
+
 ```bash
 cp 06-hooks/*.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
 ```
 
-### 步驟三：在設定中配置
-編輯 `~/.claude/settings.json` 或 `.claude/settings.json`，加入上述 hook 設定。
+### 第三步：在設定中進行設定
+
+編輯 `~/.claude/settings.json` 或 `.claude/settings.json`，使用上述鉤子設定。
 
 ## 相關概念
 
-- **[Checkpoints 與 Rewind](../08-checkpoints/)** - 儲存與恢復對話狀態
-- **[Slash Commands](../01-slash-commands/)** - 建立自訂斜線指令
-- **[Skills](../03-skills/)** - 可重用的自主能力
-- **[Subagents](../04-subagents/)** - 委派任務執行
-- **[Plugins](../07-plugins/)** - 捆綁式擴展套件
-- **[Advanced Features](../09-advanced-features/)** - 探索 Claude Code 進階功能
+- **[檢查點和回溯](../08-checkpoints/)** - 儲存和還原對話狀態
+- **[斜線命令](../01-slash-commands/)** - 建立自訂斜線命令
+- **[技能](../03-skills/)** - 可重複使用的自主功能
+- **[子代理](../04-subagents/)** - 委派任務執行
+- **[外掛](../07-plugins/)** - 封裝的擴充套件
+- **[進階功能](../09-advanced-features/)** - 探索進階 Claude Code 功能
 
 ## 額外資源
 
-- **[官方 Hooks 文件](https://code.claude.com/docs/en/hooks)** - 完整 hooks 參考
+- **[官方鉤子文件](https://code.claude.com/docs/en/hooks)** - 完整的鉤子參考
 - **[CLI 參考](https://code.claude.com/docs/en/cli-reference)** - 命令列介面文件
-- **[Memory 指南](../02-memory/)** - 持久化上下文設定
+- **[記憶指南](../02-memory/)** - 持續上下文設定
 
+---
+**上次更新**: 2026 年 4 月 11 日
+**Claude Code 版本**: 2.1.101
+**來源**:
+- https://code.claude.com/docs/en/hooks
+**相容模型**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
