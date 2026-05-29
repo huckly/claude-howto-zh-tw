@@ -3,18 +3,18 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# Hooks
+# Hooks 鉤子
 
 Hooks 是自動化腳本，會在 Claude Code 會話期間針對特定事件執行。它們可以實現自動化、驗證、權限管理以及自定義工作流程。
 
 ## 概觀
 
-Hooks 是自動化動作（shell 命令、HTTP webhooks、LLM 提示詞或子代理評估），當 Claude Code 中發生特定事件時會自動執行。它們接收 JSON 輸入，並透過結束代碼（exit codes）和 JSON 輸出進行結果通訊。
+Hooks 是自動化動作（shell 命令、HTTP webhooks、LLM 提示詞、MCP 工具呼叫或子代理評估），當 Claude Code 中發生特定事件時會自動執行。它們接收 JSON 輸入，並透過結束代碼（exit codes）和 JSON 輸出進行結果通訊。
 
 **關鍵特性：**
 - 事件驅動的自動化
 - 基於 JSON 的輸入/輸出
-- 支援 command、prompt、HTTP 和 agent 類型的 hook
+- 支援 `command`、`http`、`mcp_tool`、`prompt` 和 `agent` 類型的 hook
 - 針對特定工具的 pattern matching
 
 ## 配置
@@ -55,7 +55,7 @@ Hooks 在設定檔中以特定結構進行配置：
 |-------|-------------|---------|
 | `matcher` | 用於比對工具名稱的模式（區分大小寫） | `"Write"`, `"Edit\|Write"`, `"*"` |
 | `hooks` | hook 定義的陣列 | `[{ "type": "command", ... }]` |
-| `type` | Hook 類型：`"command"` (bash), `"prompt"` (LLM), `"http"` (webhook), 或 `"agent"` (subagent) | `"command"` |
+| `type` | Hook 類型：`"command"` (bash)、`"prompt"` (LLM)、`"http"` (webhook)、`"mcp_tool"` (MCP 工具呼叫，v2.1.118+) 或 `"agent"` (subagent) | `"command"` |
 | `command` | 要執行的 shell 命令 | `"$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh"` |
 | `timeout` | 選填的秒數超時設定（預設 60） | `30` |
 | `once` | 若為 `true`，則每個會話僅執行一次 hook | `true` |
@@ -79,7 +79,7 @@ Hooks 在設定檔中以特定結構進行配置：
 
 ## Hook 類型
 
-Claude Code 支援四種 hook 類型：
+Claude Code 支援五種 hook 類型：
 
 ### Command Hooks
 
@@ -92,6 +92,22 @@ Claude Code 支援四種 hook 類型：
   "timeout": 60
 }
 ```
+
+#### Exec 形式（`args`）
+
+> 於 v2.1.139 版本新增。
+
+除了 shell 形式的 `"command": "..."` 之外，command hook 也可以透過 `args` 陣列以 `execve()` 直接啟動二進位檔。這種方式不經過 shell 解析，因此路徑中的佔位符永遠不需要加引號，且設定不受 shell 注入漏洞影響。
+
+```json
+{
+  "type": "command",
+  "args": ["python3", "$CLAUDE_PROJECT_DIR/.claude/hooks/validate.py", "--strict"],
+  "timeout": 60
+}
+```
+
+這兩種形式**互斥** — 同時設定 `command` 和 `args` 的 hook 在設定載入時會被拒絕。當您需要管道、重新導向、`&&` 串接或 shell 展開時使用 `command`；當您只是呼叫一個帶有引數的二進位檔時使用 `args`。
 
 ### HTTP Hooks
 
@@ -129,7 +145,31 @@ Claude Code 支援四種 hook 類型：
 }
 ```
 
-LLM 會評估該提示詞並回傳結構化的決策（詳情請參閱 [Prompt-Based Hooks](#prompt-based-hooks)）。
+LLM 會評估該提示詞並回傳結構化的決策（詳情請參閱[基於提示詞的 hooks](#基於提示詞的-hooks)）。
+
+### MCP Tool Hooks
+
+> 於 v2.1.118 版本新增。
+
+`mcp_tool` 類型直接呼叫已配置的 MCP 工具；設定中引用 MCP 伺服器和工具名稱，而非 shell 命令或 URL。當驗證或反應邏輯已存在於您所配置的 MCP 伺服器中時，此方式非常實用。
+
+```json
+{
+  "matcher": "Edit",
+  "hooks": [{
+    "type": "mcp_tool",
+    "server": "my-mcp-server",
+    "tool": "validate_edit"
+  }]
+}
+```
+
+**關鍵屬性：**
+- `"type": "mcp_tool"` -- 將此識別為 MCP tool hook
+- `"server"` -- 已配置的 MCP 伺服器名稱
+- `"tool"` -- 該伺服器上要呼叫的工具名稱
+
+hook 的輸入（工具名稱、工具輸入、session 上下文）會作為 MCP 工具的引數傳入。請參閱 [MCP server 設定](../05-mcp/README.md) 了解如何配置 MCP 伺服器。
 
 ### Agent Hooks
 
@@ -151,18 +191,21 @@ LLM 會評估該提示詞並回傳結構化的決策（詳情請參閱 [Prompt-B
 
 ## Hook Events
 
-Claude Code 支援 **26 個 hook events**：
+Claude Code 支援 **29 個 hook events**：
 
 | Event | 觸發時機 | Matcher 輸入 | 是否可阻斷 | 常見用途 |
 |-------|---------------|---------------|-----------|------------|
 | **SessionStart** | 會話開始/恢復/清除/壓縮 | startup/resume/clear/compact | 否 | 環境設定 |
-| **InstructionsLoaded** | CLAUd.md 或規則檔案載入後 | (無) | 否 | 修改/過濾指令 |
+| **Setup** | 初始環境設定（每個會話執行一次） | (無) | 否 | 佈建工具、安裝依賴 |
+| **InstructionsLoaded** | CLAUDE.md 或規則檔案載入後 | (無) | 否 | 修改/過濾指令 |
 | **UserPromptSubmit** | 使用者提交 prompt | (無) | 是 | 驗證 prompt |
+| **UserPromptExpansion** | 使用者提示詞被展開時（例如 `@` 提及、斜線命令解析） | (無) | 是 | 轉換或檢視展開後的提示詞 |
 | **PreToolUse** | 工具執行前 | 工具名稱 | 是 (允許/拒絕/詢問) | 驗證、修改輸入 |
 | **PermissionRequest** | 顯示權限對話框時 | 工具名稱 | 是 | 自動核准/拒絕 |
 | **PermissionDenied** | 使用者拒絕權限提示時 | 工具名稱 | 否 | 紀錄、分析、政策執行 |
 | **PostToolUse** | 工具執行成功後 | 工具名稱 | 否 | 新增上下文、回饋 |
 | **PostToolUseFailure** | 工具執行失敗時 | 工具名稱 | 否 | 錯誤處理、紀錄 |
+| **PostToolBatch** | 一批工具使用完成後 | (無) | 否 | 彙總報告、批次驗證 |
 | **Notification** | 發送通知時 | 通知類型 | 否 | 自定義通知 |
 | **SubagentStart** | 子代理啟動時 | 代理類型名稱 | 否 | 子代理設定 |
 | **SubagentStop** | 子代理結束時 | 代理類型名稱 | 是 | 子代理驗證 |
@@ -182,11 +225,13 @@ Claude Code 支援 **26 個 hook events**：
 | **ElicitationResult** | 使用者回應 elicitation 時 | (無) | 是 | 回應處理 |
 | **SessionEnd** | 會話終止時 | (無) | 否 | 清理、最終紀錄 |
 
+> **PostToolUse 執行時長（v2.1.119）：** `PostToolUse` 和 `PostToolUseFailure` 的 hook 輸入現在包含 `duration_ms` — 詳情請參閱 [PostToolUse](#posttooluse) 章節。
+
 ### PreToolUse
 
 在 Claude 建立工具參數之後且在處理之前執行。使用此功能來驗證或修改工具輸入。
 
-**Configuration:**
+**配置：**
 ```json
 {
   "hooks": {
@@ -238,6 +283,37 @@ Claude Code 支援 **26 個 hook events**：
 **輸出控制：**
 - `"block"` 決策會透過回饋提示 Claude
 - `additionalContext`: 為 Claude 增加的上下文
+
+**額外輸入欄位（v2.1.119）：**
+
+| 欄位 | 類型 | 說明 |
+|-------|------|-------------|
+| `duration_ms` | number | 工具執行時間（毫秒）。不含在權限提示和 PreToolUse hook 執行期間花費的時間。`PostToolUse` 和 `PostToolUseFailure` hooks 均可使用。 |
+
+#### 可恢復的阻斷（`continueOnBlock`，v2.1.139）
+
+預設情況下，回傳 `"decision": "block"` 的 `PostToolUse` hook 會中止目前的回合。在 hook 上設定 `"continueOnBlock": true`，可改為將拒絕作為 `tool_result` 回傳給 Claude，使模型能讀取回饋並重試或調整。
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/policy-check.py",
+            "continueOnBlock": true
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+當 hook 的 `reason` 是 Claude 可以採取行動的內容時（例如「此檔案為唯讀；請寫入其他位置」），使用此功能；若阻斷必須完全終止回合，則不要設定此選項。
 
 ### UserPromptSubmit
 
@@ -291,6 +367,8 @@ Claude Code 支援 **26 個 hook events**：
 }
 ```
 
+> **連續阻斷安全上限（v2.1.143）：** 若 `Stop` hook 在同一回合中連續 **8 次** 回傳 `"decision": "block"`（或設定 `continue: false`），Claude Code 會短路迴圈並以警告結束會話。可透過環境變數 `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP=<整數>` 覆蓋此閾值（設為 `0` 可完全停用上限）。這可防止有缺陷的 Stop hook 使會話無限迴圈。
+
 ### SubagentStart
 
 當子代理開始執行時執行。matcher 輸入為代理類型名稱，允許鉤子針對特定的子代理類型。
@@ -338,10 +416,9 @@ exit 0
 - `clear` - 使用者清除會話
 - `logout` - 使用者登出
 - `prompt_input_exit` - 使用者透過提示詞輸入退出
-
 - `other` - 其他原因
 
-**Configuration:**
+**配置：**
 ```json
 {
   "hooks": {
@@ -361,7 +438,7 @@ exit 0
 
 ### Notification Event
 
-更新了通知事件的匹配器（matchers）：
+通知事件的匹配器（matchers）：
 - `permission_prompt` - 權限請求通知
 - `idle_prompt` - 閒置狀態通知
 - `auth_success` - 身分驗證成功
@@ -428,7 +505,7 @@ hooks:
 
 ## Hook Input and Output
 
-### JSON Input (透過 stdin)
+### JSON Input（透過 stdin）
 
 所有 hooks 都透過 stdin 接收 JSON 輸入：
 
@@ -447,7 +524,8 @@ hooks:
   "tool_use_id": "toolu_01ABC123...",
   "agent_id": "agent-abc123",
   "agent_type": "main",
-  "worktree": "/path/to/worktree"
+  "worktree": "/path/to/worktree",
+  "effort": { "level": "medium" }
 }
 ```
 
@@ -462,6 +540,7 @@ hooks:
 | `agent_id` | 執行此 hook 的 agent 識別碼 |
 | `agent_type` | agent 類型 (`"main"`、subagent 類型名稱等) |
 | `worktree` | git worktree 的路徑（若 agent 在其中執行） |
+| `effort.level` | （v2.1.133+）目前的努力程度：`low`、`medium`、`high`、`xhigh` 或 `max` |
 
 ### Exit Codes
 
@@ -471,7 +550,7 @@ hooks:
 | **2** | 阻斷性錯誤 | 阻斷操作，stderr 會顯示為錯誤 |
 | **其他** | 非阻斷性錯誤 | 繼續執行，stderr 會在詳細模式下顯示 |
 
-### JSON Output (stdout, exit code 0)
+### JSON Output（stdout，exit code 0）
 
 ```json
 {
@@ -490,6 +569,35 @@ hooks:
 }
 ```
 
+> **適用範圍（v2.1.121+）：** `hookSpecificOutput.updatedToolOutput` 現在適用於**所有**工具，而不只是 MCP 工具。`Bash`、`Edit`、`Read` 等工具的 `PostToolUse` hook 可在 Claude 看到之前改寫工具的輸出 — 適用於遮蔽機密、標準化 diff，或過濾雜訊命令輸出。範例（從 `Bash` 輸出中移除 ANSI 色彩碼）：
+>
+> ```json
+> {
+>   "hookSpecificOutput": {
+>     "hookEventName": "PostToolUse",
+>     "updatedToolOutput": "<plain-text output with ANSI escapes removed>"
+>   }
+> }
+> ```
+
+#### `terminalSequence`（v2.1.141）
+
+Hook 可以透過在 JSON 輸出中設定 `terminalSequence` 來發送原始 OSC（operating system command）跳脫序列。當 hook 回傳時，host 會將序列寫入其控制終端 — 適用於桌面通知、視窗標題更新及終端提示音，無需擁有自己的 TTY。
+
+| 欄位 | 類型 | 說明 |
+|-------|------|-------------|
+| `terminalSequence` | string | 原始跳脫序列（通常為 OSC 9 / OSC 0 / OSC 777）。以原文寫入 host 終端。 |
+
+範例 — 當長時間任務完成時發送 OSC 9 桌面通知：
+
+```json
+{
+  "terminalSequence": "]9;Task complete"
+}
+```
+
+在 `Stop` hook 上設定此功能，使通知在 Claude 完成一個回合時觸發。序列支援取決於終端；Kitty/iTerm2/Windows Terminal 支援 OSC 9。
+
 ## 環境變數
 
 | 變數 | 可用性 | 描述 |
@@ -500,8 +608,11 @@ hooks:
 | `${CLAUDE_PLUGIN_ROOT}` | Plugin hooks | 外掛目錄的路徑 |
 | `${CLAUDE_PLUGIN_DATA}` | Plugin hooks | 外掛資料目錄的路徑 |
 | `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | SessionEnd hooks | 可設定的 SessionEnd hooks 超時時間（以毫秒為單位，會覆蓋預設值） |
+| `CLAUDE_CODE_SESSION_ID` | Bash 工具子程序（v2.1.132+） | Session UUID；與 hook 輸入 JSON 中的 `session_id` 欄位相符。用於將 bash 日誌與 hook 遙測關聯。 |
+| `CLAUDE_EFFORT` | Bash 工具子程序（v2.1.133+） | 目前的努力程度（`low`/`medium`/`high`/`xhigh`/`max`）；與 hook 輸入 JSON 中的 `effort.level` 相符。 |
+| `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` | 程序範圍（v2.1.143+） | Stop hook 連續阻斷導致會話結束前的最大次數（預設 `8`）。設為 `0` 可停用上限。 |
 
-## 基於提示詞的 hooks
+## 基於提示詞的 Hooks
 
 對於 `Stop` 和 `SubagentStop` 事件，您可以使用基於 LLM 的評估：
 
@@ -618,9 +729,6 @@ def main():
     warnings = []
     for pattern, message in SECRET_PATTERNS:
         if re.search(pattern, content, re.IGNORECASE):
-```
-
-```python
             warnings.append(message)
 
     if warnings:
@@ -704,7 +812,7 @@ if __name__ == "__main__":
     main()
 ```
 
-### 範例 5：智慧停止鉤子 (基於提示詞)
+### 範例 5：智慧停止鉤子（基於提示詞）
 
 ```json
 {
@@ -724,7 +832,7 @@ if __name__ == "__main__":
 }
 ```
 
-### 範例 6：上下文使用追蹤器 (鉤子組合)
+### 範例 6：上下文使用追蹤器（鉤子組合）
 
 結合使用 `UserPromptSubmit`（訊息前）與 `Stop`（回應後）鉤子來追蹤每次請求的 token 消耗量。
 
@@ -741,9 +849,7 @@ to calculate the delta in token usage for each request.
 Token Counting Methods:
 1. Character estimation (default): ~4 chars per token, no dependencies
 2. tiktoken (optional): More accurate (~90-95%), requires: pip install tiktoken
-```
-
-```python
+"""
 import json
 import os
 import sys
@@ -764,7 +870,7 @@ def count_tokens(text: str) -> int:
     計算文本中的 token 數量。
 
     如果可用，將使用具有 p50k_base 編碼的 tiktoken（準確度約 90-95%），
-    否則將回退至字元估算法（準ق度約 80-90%）。
+    否則將回退至字元估算法（準確度約 80-90%）。
     """
     if USE_TIKTOKEN:
         try:
@@ -831,9 +937,6 @@ def handle_stop(data: dict) -> None:
     if os.path.exists(state_file):
         try:
             with open(state_file, "r") as f:
-```
-
-```python
                 state = json.load(f)
                 pre_tokens = state.get("pre_tokens", 0)
         except (json.JSONDecodeError, IOError):
@@ -867,7 +970,7 @@ if __name__ == "__main__":
     main()
 ```
 
-**Configuration:**
+**配置：**
 ```json
 {
   "hooks": {
@@ -909,7 +1012,7 @@ if __name__ == "__main__":
 
 > **注意：** Anthropic 尚未發布官方的離線 tokenizer。這兩種方法都是近似值。對話紀錄包含使用者提示詞、Claude 的回應以及工具輸出，但不包含系統提示詞或內部上下文。
 
-### Example 7: Seed Auto-Mode Permissions (一次性設定腳本)
+### 範例 7：植入自動模式權限（一次性設定腳本）
 
 一個一次性的設定腳本，用於在 `~/.claude/settings.json` 中植入約 67 個安全權限規則，等同於 Claude Code 的自動模式基準線 — 不含任何鉤子，也不會記住未來的選擇。執行一次即可；可重複執行（會跳過已存在的規則）。
 
@@ -929,8 +1032,7 @@ python3 09-advanced-features/setup-auto-mode-permissions.py
 |----------|---------|
 | 內建工具 | `Read(*)`, `Edit(*)`, `Write(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)` |
 | Git 讀取 | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)` |
-| Git 寫入 (本地) | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
-
+| Git 寫入（本地） | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
 | Package managers | `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(cargo build:*)` |
 | Build & test | `Bash(make:*)`, `Bash(pytest:*)`, `Bash(go test:*)` |
 | Common shell | `Bash(ls:*)`, `Bash(cat:*)`, `Bash(find:*)`, `Bash(cp:*)`, `Bash(mv:*)` |
@@ -941,7 +1043,156 @@ python3 09-advanced-features/setup-auto-mode-permissions.py
 - `DROP TABLE`, `kubectl delete`, `terraform destroy`
 - `npm publish`, `curl | bash`, production deploys
 
-## 外掛 鉤子
+### 範例 8：學習進度記錄器（SessionEnd）
+
+在每個 Claude Code 會話結束時記錄您學習了哪些模組。進度儲存在 `~/.claude-howto-progress.json` — 在 repo 外部，因此在 `git pull` 後不會被覆蓋。
+
+**為何使用 `SessionEnd` 而非 `Stop`？**
+`Stop` 在*每次* Claude 回應後觸發。`SessionEnd` 在會話終止時觸發一次 — 正是您想要在會話結束時記日誌的情況。
+
+**為何使用 `/dev/tty` 接收輸入？**
+Hook 腳本透過 `stdin` 接收 hook JSON 資料，因此互動式的 `read` 必須直接使用 `/dev/tty` 來連接終端。
+
+**檔案：** `06-hooks/session-end.sh`
+
+```bash
+#!/usr/bin/env bash
+# SessionEnd hook: prompts for modules worked on, then appends a session record
+# to ~/.claude-howto-progress.json for persistent learning progress tracking.
+
+PROGRESS_FILE="$HOME/.claude-howto-progress.json"
+
+# Guard: only run inside this repo
+if [[ "$CLAUDE_PROJECT_DIR" != *"claude-howto"* ]] && [[ "$PWD" != *"claude-howto"* ]]; then
+  exit 0
+fi
+
+if [ ! -f "$PROGRESS_FILE" ]; then
+  echo '{"sessions":[]}' > "$PROGRESS_FILE"
+fi
+
+DATE=$(date +"%Y-%m-%d")
+TIME=$(date +"%H:%M")
+
+echo ""
+echo " Which modules did you work on? (e.g. 06,07 or press Enter to skip)"
+echo " 01=Slash  02=Memory  03=Skills  04=Subagents  05=MCP"
+echo " 06=Hooks  07=Plugins 08=Checkpoints 09=Advanced 10=CLI"
+printf " > "
+read -r INPUT </dev/tty
+
+if [ -z "$INPUT" ] || [ "$INPUT" = "skip" ]; then
+  exit 0
+fi
+
+MODULES_JSON=$(echo "$INPUT" | tr ',' '\n' | tr -d ' ' | while read -r m; do
+  case "$m" in
+    01) echo '"01-slash-commands"' ;;
+    02) echo '"02-memory"' ;;
+    03) echo '"03-skills"' ;;
+    04) echo '"04-subagents"' ;;
+    05) echo '"05-mcp"' ;;
+    06) echo '"06-hooks"' ;;
+    07) echo '"07-plugins"' ;;
+    08) echo '"08-checkpoints"' ;;
+    09) echo '"09-advanced-features"' ;;
+    10) echo '"10-cli"' ;;
+    *)  echo "\"$m\"" ;;
+  esac
+done | paste -sd ',' -)
+
+printf " Notes? (optional, press Enter to skip): "
+read -r NOTES </dev/tty
+
+# Pass NOTES as a separate argument so Python handles JSON escaping —
+# avoids broken JSON when notes contain quotes or backslashes.
+python3 - "$PROGRESS_FILE" "$DATE" "$TIME" "$MODULES_JSON" "$NOTES" <<'PYEOF'
+import sys, json
+
+path, date, time_str, modules_raw, notes = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
+
+new_session = {
+    "date": date,
+    "time": time_str,
+    "modules": json.loads(f"[{modules_raw}]") if modules_raw else [],
+    "notes": notes,
+}
+
+with open(path, 'r') as f:
+    data = json.load(f)
+
+data.setdefault('sessions', []).append(new_session)
+
+with open(path, 'w') as f:
+    json.dump(data, f, indent=2)
+PYEOF
+
+echo " Saved to $PROGRESS_FILE"
+```
+
+**安裝** — 將腳本複製到專案的 hook 目錄，使 `settings.json` 中的路徑可以解析：
+
+```bash
+mkdir -p .claude/hooks
+cp 06-hooks/session-end.sh .claude/hooks/
+chmod +x .claude/hooks/session-end.sh
+```
+
+**配置**（在 `.claude/settings.json` 中）：
+
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/session-end.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**輸出 — `~/.claude-howto-progress.json`：**
+
+```json
+{
+  "sessions": [
+    {
+      "date": "2026-04-18",
+      "time": "14:32",
+      "modules": ["06-hooks", "07-plugins"],
+      "notes": "Installed first hook, tried pre-commit example"
+    }
+  ]
+}
+```
+
+**關鍵模式說明：**
+
+| 模式 | 重要性 |
+|---------|----------------|
+| `SessionEnd` 事件 | 在退出時觸發一次 — 而非像 `Stop` 每次回應後都觸發 |
+| `read -r INPUT </dev/tty` | Hook 佔用 `stdin`（JSON 資料）；使用 `/dev/tty` 接收使用者輸入 |
+| `$CLAUDE_PROJECT_DIR` | 可攜式路徑 — 永遠不要硬編碼 `/Users/yourname/...` |
+| 頂部的防衛子句 | 防止全域安裝時在無關專案中執行鉤子 |
+| 儲存在 repo 外部 | `~/` 路徑在 `git pull` 後仍能存活，不會覆蓋您的資料 |
+
+**附屬工具：視覺化進度追蹤器**
+
+如需涵蓋全部 10 個模組的完整核取方塊 UI，請在瀏覽器中開啟附帶的追蹤器：
+
+```bash
+open local-progress/index.html
+```
+
+進度儲存在瀏覽器 `localStorage` 中（永遠不會寫入 repo 內的磁碟）。使用**匯出**按鈕將快照儲存為 JSON，並使用**匯入**來還原。
+
+## Plugin Hooks
 
 外掛可以在其 `hooks/hooks.json` 檔案中包含鉤子：
 
@@ -965,13 +1216,13 @@ python3 09-advanced-features/setup-auto-mode-permissions.py
 }
 ```
 
-**外掛 鉤子中的環境變數：**
+**外掛鉤子中的環境變數：**
 - `${CLAUDE_PLUGIN_ROOT}` - 外掛目錄的路徑
 - `${CLAUDE_PLUGIN_DATA}` - 外掛資料目錄的路徑
 
 這讓外掛可以包含自定義的驗證與自動化鉤子。
 
-## MCP 工具 鉤子
+## MCP 工具鉤子
 
 MCP 工具遵循 `mcp__<server>__<tool>` 的模式：
 
@@ -1008,6 +1259,8 @@ MCP 工具遵循 `mcp__<server>__<tool>` 的模式：
 - **需要工作區信任：** `statusLine` 與 `fileSuggestion` 鉤子的輸出命令現在需要先接受工作區信任後才會生效。
 - **HTTP 鉤子與環境變數：** HTTP 鉤子需要明確的 `allowedEnvVars` 列表，才能在 URL 中使用環境變數插值。這可以防止敏感的環境變數意外洩漏到遠端端點。
 - **管理設定層級：** `disableAllHooks` 設定現在會遵循管理設定層級，這意味著組織層級的設定可以強制禁用鉤子，且個人使用者無法覆蓋。
+- **PowerShell 自動核准（v2.1.119）：** PowerShell 工具命令現在可以在權限模式下自動核准，與 Bash 保持一致。這為使用 PowerShell 支援 shell 工具執行 Claude Code 的 Windows 使用者帶來同等功能。
+- **Bash 裸環境變數自動核准已關閉（v2.1.145）：** 在 v2.1.145 之前，形如 `FOO=bar somecommand` 的 Bash 命令（在非白名單命令前加上裸變數賦值）在白名單中只有 `FOO=bar` 本身時可能被自動核准。v2.1.145 關閉了此漏洞 — 此類命令現在會觸發權限提示。依賴此隱式允許的腳本將開始出現提示；請透過涵蓋完整命令（而非僅變數賦值）的 `Bash(...)` 權限規則明確重新允許它們。
 
 ### 最佳實務
 
@@ -1031,7 +1284,7 @@ MCP 工具遵循 `mcp__<server>__<tool>` 的模式：
 claude --debug
 ```
 
-### 詳細模式 (Verbose Mode)
+### 詳細模式（Verbose Mode）
 
 在 Claude Code 中使用 `Ctrl+O` 可啟用詳細模式，並查看鉤子的執行進度。
 
@@ -1145,18 +1398,18 @@ echo $?
 
 ## Installation
 
-### Step 1: 建立 Hooks 目錄
+### Step 1：建立 Hooks 目錄
 ```bash
 mkdir -p ~/.claude/hooks
 ```
 
-### Step 2: 複製範例 Hooks
+### Step 2：複製範例 Hooks
 ```bash
 cp 06-hooks/*.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
 ```
 
-### Step 3: 在設定中進行配置
+### Step 3：在設定中進行配置
 編輯 `~/.claude/settings.json` 或 `.claude/settings.json` 並填入上述的 hook 設定。
 
 ## Related Concepts
@@ -1175,8 +1428,16 @@ chmod +x ~/.claude/hooks/*.sh
 - **[Memory Guide](../02-memory/)** - 持久化上下文配置指南
 
 ---
-**Last Updated**: April 16, 2026
-**Claude Code Version**: 2.1.110
+**Last Updated**: May 25, 2026
+**Claude Code Version**: 2.1.150
 **Sources**:
 - https://code.claude.com/docs/en/hooks
-**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://code.claude.com/docs/en/changelog
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.118
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.131
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.138
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.139
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.141
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.143
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
+**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

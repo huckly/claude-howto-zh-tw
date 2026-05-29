@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# 記憶指南
+# 記憶體系統
 
 記憶功能讓 Claude 能夠在不同的會話與對話之間保留上下文。它以兩種形式存在：claude.ai 中的自動合成，以及 Claude Code 中基於檔案系統的 CLAUDE.md。
 
@@ -136,7 +136,6 @@ Claude 將根據您的要求更新適當的 `CLAUDE.md` 檔案。
 - 對專案標準進行大規模更新時
 - 重組記憶結構時
 - 加入詳細文件或指南時
-
 - 隨著專案演進維護與更新記憶
 
 **比較：`/memory` vs `/init`**
@@ -267,9 +266,6 @@ graph TD
     style E fill:#f3e5f5,stroke:#333,color:#333
     style F fill:#e8f5e9,stroke:#333,color:#333
     style G fill:#fff3e0,stroke:#333,color:#333
-```
-
-```
     style H fill:#e1f5fe,stroke:#333,color:#333
     style I fill:#e1f5fe,stroke:#333,color:#333
 ```
@@ -281,7 +277,7 @@ graph TD
 ```jsonc
 // In ~/.claude/settings.json or .claude/settings.json
 {
-  "claclaMdExcludes": [
+  "claudeMdExcludes": [
     "packages/legacy-app/CLAUDE.md",
     "vendors/**/CLAUDE.md"
   ]
@@ -296,7 +292,7 @@ graph TD
 
 ## 設定檔層級結構
 
-Claude Code 的設定（包括 `autoMemoryDirectory`、`claclaMdExcludes` 以及其他配置）是從五層層級結構中解析，較高層級的設定具有優先權：
+Claude Code 的設定（包括 `autoMemoryDirectory`、`claudeMdExcludes` 以及其他配置）是從五層層級結構中解析，較高層級的設定具有優先權：
 
 | 層級 | 位置 | 範圍 |
 |-------|----------|-------|
@@ -313,6 +309,53 @@ Claude Code 的設定（包括 `autoMemoryDirectory`、`claclaMdExcludes` 以及
 - **Windows**: Windows Registry
 
 這些平台原生機制會與 JSON 設定檔一同讀取，並遵循相同的優先權規則。
+
+> **注意 (v2.1.119)**：`/config` 的變更現在會持久化至 `~/.claude/settings.json`。透過 `/config` 寫入的值會參與上述正常的專案/本地/政策優先順序鏈，不再僅限於當前會話。請使用 `/config` 進行互動式編輯，並直接編輯 `settings.json` 檔案來進行腳本化或受管理的配置。
+
+### 保留與清除設定
+
+| 設定 | 類型 | 預設值 | 說明 |
+|---------|------|---------|-------------|
+| `cleanupPeriodDays` | 整數（天） | 30 | 磁碟上暫存物件的保留期限。**自 v2.1.117 起**，適用於以下四項：checkpoints（`~/.claude/checkpoints/`）、tasks（`~/.claude/tasks/`）、shell-snapshots（`~/.claude/shell-snapshots/`）以及 backups（`~/.claude/backups/`）。超出保留期限的檔案會在啟動時自動清除。 |
+
+```jsonc
+// ~/.claude/settings.json
+{
+  "cleanupPeriodDays": 14
+}
+```
+
+### 署名、語音與 PR URL 設定
+
+| 設定 | 類型 | 說明 |
+|---------|------|-------------|
+| `attribution.commit` | boolean | 在 Claude 建立的 commit 中加入 `Co-Authored-By: Claude` 標記。取代已廢棄的 `includeCoAuthoredBy` 旗標。 |
+| `attribution.pr` | boolean | 在 pull request 說明中加入 Claude 署名。取代針對 PR 的已廢棄 `includeCoAuthoredBy` 旗標。 |
+| `voice.enabled` | boolean | 啟用按住說話（push-to-talk）語音輸入（`/voice`）。取代已廢棄的 `voiceEnabled` 旗標。 |
+| `prUrlTemplate` | string | **v2.1.119 新增。** 自訂頁尾 PR 徽章的 URL 範本；適用於 GitLab、Bitbucket 或內部 code review 平台。支援 `{{owner}}`、`{{repo}}` 與 `{{number}}` 佔位符。 |
+
+```jsonc
+// ~/.claude/settings.json
+{
+  "attribution": {
+    "commit": false,
+    "pr": true
+  },
+  "voice": {
+    "enabled": true
+  },
+  "prUrlTemplate": "https://gitlab.internal/{{owner}}/{{repo}}/-/merge_requests/{{number}}"
+}
+```
+
+#### 已廢棄的設定名稱
+
+以下舊版設定鍵仍然有效，但已被廢棄。建議使用上方的替代設定。
+
+| 已廢棄的鍵 | 替代設定 | 備注 |
+|----------------|-------------|-------|
+| `includeCoAuthoredBy` | `attribution.commit` / `attribution.pr` | 舊的單一旗標已拆分為獨立的 commit 與 PR 開關。舊版安裝的使用者可繼續使用舊鍵；新專案應使用巢狀格式。 |
+| `voiceEnabled` | `voice.enabled` | 已整合至 `voice` 命名空間，以便未來新增更多語音相關選項。 |
 
 ## 模組化規則系統
 
@@ -478,7 +521,6 @@ npm install -g @anthropic-ai/claude-code@latest
 
 - 將 auto memory 儲存在共享或同步的位置
 - 將 auto memory 與預設的 Claude 配置目錄分開
-
 - 使用位於預設層級之外的專案特定路徑
 
 ### Worktree 與 Repository 共用
@@ -491,7 +533,7 @@ Subagents（透過 Task 或平行執行等工具產生的代理）可以擁有�
 
 ```yaml
 memory: user      # 僅載入使用者層級的記憶
-memory: project   # 僅載લો專案層級的記憶
+memory: project   # 僅載入專案層級的記憶
 memory: local     # 僅載入本地記憶
 ```
 
@@ -604,37 +646,35 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 - Blue-green deployment strategy
 - Automatic rollback on failure
 - Database migrations run before deploy
-```
 
-## 常用命令
+## Common Commands
 
-| 命令 | 用途 |
+| Command | Purpose |
 |---------|---------|
-| `npm run dev` | 啟動開發伺服器 |
-| `npm test` | 執行測試套件 |
-| `npm run lint` | 檢查程式碼風格 |
-| `npm run build` | 建置生產版本 |
-| `npm run migrate` | 執行資料庫遷移 |
+| `npm run dev` | Start development server |
+| `npm test` | Run test suite |
+| `npm run lint` | Check code style |
+| `npm run build` | Build for production |
+| `npm run migrate` | Run database migrations |
 
-## 團隊聯絡人
+## Team Contacts
 - Tech Lead: Sarah Chen (@sarah.chen)
 - Product Manager: Mike Johnson (@mike.j)
 - DevOps: Alex Kim (@alex.k)
 
-## 已知問題與解決方案
-- PostgreSQL 連線池在尖峰時段限制為 20
-- 解決方案：實作查詢佇列
-- Safari 14 與 async generators 的相容性問題
-- 解決方案：使用 Babel transpiler
+## Known Issues & Workarounds
+- PostgreSQL connection pooling limited to 20 during peak hours
+- Workaround: Implement query queuing
+- Safari 14 compatibility issues with async generators
+- Workaround: Use Babel transpiler
 
-## 相關專案
+## Related Projects
 - Analytics Dashboard: `/projects/analytics`
 - Mobile App: `/projects/mobile`
 - Admin Panel: `/projects/admin`
-
 ```
 
-### Example 2: Directory-Specific Memory
+### 範例 2：特定目錄的記憶
 
 **檔案：** `./src/api/CLAUDE.md`
 
@@ -702,13 +742,12 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 - 為快取鍵加上資源類型的標籤
 ````
 
-### Example 3: Personal Memory
+### 範例 3：個人記憶
 
 **檔案：** `~/.claude/CLAUDE.md`
 
 ```markdown
 # 我的開發偏好
-```
 
 ## 關於我
 - **經驗程度**：8 年全端開發經驗
@@ -816,15 +855,13 @@ User: # new rule into memory
 
 Claude: I'm saving this rule to memory. Which memory file should I use?
         1. Project memory (./CLAUDE.md)
-```
-
-2. 個人記憶 (~/.claude/CLAUDE.md)
+        2. Personal memory (~/.claude/CLAUDE.md)
 
 User: Project memory
 
-Claude: ✅ 記憶已儲存！
+Claude: ✅ Memory saved!
 
-已新增至 ./CLAUDE.md:
+Added to ./CLAUDE.md:
 ---
 
 ### Input Validation
@@ -918,7 +955,7 @@ graph LR
 
 - **記錄常用指令**：將重複使用的指令記錄下來以節省時間
 
-- **對專案記憶進行版本控制**：將專案層級的 CLAUd.md 檔案提交至 git，以造福團隊
+- **對專案記憶進行版本控制**：將專案層級的 CLAUDE.md 檔案提交至 git，以造福團隊
 
 - **定期審查**：隨著專案演進與需求變更，定期更新記憶
 
@@ -955,7 +992,7 @@ graph LR
 
 **快速更新工作流程：**
 
-1. 單一規則：在對話中使用 `#` 前綴
+1. 單一規則：使用 `/memory` 開啟編輯器，或透過對話方式提出
 2. 多項變更：使用 `/memory` 開啟編輯器
 3. 初始設定：使用 `/init` 建立範本
 
@@ -1161,8 +1198,12 @@ Claude 將會提示您選擇要更新哪一個記憶檔案。
 - [Official Memory Docs](https://code.claude.com/docs/en/memory) - Anthropic 官方文件
 
 ---
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+**最後更新日期**：2026 年 5 月 25 日
+**Claude Code 版本**：2.1.150
 **來源**：
 - https://code.claude.com/docs/en/memory
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://code.claude.com/docs/en/settings
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.117
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

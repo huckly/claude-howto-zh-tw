@@ -13,7 +13,7 @@
 - **分類**：10 個功能分類
 - **Plugins**：3 個完整外掛
 - **Skills**：6 個完整技能
-- **Hooks**：8 個範例鉤子
+- **Hooks**：9 個範例鉤子
 - **就緒狀態**：所有範例皆可直接使用
 
 ---
@@ -60,13 +60,13 @@
 
 ---
 
-## 03. 技能 (28 個檔案)
+## 03. 技能 (16 個檔案)
 
 透過腳本與範本自動觸發的能力。
 
 ### Code Review 技能 (5 個檔案)
 ```
-code-review/
+code-review-specialist/
 ├── SKILL.md                          # 技能定義
 ├── scripts/
 │   ├── analyze-metrics.py            # 程式碼指標分析器
@@ -218,15 +218,15 @@ blog-draft/
 
 **用法**：在設定中配置，並自動執行
 
-**Hook 類型**（4 種類型，25 個事件）：
-- Tool Hooks: PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest
-- Session Hooks: SessionStart, SessionEnd, Stop, StopFailure, SubagentStart, SubagentStop
-- Task Hooks: UserPromptSubmit, TaskCompleted, TaskCreated, TeammateIdle
+**Hook 類型**（5 種類型，29 個事件）：
+- Tool Hooks: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied
+- Session Hooks: SessionStart, Setup, SessionEnd, Stop, StopFailure, SubagentStart, SubagentStop
+- Task Hooks: UserPromptSubmit, UserPromptExpansion, TaskCompleted, TaskCreated, TeammateIdle
 - Lifecycle Hooks: ConfigChange, CwdChanged, FileChanged, PreCompact, PostCompact, WorktreeCreate, WorktreeRemove, Notification, InstructionsLoaded, Elicitation, ElicitationResult
 
 ---
 
-## 07. Plugins (3 個完整外掛，40 個檔案)
+## 07. Plugins (3 個完整外掛，27 個檔案)
 
 功能組合包。
 
@@ -272,9 +272,6 @@ devops-automation/
 │   ├── deployment-specialist.md      # Deployment expert
 │   ├── incident-commander.md         # Incident coordinator
 │   └── alert-analyzer.md             # Alert analyzer
-```
-
-```
 ├── mcp/
 │   └── kubernetes-config.json        # Kubernetes 整合
 ├── hooks/
@@ -287,15 +284,15 @@ devops-automation/
 └── README.md                         # 外掛文件
 ```
 
-**Features**: Kubernetes 部署、回滾、監控、事件響應
+**功能**: Kubernetes 部署、回滾、監控、事件響應
 
-**Commands**: `/deploy`、`/rollback`、`/status`、`/incident`
+**斜線命令**: `/deploy`、`/rollback`、`/status`、`/incident`
 
-**Installation**: `/plugin install devops-automation`
+**安裝**: `/plugin install devops-automation`
 
 ---
 
-### Documentation Plugin (14 files)
+### Documentation Plugin (14 個檔案)
 ```
 documentation/
 ├── .claude-plugin/
@@ -318,11 +315,11 @@ documentation/
 └── README.md                         # 外掛文件
 ```
 
-**Features**: API 文件、README 生成、文件同步、驗證
+**功能**: API 文件、README 生成、文件同步、驗證
 
-**Commands**: `/generate-api-docs`、`/generate-readme`、`/sync-docs`、`/validate-docs`
+**斜線命令**: `/generate-api-docs`、`/generate-readme`、`/sync-docs`、`/validate-docs`
 
-**Installation**: `/plugin install documentation`
+**安裝**: `/plugin install documentation`
 
 **Plus**: `README.md` - 外掛概覽與使用指南
 
@@ -495,7 +492,8 @@ claude-howto/
 ├── README.md                                    # 主要概覽
 ├── INDEX.md                                     # 本檔案
 ├── QUICK_REFERENCE.md                           # 快速參考卡
-
+├── claude_concepts_guide.md                     # 原始概念指南
+│
 ├── 01-slash-commands/                           # 斜線命令
 │   ├── optimize.md
 │   ├── pr.md
@@ -507,7 +505,7 @@ claude-howto/
 │   ├── doc-refactor.md
 │   ├── pr-slash-command.png
 │   └── README.md
-
+│
 ├── 02-memory/                                   # 記憶
 │   ├── project-CLAUDE.md
 │   ├── directory-api-CLAUDE.md
@@ -515,9 +513,9 @@ claude-howto/
 │   ├── memory-saved.png
 │   ├── memory-ask-claude.png
 │   └── README.md
-
+│
 ├── 03-skills/                                   # 技能
-│   ├── code-review/
+│   ├── code-review-specialist/
 │   │   ├── SKILL.md
 │   │   ├── scripts/
 │   │   │   ├── analyze-metrics.py
@@ -552,7 +550,7 @@ claude-howto/
 │   │       ├── draft-template.md
 │   │       └── outline-template.md
 │   └── README.md
-
+│
 ├── 04-subagents/                                # 子代理
 │   ├── code-reviewer.md
 │   ├── test-engineer.md
@@ -563,14 +561,14 @@ claude-howto/
 │   ├── data-scientist.md
 │   ├── clean-code-reviewer.md
 │   └── README.md
-
+│
 ├── 05-mcp/                                      # MCP 協定
 │   ├── github-mcp.json
 │   ├── database-mcp.json
 │   ├── filesystem-mcp.json
 │   ├── multi-mcp.json
 │   └── README.md
-
+│
 ├── 06-hooks/                                    # 鉤子
 │   ├── format-code.sh
 │   ├── pre-commit.sh
@@ -581,7 +579,7 @@ claude-howto/
 │   ├── context-tracker.py
 │   ├── context-tracker-tiktoken.py
 │   └── README.md
-
+│
 ├── 07-plugins/                                  # 外掛
 │   ├── pr-review/
 │   │   ├── .claude-plugin/
@@ -596,9 +594,6 @@ claude-howto/
 │   │   │   └── performance-analyzer.md
 │   │   ├── mcp/
 │   │   │   └── github-config.json
-```
-
-```text
 │   │   ├── hooks/
 │   │   │   └── pre-review.js
 │   │   └── README.md
@@ -658,6 +653,8 @@ claude-howto/
     └── README.md
 ```
 
+---
+
 ## 快速入門（依使用情境）
 
 ### 程式碼品質與審查
@@ -669,7 +666,7 @@ cp 01-slash-commands/optimize.md .claude/commands/
 cp 04-subagents/code-reviewer.md .claude/agents/
 
 # 安裝技能
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # 或者安裝完整的插件
 /plugin install pr-review
@@ -806,19 +803,51 @@ Run tests in background
 
 ---
 
-| 關鍵字搜尋 | |
-|---|---|
-| **效能** | - `01-slash-commands/optimize.md` - 效能分析<br>- `04-subagents/code-reviewer.md` - 效能審查<br>- `03-skills/code-review/` - 效能指標<br>- `07-plugins/pr-review/agents/performance-analyzer.md` - 效能專家 |
-| **安全性** | - `04-subagents/secure-reviewer.md` - 安全審查<br>- `03-skills/code-review/` - 安全分析<br>- `07-plugins/pr-review/` - 安全檢查 |
-| **測試** | - `04-subagents/test-engineer.md` - 測試工程師<br>- `07-plugins/pr-review/commands/check-tests.md` - 測試覆蓋率 |
-| **文件** | - `01-slash-commands/generate-api-docs.md` - API 文件命令<br>- `04-subagents/documentation-writer.md` - 文件撰寫代理<br>- `03-skills/doc-generator/` - 文件生成技能<br>- `07-plugins/documentation/` - 完整文件外掛 |
-| **部署** | - `07-plugins/devops-automation/` - 完整 DevOps 解決方案 |
-| **自動化** | - `06-hooks/` - 事件驅動自動化<br>- `06-hooks/pre-commit.sh` - Pre-commit 自動化<br>- `06-hooks/format-code.sh` - 自動格式化<br>- `09-advanced-features/` - 用於 CI/CD 的無頭模式 |
-| **驗證** | - `06-hooks/security-scan.sh` - 安全驗證<br>- `06-hooks/validate-prompt.sh` - 提示詞驗證 |
-| **實驗** | - `08-checkpoints/` - 使用回溯進行安全實驗<br>- `08-checkpoints/checkpoint-examples.md` - 真實案例 |
-| **規劃** | - `09-advanced-features/planning-mode-examples.md` - 規劃模式範例<br>- `09-advanced-features/README.md` - 延伸思考 |
-| **配置** | |
+## 關鍵字搜尋
 
+### 效能
+- `01-slash-commands/optimize.md` - 效能分析
+- `04-subagents/code-reviewer.md` - 效能審查
+- `03-skills/code-review-specialist/` - 效能指標
+- `07-plugins/pr-review/agents/performance-analyzer.md` - 效能專家
+
+### 安全性
+- `04-subagents/secure-reviewer.md` - 安全審查
+- `03-skills/code-review-specialist/` - 安全分析
+- `07-plugins/pr-review/` - 安全檢查
+
+### 測試
+- `04-subagents/test-engineer.md` - 測試工程師
+- `07-plugins/pr-review/commands/check-tests.md` - 測試覆蓋率
+
+### 文件
+- `01-slash-commands/generate-api-docs.md` - API 文件命令
+- `04-subagents/documentation-writer.md` - 文件撰寫代理
+- `03-skills/doc-generator/` - 文件生成技能
+- `07-plugins/documentation/` - 完整文件外掛
+
+### 部署
+- `07-plugins/devops-automation/` - 完整 DevOps 解決方案
+
+### 自動化
+- `06-hooks/` - 事件驅動自動化
+- `06-hooks/pre-commit.sh` - Pre-commit 自動化
+- `06-hooks/format-code.sh` - 自動格式化
+- `09-advanced-features/` - 用於 CI/CD 的無頭模式
+
+### 驗證
+- `06-hooks/security-scan.sh` - 安全驗證
+- `06-hooks/validate-prompt.sh` - 提示詞驗證
+
+### 實驗
+- `08-checkpoints/` - 使用回溯進行安全實驗
+- `08-checkpoints/checkpoint-examples.md` - 真實案例
+
+### 規劃
+- `09-advanced-features/planning-mode-examples.md` - 規劃模式範例
+- `09-advanced-features/README.md` - 延伸思考
+
+### 配置
 - `09-advanced-features/config-examples.json` - 設定範例
 
 ---
@@ -845,15 +874,17 @@ Run tests in background
 
 ---
 
-**Last Updated**: April 16, 2026
-**Claude Code Version**: 2.1.112
+**Last Updated**: May 25, 2026
+**Claude Code Version**: 2.1.150
 **Sources**:
-- https://docs.anthropic.com/en/docs/claude-code
-- https://www.anthropic.com/news/claude-opus-4-7
-- https://support.claude.com/en/articles/12138966-release-notes
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/commands
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
 **Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
 **Total Examples**: 100+ files
 **Categories**: 10 features
-**Hooks**: 8 automation scripts
+**Hooks**: 9 automation scripts
 **Configuration Examples**: 10+ scenarios
 **Ready to Use**: All examples

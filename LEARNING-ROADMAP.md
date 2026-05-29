@@ -15,7 +15,7 @@
 
 **請誠實回答以下問題：**
 
-- [ ] 我可以啟動 Claude Code 並進行對話 (`claue`)
+- [ ] 我可以啟動 Claude Code 並進行對話 (`claude`)
 - [ ] 我曾經建立或編輯過 CLAUDE.md 檔案
 - [ ] 我已使用過至少 3 個內建的斜線命令（例如：`/help`、`/compact`、`/model`）
 - [ ] 我曾經建立自定義的斜線命令或技能 (SKILL.md)
@@ -97,12 +97,12 @@ graph TD
 
 | 步驟 | 功能 | 複雜度 | 時間 | 等級 | 相依性 | 學習原因 | 核心優勢 |
 |------|---------|-----------|------|-------|--------------|----------------|--------------|
-| **1** | [Slash Commands](01-slash-commands/) | ⭐ 初學者 | 30 min | Level 1 | 無 | 快速提升生產力 (55+ 內建 + 5 個組合技能) | 即時自動化、團隊標準 |
+| **1** | [Slash Commands](01-slash-commands/) | ⭐ 初學者 | 30 min | Level 1 | 無 | 快速提升生產力 (60+ 內建 + 5 個組合技能) | 即時自動化、團隊標準 |
 | **2** | [Memory](02-memory/) | ⭐⭐ 初學者+ | 45 min | Level 1 | 無 | 所有功能的基礎 | 持續性的上下文、偏好設定 |
 | **3** | [Checkpoints](08-checkpoints/) | ⭐⭐ 中級 | 45 min | Level 1 | 會話管理 | 安全探索 | 實驗、復原 |
 | **4** | [CLI Basics](10-cli/) | ⭐⭐ 初學者+ | 30 min | Level 1 | 無 | 核心 CLI 用法 | 互動式與列印模式 |
 | **5** | [Skills](03-skills/) | ⭐⭐ 中級 | 1 hour | Level 2 | Slash Commands | 自動化專業知識 | 可重複使用的能力、一致性 |
-| **6** | [Hooks](06-hooks/) | ⭐⭐ 中級 | 1 hour | Level 2 | Tools, Commands | 工作流程自動化 (25 個事件, 4 種類型) | 驗證、品質閘門 |
+| **6** | [Hooks](06-hooks/) | ⭐⭐ 中級 | 1 hour | Level 2 | Tools, Commands | 工作流程自動化 (29 個事件, 5 種類型) | 驗證、品質閘門 |
 | **7** | [MCP](05-mcp/) | ⭐⭐⭐ 中級+ | 1 hour | Level 2 | Configuration | 即時數據存取 | 即時整合、APIs |
 | **8** | [Subagents](04-subagents/) | ⭐⭐⭐ 中級+ | 1.5 hours | Level 2 | Memory, Commands | 處理複雜任務 (包含 Bash 在內的 6 個內建功能) | 委派、專業化技能 |
 | **9** | [Advanced Features](09-advanced-features/) | ⭐⭐⭐⭐⭐ 進階 | 2-3 hours | Level 3 | 前述所有內容 | 進階使用者工具 | 規劃、Auto Mode、Channels、語音聽寫、權限管理 |
@@ -235,8 +235,8 @@ cat error.log | claude -p "explain this error"
 
 #### 您將達成的成果
 ✅ 透過 YAML frontmatter（包含 `effort` 與 `shell` 欄位）自動觸發特定技能
-✅ 在 25 個 hook 事件中設定事件驅動的自動化
-✅ 使用所有 4 種 hook 類型（command, http, prompt, agent）
+✅ 在 29 個 hook 事件中設定事件驅動的自動化
+✅ 使用所有 5 種 hook 類型（command, http, mcp_tool, prompt, agent）
 ✅ 強制執行程式碼品質標準
 ✅ 為您的工作流程建立自定義 hooks
 
@@ -244,7 +244,7 @@ cat error.log | claude -p "explain this error"
 
 ```bash
 # 練習 1: 安裝一個 skill
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # 練習 2: 設定 hooks
 mkdir -p ~/.claude/hooks
@@ -310,9 +310,6 @@ claude mcp add github -- npx -y @modelcontextprotocol/server-github
 
 # 練習 3: 安裝 subagents
 mkdir -p .claude/agents
-```
-
-```
 cp 04-subagents/*.md .claude/agents/
 ```
 
@@ -395,8 +392,6 @@ claude --permission-mode auto "implement the feature"
 # 練習 4：進階檢查點工作流程
 # 1. 建立檢查點 "Clean state"
 # 2. 使用規劃模式來設計功能
-```
-
 # 3. 使用子代理委派進行實作
 # 4. 在背景執行測試
 # 5. 如果測試失敗，回溯至檢查點
@@ -439,7 +434,7 @@ export CLAUDE_AGENT_TEAMS=1
 
 ---
 
-### 里程碑 3B：團隊與分發（外掛 + CLI 精通）
+### Milestone 3B: 團隊與分發（外掛 + CLI 精通）
 
 **主題**：外掛 + CLI 精通 + CI/CD
 **時間**：2-3 小時
@@ -490,7 +485,6 @@ done
 - [ ] 在 CI/CD 中使用了列印模式 (`claude -p`)
 - [ ] 產生了用於腳本編寫的 JSON 輸出
 - [ ] 成功恢復了先前的會話
-
 - [ ] 建立了一個批次處理腳本
 - [ ] 將 Claude 整合至 CI/CD 工作流程
 
@@ -538,7 +532,7 @@ done
 
 1. 複製一個斜線命令：`cp 01-slash-commands/optimize.md .claude/commands/`
 2. 在 Claude Code 中嘗試：`/optimize`
-3.閱讀：[01-slash-commands/README.md](01-slash-commands/README.md)
+3. 閱讀：[01-slash-commands/README.md](01-slash-commands/README.md)
 
 **成果**：你將擁有一個可運作的斜線命令並理解基本概念
 
@@ -549,7 +543,7 @@ done
 
 1. **斜線命令** (15 分鐘)：複製並測試 `/optimize` 與 `/pr`
 2. **專案記憶** (15 分鐘)：建立包含專案標準的 CLAUDE.md
-3. **安裝技能** (15 分鐘)：設定 code-review 技能
+3. **安裝技能** (15 分鐘)：設定 code-review-specialist 技能
 4. **組合嘗試** (15 分鐘)：觀察它們如何協同工作
 
 **成果**：透過命令、記憶與自動化技能獲得基礎的生產力提升
@@ -598,6 +592,8 @@ done
 - **趕著完成里程碑**——請花時間去理解
 - **忽略文件**——每個 README 都包含有價值的細節
 - **孤立作業**——請與隊友討論
+
+---
 
 ## 🎓 學習風格
 
@@ -692,7 +688,7 @@ done
 **解決方案**：建立你自己的速查表。利用 checkpoints 進行安全實驗。
 
 ### 挑戰 6：「我有經驗，但不確定從何開始」
-**解決方案**：進行上方的 [Self-Assessment Quiz](#-find-your-level)。跳轉至你的等級，並使用前置條件檢查來識別任何知識缺口。
+**解決方案**：進行上方的 [Self-Assessment Quiz](#-尋找您的程度)。跳轉至你的等級，並使用前置條件檢查來識別任何知識缺口。
 
 ---
 
@@ -742,12 +738,13 @@ done
 
 ---
 
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.112
+**最後更新日期**：2026 年 5 月 25 日
+**Claude Code 版本**：2.1.150
 **來源**：
-- https://docs.anthropic.com/en/docs/claude-code
-- https://www.anthropic.com/news/claude-opus-4-7
-- https://support.claude.com/en/articles/12138966-release-notes
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/hooks
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
 **相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
 **維護者**：Claude How-To Contributors
 **授權**：僅供教育用途，可自由使用與改編

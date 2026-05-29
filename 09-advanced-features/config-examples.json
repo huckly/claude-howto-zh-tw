@@ -7,7 +7,7 @@
       "description": "Configuration for active development work",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0.7
         },
         "planning": {
@@ -24,8 +24,7 @@
         },
         "hooks": {
           "PreToolUse:Write": "prettier --write ${file_path}",
-          "PostToolUse:Write": "eslint ${file_path}",
-          "PreCommit": "npm test"
+          "PostToolUse:Write": "eslint ${file_path}"
         }
       }
     },
@@ -35,7 +34,7 @@
       "description": "Configuration for reviewing code without modifications",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0.3
         },
         "permissions": {
@@ -56,7 +55,7 @@
       "description": "Configuration for learning and experimentation",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0.5
         },
         "permissions": {
@@ -82,7 +81,7 @@
       "description": "Configuration for production operations with safety checks",
       "config": {
         "general": {
-          "model": "claude-opus-4",
+          "model": "claude-opus-4-7",
           "temperature": 0.1
         },
         "permissions": {
@@ -90,9 +89,7 @@
           "requireConfirmationFor": ["Bash", "Git", "Write", "Edit"]
         },
         "hooks": {
-          "PreCommit": "npm test && npm run lint && npm run build",
-          "PrePush": "npm run test:e2e",
-          "PostPush": "~/.claude/hooks/notify-team.sh"
+          "PreToolUse": "~/.claude/hooks/pre-commit.sh"
         },
         "checkpoints": {
           "autoCheckpoint": true
@@ -109,7 +106,7 @@
       "description": "Configuration for automated CI/CD operations",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0
         },
         "permissions": {
@@ -136,7 +133,7 @@
       "description": "Configuration for security-focused code analysis",
       "config": {
         "general": {
-          "model": "claude-opus-4",
+          "model": "claude-opus-4-7",
           "temperature": 0.2
         },
         "permissions": {
@@ -158,7 +155,7 @@
       "description": "Configuration for performance analysis and optimization",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0.4
         },
         "planning": {
@@ -180,7 +177,7 @@
       "description": "Configuration for collaborative development",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0.6
         },
         "permissions": {
@@ -207,7 +204,7 @@
       "description": "Configuration for major refactoring work",
       "config": {
         "general": {
-          "model": "claude-opus-4",
+          "model": "claude-opus-4-7",
           "temperature": 0.3
         },
         "planning": {
@@ -255,7 +252,7 @@
       "description": "Configuration for writing documentation",
       "config": {
         "general": {
-          "model": "claude-sonnet-4-5",
+          "model": "claude-sonnet-4-6",
           "temperature": 0.7
         },
         "permissions": {

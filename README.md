@@ -12,10 +12,10 @@
 [![GitHub Stars](https://img.shields.io/github/stars/luongnv89/claude-howto?style=flat&color=gold)](https://github.com/luongnv89/claude-howto/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/luongnv89/claude-howto?style=flat)](https://github.com/luongnv89/claude-howto/network/members)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1.112-brightgreen)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.145-brightgreen)](CHANGELOG.md)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-2.1+-purple)](https://code.claude.com)
 
-🌐 **Language / Ngôn ngữ / 语言 / Мова:** [English](README.md) | [Tiếng Việt](vi/README.md) | [中文](zh/README.md) | [Українська](uk/README.md)
+🌐 **Language / Ngôn ngữ / 语言 / Мова:** [English](README.md) | [Tiếng Việt](vi/README.md) | [中文](zh/README.md) | [Українська](uk/README.md) | [日本語](ja/README.md)
 
 # 在一個週末內精通 Claude Code
 
@@ -98,11 +98,11 @@
 
 ---
 
-## 深受 21,800+ 名開發者信賴
+## 深受開發者信賴
 
-- **21,800+ GitHub stars** 來自每天使用 Claude Code 的開發者
-- **2,585+ forks** — 團隊正將此指南改編至他們自己的工作流程中
-- **積極維護中** — 與每次 Claude Code 版本同步（最新版本：v2.1.112，2026 年 4 月）
+- **GitHub stars** 來自每天使用 Claude Code 的開發者
+- **Forks** — 團隊正將此指南改編至他們自己的工作流程中
+- **積極維護中** — 與每次 Claude Code 版本同步（最新版本：v2.1.150，2026 年 5 月）
 - **社群驅動** — 來自分享真實配置的開發者的貢獻
 
 [![Star History Chart](https://api.star-history.com/svg?repos=luongnv89/claude-howto&type=Date)](https://star-history.com/#luongnv89/claude-howto&Date)
@@ -140,6 +140,8 @@
 
 ## 15 分鐘快速上手
 
+> **安裝說明**：從 v2.1.113 開始，Claude Code 以原生跨平台二進位檔（macOS/Linux/Windows）發布。`npm install -g @anthropic-ai/claude-code` 仍然有效 — 原生二進位檔在首次使用時會作為可選依賴項下載。自 v2.1.116 起，下載來源為 `https://downloads.claude.ai/claude-code-releases` — 企業代理伺服器必須將此主機加入允許清單。
+
 ```bash
 # 1. Clone 指南
 git clone https://github.com/luongnv89/claude-howto.git
@@ -156,7 +158,7 @@ cp 01-slash-commands/optimize.md /path/to/your-project/.claude/commands/
 cp 02-memory/project-CLAUDE.md /path/to/your-project/CLAUDE.md
 
 # 5. 安裝一個技能：
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 ```
 
 想要完整的設定？這裡有 **1 小時精華設定指南**：
@@ -169,7 +171,7 @@ cp 01-slash-commands/*.md .claude/commands/
 cp 02-memory/project-CLAUDE.md ./CLAUDE.md
 
 # 安裝一個技能 (15 分鐘)
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # 週末目標：新增 hooks、subagents、MCP 與 plugins
 # 依照學習路徑進行引導式設定
@@ -199,7 +201,7 @@ cp -r 03-skills/code-review ~/.claude/skills/
 是的。採用 MIT 授權，永久免費。您可以將其用於個人專案、工作或團隊中 —— 除了包含授權聲明外，沒有其他限制。
 
 **這有在維護嗎？**
-有的，正積極維護中。本指南會隨著每一次 Claude Code 的發佈進行同步。目前版本：v2.1.112 (2026 年 4 月)，相容於 Claude Code 2.1+。
+有的，正積極維護中。本指南會隨著每一次 Claude Code 的發佈進行同步。目前版本：v2.1.150 (2026 年 5 月)，相容於 Claude Code 2.1+。
 
 **這與官方文件有什麼不同？**
 官方文件是功能參考手冊。而本指南是一份包含圖解、生產力等級範本以及漸進式學習路徑的教學指南。兩者相輔相成 —— 您可以從這裡開始學習，並在需要特定細節時查閱官方文件。
@@ -253,7 +255,6 @@ MIT 授權。永久免費。複製它、分支它、讓它成為您的一部分�
 
 | 功能 | 呼叫方式 | 持久性 | 最適合用於 |
 |---------|-----------|------------|----------|
-
 | **斜線命令** | 手動 (`/cmd`) | 僅限會話 | 快速捷徑 |
 | **記憶** | 自動載入 | 跨會話 | 長期學習 |
 | **技能** | 自動調用 | 檔案系統 | 自動化工作流程 |
@@ -279,7 +280,7 @@ cp 01-slash-commands/*.md .claude/commands/
 cp 02-memory/project-CLAUDE.md ./CLAUDE.md
 
 # Skills
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # Subagents
 cp 04-subagents/*.md .claude/agents/
@@ -372,18 +373,17 @@ cp 02-memory/personal-CLAUDE.md ~/.claude/CLAUDE.md
 **內容**: 包含指令與腳本的可重用、自動調用能力
 
 **範例**:
-
-- `code-review/` - 使用腳本進行全面的程式碼審查
+- `code-review-specialist/` - 使用腳本進行全面的程式碼審查
 - `brand-voice/` - 品牌語氣一致性檢查器
 - `doc-generator/` - API 文件產生器
 
 **安裝**:
 ```bash
 # 個人技能
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # 專案技能
-cp -r 03-skills/code-review /path/to/project/.claude/skills/
+cp -r 03-skills/code-review-specialist /path/to/project/.claude/skills/
 ```
 
 **用法**: 當相關時會自動觸發
@@ -482,11 +482,13 @@ chmod +x ~/.claude/hooks/*.sh
 
 **用法**: 鉤子會在事件發生時自動執行
 
-**鉤子類型** (4 種類型，25 個事件):
+**鉤子類型** (5 種類型，29 個事件):
 - **工具鉤子 (Tool Hooks)**: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`
 - **會話鉤子 (Session Hooks)**: `SessionStart`, `SessionEnd`, `Stop`, `StopFailure`, `SubagentStart`, `SubagentStop`
 - **任務鉤子 (Task Hooks)**: `UserPromptSubmit`, `TaskCompleted`, `TaskCreated`, `TeammateIdle`
 - **生命週期鉤子 (Lifecycle Hooks)**: `ConfigChange`, `CwdChanged`, `FileChanged`, `PreCompact`, `PostCompact`, `WorktreeCreate`, `WorktreeRemove`, `Notification`, `InstructionsLoaded`, `Elicitation`, `ElicitationResult`
+
+</details>
 
 <details>
 <summary>07. Plugins</summary>
@@ -596,716 +598,155 @@ claude -r "feature-auth" "continue implementation"
 </details>
 
 <details>
-<summary>Example Workflows</summary>
+<summary>工作流程範例</summary>
 
-### Complete Code Review Workflow
+### 完整的程式碼審查工作流程
 
 ```markdown
-# Uses: Slash Commands + Subagents + Memory + MCP
+# 使用：斜線命令 + Subagents + 記憶 + MCP
+
+使用者：/review-pr
+
+Claude：
+1. 載入專案記憶（程式碼標準）
+2. 透過 GitHub MCP 取得 PR
+3. 委派給 code-reviewer subagent
+4. 委派給 test-engineer subagent
+5. 整合所有發現
+6. 提供全面的審查報告
 ```
 
-User: /review-pr
+### 自動化文件生成
 
-Claude:
-1. Loads project memory (coding standards
-2. Fetches PR via GitHub MCP
-3. way
-4. way
-5. way
-6. way
-7. way
-8. way
-9. way
-10. way
-11. way
-12. way
-13. way
-14. way
-15. way
-16. way
-17. way
-18. way
-19. way
-20. way
-21. way
-22. way
-23. way
-24. way
-25. way
-26. way
-27. way
-28. way
-29. way
-30. way
-31. way
-32. way
-33. way
-34. way
-35. way
-36. way
-37. way
-38. way
-39. way
-40. way
-41. way
-42. way
-43. way
-44. way
-45. way
-46. way
-47. way
-48. way
-49. way
-50. way
-51. way
-52. way
-53. way
-54. way
-55. way
-56. way
-57. way
-58. way
-59. way
-60. way
-61. way
-62. way
-63. way
-64. way
-65. way
-66. way
-67. way
-68. way
-69. way
-70. way
-71. way
-72. way
-73. way
-74. way
-75. way
-76. way
-77. way
-78. way
-79. way
-80. way
-81. way
-82. way
-83. way
-84. way
-85. way
-86. way
-87. way
-88. way
-89. way
-90. way
-91. way
-92. way
-93. way
-94. way
-95. way
-96. way
-97. way
-98. way
-99. way
-100. way
-101. way
-102. way
-103. way
-104. way
-105. way
-106. way
-107. way
-108. way
-109. way
-110. way
-111. way
-112. way
-113. way
-114. way
-115. way
-116. way
-117. way
-118. way
-119. way
-120. way
-121. way
-122. way
-123. way
-124. way
-125. way
-126. way
-127. way
-128. way
-129. way
-130. way
-131. way
-132. way
-133. way
-134. way
-135. way
-136. way
-137. way
-138. way
-139. way
-140. way
-141. way
-142. way
-143. way
-144. way
-145. way
-146. way
-147. way
-148. way
-149. way
-150. way
-151. way
-152. way
-153. way
-154. way
-155. way
-156. way
-157. way
-158. way
-159. way
-160. way
-161. way
-162. way
-163. way
-164. way
-165. way
-166. way
-167. way
-168. way
-169. way
-170. way
-171. way
-172. way
-173. way
-174. way
-175. way
-176. way
-177. way
-178. way
-179. way
-180. way
-181. way
-182. way
-183. way
-184. way
-185. way
-186. way
-187. way
-188. way
-189. way
-190. way
-191. way
-192. way
-193. way
-194. way
-195. way
-196. way
-197. way
-198. way
-199. way
-200. way
-201. way
-202. way
-203. way
-204. way
-205. way
-206. way
-207. way
-208. way
-209. way
-210. way
-211. way
-212. way
-213. way
-214. way
-215. way
-216. way
-217. way
-218. way
-219. way
-220. way
-221. way
-222. way
-223. way
-224. way
-225. way
-226. way
-227. way
-228. way
-229. way
-230. way
-231. way
-232. way
-233. way
-234. way
-235. way
-236. way
-237. way
-238. way
-239. way
-240. way
-241. way
-242. way
-243. way
-244. way
-245. way
-246. way
-247. way
-248. way
-249. way
-250. way
-251. way
-252. way
-253. way
-254. way
-255. way
-256. way
-257. way
-258. way
-259. way
-260. way
-261. way
-262. way
-263. way
-264. way
-265. way
-266. way
-267. way
-268. way
-269. way
-270. way
-271. way
-272. way
-273. way
-274. way
-275. way
-276. way
-277. way
-278. way
-279. way
-280. way
-281. way
-282. way
-283. way
-284. way
-285. way
-286. way
-287. way
-288. way
-289. way
-290. way
-291. way
-292. way
-293. way
-294. way
-295. way
-296. way
-297. way
-298. way
-299. way
-300. way
-301. way
-302. way
-303. way
-304. way
-305. way
-306. way
-307. way
-308. way
-309. way
-310. way
-311. way
-312. way
-313. way
-314. way
-315. way
-316. way
-317. way
-318. way
-319. way
-320. way
-321. way
-322. way
-323. way
-324. way
-325. way
-326. way
-327. way
-328. way
-329. way
-330. way
-331. way
-332. way
-333. way
-334. way
-335. way
-336. way
-337. way
-338. way
-339. way
-340. way
-341. way
-342. way
-343. way
-344. way
-345. way
-346. way
-347. way
-348. way
-349. way
-350. way
-351. way
-352. way
-353. way
-354. way
-355. way
-356. way
-357. way
-358. way
-359. way
-360. way
-361. way
-362. way
-363. way
-364. way
-365. way
-366. way
-367. way
-368. way
-369. way
-370. way
-371. way
-372. way
-373. way
-374. way
-375. way
-376. way
-377. way
-378. way
-379. way
-380. way
-381. way
-382. way
-383. way
-384. way
-385. way
-386. way
-387. way
-388. way
-389. way
-390. way
-391. way
-392. way
-393. way
-394. way
-395. way
-396. way
-397. way
-398. way
-399. way
-400. way
-401. way
-402. way
-403. way
-404. way
-405. way
-406. way
-407. way
-408. way
-409. way
-410. way
-411. way
-412. way
-413. way
-414. way
-415. way
-416. way
-417. way
-418. way
-419. way
-420. way
-421. way
-422. way
-423. way
-424. way
-425. way
-426. way
-427. way
-428. way
-429. way
-430. way
-431. way
-432. way
-433. way
-434. way
-435. way
-436. way
-437. way
-438. way
-439. way
-440. way
-441. way
-442. way
-443. way
-444. way
-445. way
-446. way
-447. way
-448. way
-449. way
-450. way
-451. way
-452. way
-453. way
-454. way
-455. way
-456. way
-457. way
-458. way
-459. way
-460. way
-461. way
-462. way
-463. way
-464. way
-465. way
-466. way
-467. way
-468. way
-469. way
-470. way
-471. way
-472. way
-473. way
-474. way
-475. way
-476. way
-477. way
-478. way
-479. way
-480. way
-481. way
-482. way
-483. way
-484. way
-485. way
-486. way
-487. way
-488. way
-489. way
-490. way
-491. way
-492. way
-493. way
-494. way
-495. way
-496. way
-497. way
-498. way
-499. way
-500. way
-501. way
-502. way
-503. way
-504. way
-505. way
-506. way
-507. way
-508. way
-509. way
-510. way
-511. way
-512. way
-513. way
-514. way
-515. way
-516. way
-517. way
-518. way
-519. way
-520. way
-521. way
-522. way
-523. way
-524. way
-525. way
-526. way
-527. way
-528. way
-529. way
-530. way
-531. way
-532. way
-533. way
-534. way
-535. way
-536. way
-537. way
-538. way
-539. way
-540. way
-541. way
-542. way
-543. way
-544. way
-545. way
-546. way
-547. way
-548. way
-549. way
-550. way
-551. way
-552. way
-553. way
-554. way
-555. way
-556. way
-557. way
-558. way
-559. way
-560. way
-561. way
-562. way
-563. way
-564. way
-565. way
-566. way
-567. way
-568. way
-569. way
-570. way
-571. way
-572. way
-573. way
-574. way
-575. way
-576. way
-577. way
-578. way
-579. way
-580. way
-581. way
-582. way
-583. way
-584. way
-585. way
-586. way
-587. way
-588. way
-589. way
-590. way
-591. way
-592. way
-593. way
-594. way
-595. way
-596. way
-597. way
-598. way
-599. way
-600. way
-601. way
-602. way
-603. way
-604. way
-605. way
-606. way
-607. way
-608. way
-609. way
-610. way
-611. way
-612. way
-613. way
-614. way
-615. way
-616. way
-617. way
-618. way
-619. way
-620. way
-621. way
-622. way
-623. way
-624. way
-625. way
-626. way
-627. way
-628. way
-629. way
-630. way
-631. way
-632. way
-633. way
-634. way
-635. way
-636. way
-637. way
-638. way
-639. way
-640. way
-641. way
-642. way
-643. way
-644. way
-645. way
-646. way
-647. way
-648. way
-649. way
-650. way
-651. way
-652. way
-653. way
-654. way
-655. way
-656. way
-657. way
-658. way
-659. way
-660. way
-661. way
-662. way
-663. way
-664. way
-665. way
-666. way
-667. way
-668. way
-669. way
-670. way
-671. way
-672. way
-673. way
-674. way
-675. way
-676. way
-677. way
-678. way
-679. way
-680. way
-681. way
-682. way
-683. way
-684. way
-685. way
-686. way
-687. way
-688. way
-689. way
-690. way
-691. way
-692. way
-693. way
-694. way
-695. way
-696. way
-697. way
-69
+```markdown
+# 使用：技能 + Subagents + 記憶
 
+使用者：「為 auth 模組生成 API 文件」
+
+Claude：
+1. 載入專案記憶（文件標準）
+2. 偵測到文件生成請求
+3. 自動調用 doc-generator 技能
+4. 委派給 api-documenter subagent
+5. 建立包含範例的完整文件
+```
+
+### DevOps 部署
+
+```markdown
+# 使用：Plugins + MCP + Hooks
+
+使用者：/deploy production
+
+Claude：
+1. 執行 pre-deploy hook（驗證環境）
+2. 委派給 deployment-specialist subagent
+3. 透過 Kubernetes MCP 執行部署
+4. 監控進度
+5. 執行 post-deploy hook（健康檢查）
+6. 回報狀態
+```
+
+</details>
+
+<details>
+<summary>目錄結構</summary>
+
+```
+├── 01-slash-commands/
+│   ├── optimize.md
+│   ├── pr.md
+│   ├── generate-api-docs.md
+│   └── README.md
+├── 02-memory/
+│   ├── project-CLAUDE.md
+│   ├── directory-api-CLAUDE.md
+│   ├── personal-CLAUDE.md
+│   └── README.md
+├── 03-skills/
+│   ├── code-review-specialist/
+│   │   ├── SKILL.md
+│   │   ├── scripts/
+│   │   └── templates/
+│   ├── brand-voice/
+│   │   ├── SKILL.md
+│   │   └── templates/
+│   ├── doc-generator/
+│   │   ├── SKILL.md
+│   │   └── generate-docs.py
+│   └── README.md
+├── 04-subagents/
+│   ├── code-reviewer.md
+│   ├── test-engineer.md
+│   ├── documentation-writer.md
+│   ├── secure-reviewer.md
+│   ├── implementation-agent.md
+│   └── README.md
+├── 05-mcp/
+│   ├── github-mcp.json
+│   ├── database-mcp.json
+│   ├── filesystem-mcp.json
+│   ├── multi-mcp.json
+│   └── README.md
+├── 06-hooks/
+│   ├── format-code.sh
+│   ├── pre-commit.sh
+│   ├── security-scan.sh
+│   ├── log-bash.sh
+│   ├── validate-prompt.sh
+│   ├── notify-team.sh
+│   └── README.md
+├── 07-plugins/
+│   ├── pr-review/
+│   ├── devops-automation/
+│   ├── documentation/
+│   └── README.md
+├── 08-checkpoints/
+│   ├── checkpoint-examples.md
+│   └── README.md
+├── 09-advanced-features/
+│   ├── config-examples.json
+│   ├── planning-mode-examples.md
+│   └── README.md
+├── 10-cli/
+│   └── README.md
+└── README.md (this file)
+```
+
+</details>
+
+<details>
+<summary>最佳實踐</summary>
+
+### 應該做的
+- 從斜線命令開始，循序漸進
+- 逐步增加功能
+- 使用記憶來管理團隊標準
+- 先在本機測試配置
+- 記錄自定義實作內容
+- 對專案配置進行版本控管
+- 與團隊分享外掛
+
+### 不應該做的
+- 不要建立冗餘的功能
+- 不要在程式碼中寫死憑證
+- 不要跳過文件撰寫
+- 不要把簡單的任務過度複雜化
+- 不要忽視安全性最佳實踐
+- 不要提交敏感資料
+
+</details>
+
+<details>
+<summary>疑難排解</summary>
+
+### 功能未載入
+1. 檢查檔案位置與命名
+2. 驗證 YAML frontmatter 語法
+3. 檢查檔案權限
+4. 確認 Claude Code 版本相容性
+
+### MCP 連線失敗
 1. 驗證環境變數
 2. 檢查 MCP server 安裝情況
 3. 測試憑證
@@ -1409,7 +850,6 @@ uv run scripts/build_epub.py
 <summary>額外資源</summary>
 
 - [Claude Code Documentation](https://code.claude.com/docs/en/overview)
-
 - [MCP Protocol Specification](https://modelcontextprotocol.io)
 - [Skills Repository](https://github.com/luongnv89/skills) - 即插即用的技能集合
 - [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook)
@@ -1431,10 +871,15 @@ MIT License - 請參閱 [LICENSE](LICENSE)。可自由使用、修改與分發�
 
 ---
 
-**Last Updated**: April 16, 2026
-**Claude Code Version**: 2.1.112
+**Last Updated**: May 25, 2026
+**Claude Code Version**: 2.1.150
 **Sources**:
-- https://docs.anthropic.com/en/docs/claude-code
-- https://www.anthropic.com/news/claude-opus-4-7
-- https://support.claude.com/en/articles/12138966-release-notes
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/changelog
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.131
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.138
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.143
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.113
 **Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

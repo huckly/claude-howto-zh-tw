@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# Subagents - 完整參考指南
+# 子代理 - 完整參考指南
 
 Subagents 是 Claude Code 可以委派任務的專業化 AI 助手。每個 subagent 都有特定的用途，使用與主對話分離的獨立上下文視窗，並且可以配置特定的工具與自定義的系統提示詞。
 
@@ -21,17 +21,18 @@ Subagents 是 Claude Code 可以委派任務的專業化 AI 助手。每個 suba
 10. [Subagents 的持久化記憶](#persistent-memory-for-subagents)
 11. [背景 Subagents](#background-subagents)
 12. [Worktree 隔離](#worktree-isolation)
-13. [限制可生成的 Subagents](#restrict-spawnable-subagents)
-14. [`claude agents` CLI 命令](#claude-agents-cli-command)
-15. [代理團隊 (實驗性功能)](#agent-teams-experimental)
-16. [外掛 Subagent 安全性](#plugin-subagent-security)
-17. [架構](#architecture)
-18. [上下文管理](#context-management)
-19. [何時使用 Subagents](#when-to-use-subagents)
-20. [最佳實踐](#best-practices)
-21. [此資料夾中的範例 Subagents](#example-subagents-in-this-folder)
-22. [安裝說明](#installation-instructions)
-23. [相關概念](#related-concepts)
+13. [分叉子代理](#forked-subagents)
+14. [限制可生成的 Subagents](#restrict-spawnable-subagents)
+15. [`claude agents` CLI 命令](#claude-agents-cli-command)
+16. [代理團隊 (實驗性功能)](#agent-teams-experimental)
+17. [外掛 Subagent 安全性](#plugin-subagent-security)
+18. [架構](#architecture)
+19. [上下文管理](#context-management)
+20. [何時使用 Subagents](#when-to-use-subagents)
+21. [最佳實踐](#best-practices)
+22. [此資料夾中的範例 Subagents](#example-subagents-in-this-folder)
+23. [安裝說明](#installation-instructions)
+24. [相關概念](#related-concepts)
 
 ---
 
@@ -47,7 +48,7 @@ Subagents 透過以下方式在 Claude Code 中實現委派任務執行：
 
 每個 subagent 都以乾淨的狀態獨立運作，僅接收執行任務所需的特定上下文，然後將結果回傳給主代理進行整合。
 
-**快速入門**：使用 `/agents` 斜線命令以互動方式建立、查看、編輯及管理您的 subagents。
+**快速入門**：使用 `/agents` 命令以互動方式建立、查看、編輯及管理您的 subagents。
 
 ---
 
@@ -78,9 +79,9 @@ Subagent 檔案可以儲存在具有不同範圍的多個位置：
 
 ---
 
-## Configuration
+## 配置
 
-### File Format
+### 檔案格式
 
 Subagents 定義於 YAML frontmatter 中，後接 markdown 格式的系統提示詞：
 
@@ -115,7 +116,7 @@ to solving problems.
 
 您的 subagent 系統提示詞位於此處。這可以包含多個段落，且應清楚定義 subagent 的角色、能力以及解決問題的方法。
 
-### Configuration Fields
+### 配置欄位
 
 | 欄位 | 必要 | 說明 |
 |-------|----------|-------------|
@@ -126,7 +127,7 @@ to solving problems.
 | `model` | 否 | 使用的模型：`sonnet`、`opus`、`haiku`、完整模型 ID 或 `inherit`。預設為已設定的 subagent 模型 |
 | `permissionMode` | 否 | `default`、`acceptEdits`、`dontAsk`、`bypassPermissions`、`plan` |
 | `maxTurns` | 否 | subagent 可進行的最大代理回合數 |
-| `skills` | 否 | 以逗號分隔的預載技能列表。啟動時會將完整的技能內容注入 subagent 的上下文 |
+| `skills` | 否 | 以逗號分隔的預載技能列表。啟動時會將完整的技能內容注入 subagent 的上下文。**v2.1.133+：** subagents 也可透過 Skill 工具探索專案、使用者與外掛技能，與主會話使用相同的目錄，不再侷限於自身內嵌的技能集。 |
 | `mcpServers` | 否 | 提供給 subagent 使用的 MCP servers |
 | `hooks` | 否 | 組件範圍的鉤子 (PreToolUse, PostToolUse, Stop) |
 | `memory` | 否 | 持久化記憶目錄範圍：`user`、`project` 或 `local` |
@@ -135,15 +136,51 @@ to solving problems.
 | `isolation` | 否 | 設定為 `worktree` 以為 subagent 提供獨立的 git worktree |
 | `initialPrompt` | 否 | 當 subagent 作為主要代理執行時，自動提交的第一個回合 |
 
-### Tool Configuration Options
+### 主執行緒代理的 Frontmatter 支援 (v2.1.117+/v2.1.119+)
+
+當代理透過 `claude --agent <name>` 或 `--print` 模式作為主執行緒代理呼叫時，以下 frontmatter 欄位會生效：
+
+| 欄位 | 版本 | 備注 |
+|-------|---------|-------|
+| `mcpServers` | v2.1.117+ | 透過 `claude --agent <name>` 作為主執行緒代理呼叫時載入 |
+| `permissionMode` | v2.1.119+ | 透過 `--agent <name>` 對內建代理生效 |
+| `tools` / `disallowedTools` | v2.1.119+ | 在 `--print` 模式（非互動式/指令碼化使用）下生效 |
+
+**範例 — 具備 `mcpServers` 與 `permissionMode` 的代理：**
+
+```yaml
+---
+name: secure-researcher
+description: Research agent with scoped MCP access and restricted permissions
+permissionMode: acceptEdits
+mcpServers:
+  notion:
+    type: http
+    url: https://mcp.notion.com/mcp
+  github:
+    type: http
+    url: https://api.github.com/mcp
+tools: Read, Grep, Glob
+---
+
+You are a research agent. You may query Notion and GitHub through the
+configured MCP servers, and read local files, but you cannot write or
+execute commands outside of accepted edits.
+```
+
+執行方式：
+
+```bash
+claude --agent secure-researcher
+```
+
+### 工具配置選項
 
 **選項 1：繼承所有工具（省略該欄位）**
 ```yaml
 ---
 name: full-access-agent
 description: Agent with all available tools
-```
-
 ---
 ```
 
@@ -155,6 +192,8 @@ description: 僅具備特定工具的代理
 tools: Read, Grep, Glob, Bash
 ---
 ```
+
+> **關於 Glob/Grep 的注意事項 (v2.1.113+)：** 在原生 macOS/Linux 建置版本中，Glob 和 Grep 是透過 Bash 工具以 `bfs`/`ugrep` 形式提供，而非獨立工具。Windows 與 npm-JS 建置版本仍將它們公開為獨立工具。作者仍可在 `allowedTools` 中引用 Glob/Grep；後端的替換是透明的。
 
 **選項 3：條件式工具存取**
 ```yaml
@@ -172,8 +211,8 @@ tools: Read, Bash(npm:*), Bash(test:*)
 ```bash
 claude --agents '{
   "code-reviewer": {
-    "description": "專家級程式碼審查員。在程式碼變更後主動使用。",
-    "prompt": "你是一位資深程式碼審查員。專注於程式碼品質、安全性與最佳實踐。",
+    "description": "Expert code reviewer. Use proactively after code changes.",
+    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
     "tools": ["Read", "Grep", "Glob", "Bash"],
     "model": "sonnet"
   }
@@ -255,33 +294,33 @@ Claude Code 包含數個隨時可用的內建子代理：
 - **"medium"** - 中度探索，在速度與徹底性之間取得平衡，為預設方式
 - **"very thorough"** - 跨多個位置與命名慣例進行全面的分析，可能需要較長時間
 
-### Bash Subagent
+### Bash 子代理
 
 | 屬性 | 值 |
 |----------|-------|
-| **Model** | 繼承自父代理 |
-| **Tools** | Bash |
-| **Purpose** | 在獨立的上下文視窗中執行終端機指令 |
+| **模型** | 繼承自父代理 |
+| **工具** | Bash |
+| **用途** | 在獨立的上下文視窗中執行終端機指令 |
 
 **使用時機**：當執行需要隔離上下文的 shell 指令時。
 
-### Statusline Setup Subagent
+### Statusline Setup 子代理
 
 | 屬性 | 值 |
 |----------|-------|
-| **Model** | Sonnet |
-| **Tools** | Read, Write, Bash |
-| **Purpose** | 配置 Claude Code 狀態列顯示 |
+| **模型** | Sonnet |
+| **工具** | Read, Write, Bash |
+| **用途** | 配置 Claude Code 狀態列顯示 |
 
 **使用時機**：當設定或自定義狀態列時。
 
-### Claude Code Guide Subagent
+### Claude Code Guide 子代理
 
 | 屬性 | 值 |
 |----------|-------|
-| **Model** | Haiku (快速、低延遲) |
-| **Tools** | Read-only |
-| **Purpose** | 回答關於 Claude Code 功能與用法的問題 |
+| **模型** | Haiku (快速、低延遲) |
+| **工具** | 唯讀 |
+| **用途** | 回答關於 Claude Code 功能與用法的問題 |
 
 **使用時機**：當使用者詢問關於 Claude Code 如何運作或如何使用特定功能時。
 
@@ -289,7 +328,7 @@ Claude Code 包含數個隨時可用的內建子代理：
 
 ## 管理 Subagents
 
-### 使用 `/agents` 斜線命令 (建議方式)
+### 使用 `/agents` 命令 (建議方式)
 
 ```bash
 /agents
@@ -310,7 +349,7 @@ mkdir -p .claude/agents
 cat > .claude/agents/test-runner.md << 'EOF'
 ---
 name: test-runner
-description: 主動用於執行測試並修復失敗
+description: Use proactively to run tests and fix failures
 ---
 
 You are a test automation expert. When you see code changes, proactively
@@ -351,6 +390,8 @@ description: Expert code review specialist. Use PROACTIVELY after writing or mod
 > Have the code-reviewer subagent look at my recent changes
 > Ask the debugger subagent to investigate this error
 ```
+
+> **`subagent_type` 不區分大小寫與分隔符號的比對 (v2.1.140)**：`subagent_type`（在 `Agent` 工具呼叫或 `--agent` 旗標中）的比對不區分大小寫，且會忽略分隔符號差異 — `code-reviewer`、`Code Reviewer` 與 `code_reviewer` 都會解析到同一個代理。這消除了長期以來因大小寫差異而悄悄降回預設代理的問題。
 
 ### @-Mention 調用
 
@@ -534,6 +575,45 @@ graph TB
 
 ---
 
+## 分叉子代理
+
+分叉子代理（`context: fork`）在分叉當下繼承父代理的完整對話上下文，而非從乾淨的狀態開始。這對於在不丟失既有工作的情況下探索替代路徑非常有用。
+
+> **可用性**：在 v2.1.117 中正式發布 (GA)。在外部建置版本（非第一方發行版）中，需設定 `CLAUDE_CODE_FORK_SUBAGENT=1` 以啟用分叉功能。
+
+### 配置
+
+```yaml
+---
+name: alternative-explorer
+description: Explore an alternative implementation path while preserving parent context
+context: fork
+tools: Read, Edit, Bash, Grep, Glob
+---
+
+You are a forked subagent. You inherit the parent's full conversation and
+may explore an alternative approach. Return your findings and the parent
+will decide whether to adopt them.
+```
+
+### 在外部建置版本中啟用
+
+```bash
+export CLAUDE_CODE_FORK_SUBAGENT=1
+claude
+```
+
+### 何時使用分叉與乾淨上下文
+
+| 情境 | `context: fork` | 乾淨上下文（預設） |
+|----------|-----------------|-------------------------|
+| 探索替代實作 | 是 | 否（會失去上下文） |
+| 需要既有上下文的長期研究 | 是 | 否 |
+| 獨立的專業任務 | 否 | 是 |
+| 避免上下文污染 | 否 | 是 |
+
+---
+
 ## 限制可生成的子代理
 
 您可以透過在 `tools` 欄位中使用 `Agent(agent_type)` 語法，來控制特定子代理被允許生成的子代理。這提供了一種為委派任務建立特定子代理白名單的方法。
@@ -614,7 +694,6 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 啟用後，在您的提示詞中要求 Claude 與團隊成員一起工作：
 
 ```
-
 User: Build the authentication module. Use a team — one teammate for the API endpoints,
       one for the database schema, and one for the test suite.
 ```
@@ -1133,6 +1212,25 @@ graph TD
 
 ---
 
+## 可觀測性
+
+> **新增於 v2.1.139。**
+
+源自子代理的 API 請求會攜帶兩個額外的 HTTP 標頭，以便將追蹤與日誌關聯回發起會話：
+
+| 標頭 | 說明 |
+|--------|-------------|
+| `x-claude-code-agent-id` | 發出請求的子代理 UUID。 |
+| `x-claude-code-parent-agent-id` | 派發此子代理的代理 UUID（主代理，或鏈結中的上層子代理）。 |
+
+相同的識別碼也會作為屬性 `claude.code.agent.id` 與 `claude.code.agent.parent_id` 公開在 `claude_code.llm_request` OpenTelemetry span 上。可用於：
+
+- 將 API 費用歸因於特定子代理類型，而非整個父會話
+- 事後重建代理呼叫鏈（parent_id 構成樹狀結構）
+- 對失控的子代理發出警報（例如：某個 `agent.id` 佔會話總花費超過 50%）
+
+關於端對端 exporter 設定，請參閱[進階功能 → 遙測](../09-advanced-features/README.md)中的 OpenTelemetry 章節。
+
 ## 其他資源
 
 - [Official Subagents Documentation](https://code.claude.com/docs/en/sub-agents)
@@ -1143,9 +1241,15 @@ graph TD
 - [Hooks Guide](../06-hooks/) - 用於事件驅動的自動化
 
 ---
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+
+**最後更新日期**：2026 年 5 月 25 日
+**Claude Code 版本**：2.1.150
 **來源**：
 - https://code.claude.com/docs/en/sub-agents
 - https://code.claude.com/docs/en/agent-teams
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.117
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.131
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.138
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.139
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.140
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

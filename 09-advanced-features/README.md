@@ -130,42 +130,41 @@ claude --permission-mode plan
 User: /plan Add a real-time notification system
 
 Claude: I'll create a plan for implementing real-time notifications.
-```
 
-## 實作計畫
+## Implementation Plan
 
-### 第一階段：基礎設施設定
-1. 安裝 WebSocket 函式庫 (socket.io)
-2. 設定 WebSocket 伺服器
-3. 配置連線管理
+### Phase 1: Infrastructure Setup
+1. Install WebSocket libraries (socket.io)
+2. Set up WebSocket server
+3. Configure connection management
 
-### 第二階段：後端實作
-4. 建立通知服務
-5. 實作通知佇列
-6. 新增通知資料庫結構
-7. 建立 API 端點
+### Phase 2: Backend Implementation
+4. Create notification service
+5. Implement notification queue
+6. Add database schema for notifications
+7. Create API endpoints
 
-### 第三階段：前端整合
-8. 設定 WebSocket 用戶端
-9. 建立通知 UI 元件
-10. 實作通知狀態管理
-11. 新增通知權限
+### Phase 3: Frontend Integration
+8. Set up WebSocket client
+9. Create notification UI components
+10. Implement notification state management
+11. Add notification permissions
 
-### 第四階段：測試與部署
-12. 編寫單元測試
-13. 編寫整合測試
-14. 更新文件
-15. 部署至 staging
+### Phase 4: Testing & Deployment
+12. Write unit tests
+13. Write integration tests
+14. Update documentation
+15. Deploy to staging
 
-預計耗時：3-4 小時
-需修改的檔案：12
-需新增的檔案：8
+Estimated time: 3-4 hours
+Files to modify: 12
+New files to create: 8
 
-準備好繼續了嗎？(yes/no/modify plan)
+Ready to proceed? (yes/no/modify plan)
 
 User: yes
 
-Claude: [開始按照計畫進行實作]
+Claude: [Begins implementation following the plan]
 ```
 
 ### 計畫修改
@@ -201,6 +200,10 @@ claude --model opusplan "design and implement the new API"
 
 **從外部編輯計畫**：按下 `Ctrl+G` 可在您的外部編輯器中開啟目前的計畫，以便進行詳細修改。
 
+> **v2.1.112 更新**：計畫檔案現在會以產生它們的提示詞命名（而非隨機詞彙），讓它們更容易瀏覽與重複使用。
+
+> **v2.1.136 更新 — 計畫模式的寫入阻斷為無條件**：計畫模式現在會阻斷所有檔案寫入，包括當 `permissions.allow` 中存在匹配的 `Edit(...)` 規則時也不例外。先前較寬鬆的 `Edit(...)` 規則可能讓寫入在計畫模式中通過；此漏洞現已修補。如果某個工作流程依賴舊有行為，請在編輯前先退出計畫模式（`Shift+Tab`）。
+
 ---
 
 ## Ultraplan (雲端計畫草擬)
@@ -215,7 +218,7 @@ claude --model opusplan "design and implement the new API"
 
 - 您需要比終端機更豐富的審查介面：行內註解、表情符號回應、大綱側邊欄以及持久的歷史紀錄。
 - 您希望在本地持續編碼時進行自動化草擬 — 雲端會話會研究程式碼庫並撰寫計畫，而不會阻塞您的 CLI。
-- 計畫在執行前需要利害關係人審查 — 一個可分享的網頁 URL 比貼上終組終端機捲動內容更有效率。
+- 計畫在執行前需要利害關係人審查 — 一個可分享的網頁 URL 比貼上終端機捲動內容更有效率。
 
 ### 需求
 
@@ -275,8 +278,9 @@ Claude 會確認請求，啟動雲端環境（在 v2.1.101+ 版本中，首次�
 - `Option + T` (macOS) / `Alt + T` (Windows/Linux) - 切換延伸思考
 
 **自動啟動**：
-- 所有模型預設皆已啟用 (Opus 4.6, Sonnet 4.6, Haiku 4.5)
-- Opus 4.6：具備不同努力程度的適應性推理：`low` (○), `medium` (◐), `high` (●), `max` (僅限 Opus 4.6)
+- 所有模型預設皆已啟用 (Opus 4.7, Sonnet 4.6, Haiku 4.5)
+- Opus 4.7：具備不同努力程度的適應性推理：`low` (○), `medium` (◐), `high` (●), `xhigh`（僅限 Opus 4.7，自 2026-04-16 起為 Claude Code 的預設值）, `max`。Opus 4.6 與 Sonnet 4.6 也支援 `low`、`medium`、`high`、`max`（無 `xhigh`）。Opus 4.7 具備 1M token 的原生 context window（1M context 修復於 v2.1.117 — 在此之前，`/context` 對 Opus 4.7 的計算誤以 200K window 為準，導致過早觸發 autocompact）。自 v2.1.129 起，`/context` 僅在 UI 內顯示視覺化；ASCII 視覺化不再洩漏到對話 context 中（每次呼叫節省約 1.6k tokens），因此可以自由調用 `/context`。
+- Pro/Max 訂閱者在使用 Opus 4.6 / Sonnet 4.6 時：預設努力程度已於 v2.1.117 從 `medium` 提升至 `high`。
 - 其他模型：固定預算上限為 31,999 tokens
 
 **配置方法**：
@@ -289,9 +293,9 @@ Claude 會確認請求，啟動雲端環境（在 v2.1.101+ 版本中，首次�
 export MAX_THINKING_TOKENS=1024
 ```
 
-**努力程度** (僅限 Opus 4.6)：
+**努力程度**（支援 Opus 4.7、Opus 4.6 與 Sonnet 4.6）：
 ```bash
-export CLAUDE_CODE_EFFORT_LEVEL=high   # low (○), medium (◐), high (●), or max (Opus 4.6 only)
+export CLAUDE_CODE_EFFORT_LEVEL=xhigh   # low (○), medium (◐), high (●), xhigh (僅限 Opus 4.7，預設), 或 max
 ```
 
 **CLI 旗標**：
@@ -304,7 +308,7 @@ claude --effort high "complex architectural review"
 /effort high
 ```
 
-> **注意：** 提示詞中的關鍵字 "ultrathink" 會啟動深度推理模式。努力程度 `low`、`medium`、`high` 和 `max` (僅限 Opus 4.6) 會控制 Claude 進行推理的程度。
+> **注意：** 提示詞中的關鍵字 "ultrathink" 會啟動深度推理模式。努力程度 `low`、`medium`、`high` 與 `max` 支援 Opus 4.7、Opus 4.6 以及 Sonnet 4.6。`xhigh`（Opus 4.7 預設）僅限 Opus 4.7。
 
 ### 延伸思考的優點
 
@@ -316,75 +320,73 @@ claude --effort high "complex architectural review"
 ### 範例：架構決策
 
 ```
-User: /think Should we use microservices or a monolith for our e-commerce platform?
+User: ultrathink Should we use microservices or a monolith for our e-commerce platform?
 
 Claude: Let me think through this architectural decision carefully...
 
 <extended_thinking>
+## Context Analysis
+- Team size: 5 developers
+- Expected traffic: 10k daily users initially
+- Need to scale to 100k+ users
+- Limited DevOps resources
+- 6-month timeline to MVP
+
+## Approach 1: Microservices
+Pros:
++ Independent scaling
++ Technology flexibility
++ Team independence
++ Fault isolation
+
+Cons:
+- Operational complexity
+- Network overhead
+- Distributed tracing needed
+- Requires DevOps expertise
+- Slower initial development
+
+## Approach 2: Monolith
+Pros:
++ Simpler deployment
++ Faster initial development
++ Easier debugging
++ Lower operational overhead
++ Single codebase
+
+Cons:
+- Scaling challenges later
+- All-or-nothing deployments
+- Technology lock-in
+- Potential for tight coupling
+
+## Decision Factors
+1. Team size (5 devs) → Favors monolith
+2. DevOps resources (limited) → Favors monolith
+3. Timeline (6 months) → Favors monolith
+4. Future scale (100k users) → Achievable with monolith + caching
+5. Complexity budget → Limited
+
+## Recommendation
+Start with a **modular monolith**:
+- Single deployment unit
+- Clear module boundaries
+- Clean interfaces between modules
+- Prepare for future extraction to microservices if needed
+
+This gives you:
+✓ Fast initial development
+✓ Low operational complexity
+✓ Option to extract services later
+✓ Clear architecture
+
+Migration path: When you reach 50k+ users or specific modules need independent scaling, extract those modules into microservices.
+</extended_thinking>
+
+**Recommendation**: Implement a modular monolith with clean module boundaries.
+
+This approach balances your current constraints (team size, timeline, DevOps resources) with future scalability needs. You can migrate specific modules to microservices later when there's a clear business need.
 ```
-
-## 上下文分析
-- 團隊規模：5 名開發人員
-- 預期流量：初期每日 1 萬名使用者
-- 需要擴展至 10 萬名以上使用者
-- DevOps 資源有限
-- 距離 MVP 的時程為 6 個月
-
-## 方案 1：微服務 (Microservices)
-優點：
-+ 獨立擴展
-+ 技術靈活性
-+ 團隊獨立性
-+ 故障隔離
-
-缺點：
-- 維運複雜度高
-- 網路開銷
-- 需要分散式追蹤
-- 需要 DevOps 專業知識
-- 初期開發速度較慢
-
-## 方案 2：單體架構 (Monolith)
-優點：
-+ 部署更簡單
-+ 初期開發速度較快
-+ 更容易除錯
-+ 維運開銷較低
-+ 單一程式碼庫
-
-缺點：
-- 後期擴展挑戰
-- 全有或全無的部署方式
-- 技術鎖定
-- 可能導致緊密耦合
-
-## 決策因素
-1. 團隊規模 (5 名開發人員) → 傾向單體架構
-2. DevOps 資源 (有限) → 傾向單體架構
-3. 時程 (6 個月) → 傾向單體架構
-4. 未來規模 (10 萬名使用者) → 透過單體架構 + 快取即可達成
-5. 複雜度預算 → 有限
-
-## 建議
-從**模組化單體架構 (modular monolith)** 開始：
-- 單一部署單元
-- 清晰的模組邊界
-- 模組間具備乾淨的介面
-- 為未來若有需要提取至微服務做好準備
-
-這將為您帶來：
-✓ 快速的初期開發
-✓ 低維運複雜度
-✓ 後期提取服務的選項
-✓ 清晰的架構
-
-遷移路徑：當使用者達到 5 萬名以上，或特定模組需要獨立擴展時，將這些模組提取為微服務。
-
-**建議**：實作具有清晰模組邊界的模組化單體架構。
-
-此方案在您目前的限制（團隊規模、時程、DevOps 資源）與未來的擴展需求之間取得了平衡。當出現明確的業務需求時，您可以隨時將特定模組遷移至微服務。
-
----
 
 ### 延伸思考配置 (Extended Thinking Configuration)
 
@@ -394,31 +396,35 @@ Claude: Let me think through this architectural decision carefully...
 # 設定思考 token 預算
 export MAX_THINKING_TOKENS=16000
 
-# 設定努力程度 (僅限 Opus 4.6)：low (○), medium (◐), high (●), 或 max (僅限 Opus 4.6)
-export CLAUDE_CODE_EFFORT_LEVEL=high
+# 設定努力程度 (支援 Opus 4.7、Opus 4.6、Sonnet 4.6)：low (○), medium (◐), high (●), xhigh (僅限 Opus 4.7，預設), 或 max
+export CLAUDE_CODE_EFFORT_LEVEL=xhigh
 ```
 
 在會話期間使用 `Alt+T` / `Option+T` 進行切換，使用 `/effort` 設定努力程度，或透過 `/config` 進行配置。
+
+---
 
 ## Auto Mode
 
 Auto Mode 是一種研究預覽階段的權限模式（2026 年 3 月），它使用背景安全分類器在執行每個動作前進行審查。它允許 Claude 自主工作，同時阻斷危險的操作。
 
-### Requirements
+### 需求
 
-- **Plan**: Team、Enterprise 或 API（不適用於 Pro 或 Max 方案）
-- **Model**: Claude Sonname 4.6 或 Opus 4.6
-- **Provider**: 僅限 Anthropic API（不支援 Bedrock、Vertex 或 Foundry）
-- **Classifier**: 執行於 Claude Sonnet 4.6（會增加額外的 token 成本）
+- **Plan**：Team、Enterprise 或 API（不適用於 Pro 或 Max 方案）
+- **Model**：Claude Sonnet 4.6 或 Opus 4.7
+- **Provider**：僅限 Anthropic API（不支援 Bedrock、Vertex 或 Foundry）
+- **Classifier**：執行於 Claude Sonnet 4.6（會增加額外的 token 成本）
 
-### Enabling Auto Mode
+### 啟用 Auto Mode
 
 ```bash
-# 使用 CLI 旗標解鎖 auto mode
+# 使用 CLI 旗標解鎖 auto mode（Max 訂閱者在 Opus 4.7 上不再需要此旗標，可直接存取）
 claude --enable-auto-mode
 
 # 然後在 REPL 中使用 Shift+Tab 切換至該模式
 ```
+
+> **v2.1.112 更新**：Auto mode 不再需要 `--enable-auto-mode` 旗標。Max 訂閱者可直接在 Opus 4.7 上存取。
 
 或者將其設定為預設權限模式：
 
@@ -435,47 +441,87 @@ claude --permission-mode auto
 }
 ```
 
-### How the Classifier Works
+### 分類器的運作方式
 
 背景分類器使用以下決策順序來評估每個動作：
 
-1. **Allow/deny rules** -- 首先檢查明確的權限規則
-2. **Read-only/edits auto-approved** -- 檔案讀取與編輯會自動通過
-3. **Classifier** -- 背景分類器審查該動作
-4. **Fallback** -- 在連續 3 次或總共 20 次阻斷後，退回至提示模式
+1. **Allow/deny rules** — 首先檢查明確的權限規則
+2. **Read-only/edits auto-approved** — 檔案讀取與編輯會自動通過
+3. **Classifier** — 背景分類器審查該動作
+4. **Fallback** — 在連續 3 次或總共 20 次阻斷後，退回至提示模式
 
-### Default Blocked Actions
+### 預設阻斷動作
 
 Auto mode 預設會阻斷以下動作：
 
-| Blocked Action | Example |
+| 阻斷動作 | 範例 |
 |----------------|---------|
-| Pipe-to-shell installs | `curl \| bash` |
-| Sending sensitive data externally | 透過網路傳送 API keys、憑證等敏感資料 |
-| Production deploys | 目標為正式環境的部署指令 |
-| Mass deletion | 在大型目錄執行 `rm -rf` |
-| IAM changes | 權限與角色修改 |
-| Force push to main | `git push --force origin main` |
+| Pipe-to-shell 安裝 | `curl \| bash` |
+| 向外部傳送敏感資料 | 透過網路傳送 API keys、憑證等敏感資料 |
+| 正式環境部署 | 目標為正式環境的部署指令 |
+| 大量刪除 | 在大型目錄執行 `rm -rf` |
+| IAM 變更 | 權限與角色修改 |
+| 強制推送至 main | `git push --force origin main` |
 
-### Default Allowed Actions
+### 預設允許動作
 
-| Allowed Action | Example |
+| 允許動作 | 範例 |
 |----------------|---------|
-| Local file operations | 讀取、寫入、編輯專案檔案 |
-| Declared dependency installs | 從清單中執行 `npm install`、`pip install` |
-| Read-only HTTP | 使用 `curl` 獲取文件 |
-| Pushing to current branch | `git push origin feature-branch` |
+| 本地檔案操作 | 讀取、寫入、編輯專案檔案 |
+| 已宣告的依賴套件安裝 | 從清單中執行 `npm install`、`pip install` |
+| 唯讀 HTTP | 使用 `curl` 獲取文件 |
+| 推送至目前分支 | `git push origin feature-branch` |
 
-### Configuring Auto Mode
+### 配置 Auto Mode
 
-**Print default rules as JSON**:
+**將預設規則輸出為 JSON**：
 ```bash
 claude auto-mode defaults
 ```
 
-**Configure trusted infrastructure** 透過用於企業部署的 `autoMode.environment` 管理設定進行配置。這允許管理員定義受信任的 CI/CD 環境、部署目標與基礎設施模式。
+**配置受信任的基礎設施**：透過用於企業部署的 `autoMode.environment` 管理設定進行配置。這允許管理員定義受信任的 CI/CD 環境、部署目標與基礎設施模式。
 
-### Fallback Behavior
+#### 使用 `"$defaults"` 擴充預設值（v2.1.118）
+
+自 v2.1.118 起，`autoMode.allow`、`autoMode.soft_deny` 與 `autoMode.environment` 接受一個 `"$defaults"` token，它會將您的規則**附加**到內建清單中，而非取代它。在 v2.1.118 之前，任何使用者定義的陣列都會靜默地覆蓋內建的預設值。
+
+#### 使用 `autoMode.hard_deny` 設定無條件阻斷（v2.1.136）
+
+`autoMode.hard_deny`（v2.1.136+）是一組分類器規則，它們會**無論使用者推斷意圖為何**，都阻斷某一類動作。將此用於在 auto mode 中絕對不應執行的動作 — 例如對根路徑執行 `rm -rf`，或對受保護分支執行 `git push --force`。與 `soft_deny` 不同，hard-deny 規則不能被分類器協商。
+
+```json
+{
+  "autoMode": {
+    "hard_deny": ["Bash(rm -rf /:*)", "Bash(git push --force*)"]
+  }
+}
+```
+
+**之前（取代內建值 — v2.1.118 之前的行為）：**
+
+```json
+{
+  "autoMode": {
+    "allow": ["Bash(gh pr list:*)"]
+  }
+}
+```
+
+**之後（擴充內建值 — v2.1.118+）：**
+
+```json
+{
+  "autoMode": {
+    "allow": ["$defaults", "Bash(gh pr list:*)"],
+    "soft_deny": ["$defaults", "Bash(kubectl delete:*)"],
+    "environment": ["$defaults", "trusted-ci.internal"]
+  }
+}
+```
+
+使用 `"$defaults"` 可在保留原廠基準規則的同時，疊加組織或專案特定的規則。
+
+### 後備行為
 
 當分類器不確定時，auto mode 會退回至提示使用者：
 - 在 **3 次連續** 分類器阻斷後
@@ -483,7 +529,7 @@ claude auto-mode defaults
 
 這確保了當分類器無法自信地核准動作時，使用者始終保有控制權。
 
-### Seeding Auto-Mode-Equivalent Permissions (No Team Plan Required)
+### 植入等效 Auto Mode 的權限（不需要 Team 方案）
 
 如果您沒有 Team 方案，或者想要一種不使用背景分類器的更簡單方法，您可以透過在 `~/.claude/settings.json` 中植入保守的基礎安全權限規則來達成類似效果。該腳本從唯讀與本地檢查規則開始，接著讓您僅在需要時才選擇加入編輯、測試、本地 git 寫入、套件安裝以及 GitHub 寫入動作。
 
@@ -649,7 +695,7 @@ Claude: [Shows linter output from bg-5002]
 
 > **v2.1.98 新功能**：Monitor 工具讓 Claude 可以監控背景指令的 stdout，並在匹配的事件出現時立即做出反應 — 取代了用於等待長時間執行程序的輪詢迴圈與 `sleep`。
 
-Monitor 可附加到任何會寫入 stdout 的 shell 指令。指令產生的每一行 stdout 都會變成一個喚醒會話的通知。由 Claude 指定指令；測試框架會串流輸出並在事件觸發時傳送。關於啟動底層程序，請參閱相關的 [Background Tasks](#background-tasks) 章節。
+Monitor 可附加到任何會寫入 stdout 的 shell 指令。指令產生的每一行 stdout 都會變成一個喚醒會話的通知。由 Claude 指定指令；測試框架會串流輸出並在事件觸發時傳送。關於啟動底層程序，請參閱相關的 [背景任務](#background-tasks) 章節。
 
 ### 為什麼這很重要
 
@@ -657,13 +703,13 @@ Monitor 可附加到任何會寫入 stdout 的 shell 指令。指令產生的每
 
 ### 兩種常見模式
 
-**Stream filters (串流篩選器)** 監控來自長時間執行來源的連續輸出。指令會持續執行；每一行匹配的內容都是一個事件。
+**Stream filters（串流篩選器）** 監控來自長時間執行來源的連續輸出。指令會持續執行；每一行匹配的內容都是一個事件。
 
 ```bash
 tail -f /var/log/app.log | grep --line-buffered "ERROR"
 ```
 
-**Poll-and-emit filters (輪詢與發送篩選器)** 定期檢查來源，僅在發生變化時發送。適用於 API、資料庫或任何沒有原生串流的來源。
+**Poll-and-emit filters（輪詢與發送篩選器）** 定期檢查來源，僅在發生變化時發送。適用於 API、資料庫或任何沒有原生串流的來源。
 
 ```bash
 last=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -678,13 +724,15 @@ done
 
 「啟動我的開發伺服器並監控錯誤。」Claude 會將伺服器作為背景任務啟動，附加一個 Monitor 篩選器 (`tail -F server.log | grep --line-buffered -E "ERROR|FATAL"`)，接著會話進入靜默狀態。當日誌中出現錯誤行的一瞬間，Claude 會被喚醒、讀取錯誤並做出反應 — 例如重啟伺服器、修復 bug 或向你回報 — 而不需要你手動檢查。
 
-> **警告**：當使用管道 (piping) 傳輸至 `grep` 時，**務必**使用 `grep --line-buffered`。如果沒有使用它，grep 會以 4KB 為區塊緩衝 stdout，這可能導致在低流量串流中事件延遲數分鐘。這是實務中導致 Monitor 失效的首要原因 — 如果你的篩選器在不該靜默時看起來卻是靜默的，請先檢查是否使用了 `--line-buffered` 旗標。
+> **警告**：當使用管道（piping）傳輸至 `grep` 時，**務必**使用 `grep --line-buffered`。如果沒有使用它，grep 會以 4KB 為區塊緩衝 stdout，這可能導致在低流量串流中事件延遲數分鐘。這是實務中導致 Monitor 失效的首要原因 — 如果你的篩選器在不該靜默時看起來卻是靜默的，請先檢查是否使用了 `--line-buffered` 旗標。
 
 ---
 
 ## 排程任務
 
 排程任務讓您能依照週期性時程或作為一次性提醒，自動執行提示詞。任務的範圍僅限於會話（session-scoped）——它們會在 Claude Code 執行期間運行，並在會話結束時清除。自 v2.1.72+ 版本起可用。
+
+> **於 claude.com 以「Routines」名稱行銷（2026-05-14）**：Anthropic 的產品部落格將此介面介紹為 **Routines**。CLI 命令仍為 `/schedule`；本指南使用原始的「排程任務」名稱以保持一致性。如果您在 claude.com 文件或桌面應用程式中看到「Routines」，它指的是同一功能。
 
 ### `/loop` 命令
 
@@ -712,7 +760,7 @@ in 45 minutes, run the integration tests
 | 工具 | 說明 |
 |------|-------------|
 | `CronCreate` | 建立新的排程任務 |
-| `CronList` | 列出所有啟用的排程任務 |
+| `CronList` | 列出所有啟用的排程任務。自 v2.1.136 起，輸出也包含限定詞（qualifier）與排程提示詞內容，因此您無需開啟就能稽核每個 cron 將執行的內容。 |
 | `CronDelete` | 移除排程任務 |
 
 **限制與行為**：
@@ -746,6 +794,8 @@ Cloud 排程任務在重新啟動後仍會保留，且不需要 Claude Code 在�
 export CLAUDE_CODE_DISABLE_CRON=1
 ```
 
+> **`/schedule` 因 API key 層級而自動停用（v2.1.139）**：當設定了 `ANTHROPIC_API_KEY`、`ANTHROPIC_AUTH_TOKEN` 或 `apiKeyHelper` 的任何一項時，即使您同時以 claude.ai 登入，Cloud `/schedule` 也會靜默不可用。相同條件也會停用[遠端控制](#remote-control)、claude.ai MCP 連接器以及通知偏好設定。請取消設定 API key（或在 Pro/Max OAuth 層級執行）以使用 `/schedule`。本地端的 `CronCreate` 不受影響。
+
 ### 範例：監控部署
 
 ```
@@ -774,6 +824,12 @@ export CLAUDE_CODE_DISABLE_CRON=1
 | `dontAsk` | 僅執行預先核准的工具；其他所有動作皆被拒絕 |
 
 在 CLI 中使用 `Shift+Tab` 可以在模式之間切換。可以使用 `--permission-mode` 旗標或 `permissions.defaultMode` 設定來設定預設值。
+
+> **`--dangerously-skip-permissions` 擴充的路徑覆蓋範圍（v2.1.121, v2.1.126）**：`--dangerously-skip-permissions` CLI 旗標（以及等效的 `bypassPermissions` 模式）現在針對更廣泛的允許清單繞過提示 — 包括 `.claude/skills/`、`.claude/agents/`、`.claude/commands/`、`.claude/`、`.git/`、`.vscode/` 以及 shell 設定檔。破壞性的移除指令（`rm -rf /` 等）無論在任何模式下都仍會提示。請將此旗標視為比以往更鋒利的工具；僅在一次性的沙盒環境中使用。
+
+> **Windows shell 偵測（v2.1.120, v2.1.126）**：不再需要 Git for Windows / Git Bash。當 Git Bash 不存在時，Claude Code 使用 PowerShell 作為 shell 工具。自 v2.1.126 起，當 PowerShell 工具啟用時，PowerShell 為**主要** shell，偵測範圍涵蓋透過 Microsoft Store 安裝、無 PATH 的 MSI，或作為 `.NET global tool` 安裝的 PowerShell 7。
+
+> **PowerShell 工具在 Windows 上對 Bedrock/Vertex/Foundry 預設啟用（v2.1.143）**：自 v2.1.143 起，PowerShell 工具在 Windows 上對 Bedrock、Vertex 與 Foundry 使用者**預設啟用**。Claude Code 以 `-ExecutionPolicy Bypass` 調用 PowerShell，因此即使系統原則為 `Restricted`，腳本也能執行。若要讓 Claude Code 遵守系統執行原則，請設定 `CLAUDE_CODE_POWERSHELL_RESPECT_EXECUTION_POLICY=1`。若要完全停用 PowerShell 工具，請設定 `CLAUDE_CODE_USE_POWERSHELL_TOOL=0`。
 
 ### 啟動方式
 
@@ -823,12 +879,11 @@ Approve this change? (yes/no/show)
 User: /plan Implement user authentication system
 
 Claude: I'll create a plan for implementing authentication.
-```
 
-## 實作計畫
+## Implementation Plan
 [包含階段與步驟的詳細計畫]
 
-準備好繼續了嗎？(yes/no/modify)
+Ready to proceed? (yes/no/modify)
 ```
 
 #### Accept Edits 模式
@@ -881,16 +936,16 @@ Claude: [自動接受檔案編輯而無需詢問]
 - 批次處理
 - 排程任務
 
-### 以列印模式執行 (非互動式)
+### 以列印模式執行（非互動式）
 
 ```bash
 # 執行特定任務
 claude -p "Run all tests"
 
-# 處理透過管道 (pipe) 傳入的內容
+# 處理透過管道（pipe）傳入的內容
 cat error.log | claude -p "Analyze these errors"
 
-# CI/CD 整合 (GitHub Actions)
+# CI/CD 整合（GitHub Actions）
 - name: AI Code Review
   run: claude -p "Review PR"
 ```
@@ -958,7 +1013,6 @@ jobs:
 列印模式 (`claude -p`) 支援多個用於自動化的旗標：
 
 ```bash
-
 # 限制自主回合數
 claude -p --max-turns 5 "refactor this module"
 
@@ -1038,6 +1092,8 @@ claude --resume auth-refactor --fork-session "alternative approach"
 
 當您在離開一段時間後回到會話時，Claude 可以顯示已完成事項的簡短摘要。對於停用了遙測功能的用戶（Bedrock、Vertex、Foundry 用戶），此功能預設為啟用。
 
+> **OTEL 遙測 — 重新啟用意見回饋調查（v2.1.136+）**：擷取 OpenTelemetry 資料的組織可以透過設定 `CLAUDE_CODE_ENABLE_FEEDBACK_SURVEY_FOR_OTEL=1` 來重新啟用 Anthropic 的會話品質調查。在 OTEL 部署中，此調查預設為關閉，因為它先前曾被重新導向而遠離遙測管線。
+
 **控制摘要行為：**
 
 ```bash
@@ -1066,7 +1122,7 @@ Claude Code 支援鍵盤快捷鍵以提升效率。以下是來自官方文件�
 | `Ctrl+G` | 在外部編輯器中編輯計畫 |
 | `Ctrl+L` | 清除終端機畫面 |
 | `Ctrl+O` | 切換詳細輸出（查看推理過程） |
-| `Ctrl+R` | 反向搜尋歷史紀錄 |
+| `Ctrl+R` | 反向搜尋歷史紀錄。自 v2.1.129+ 起，預設搜尋**所有專案的所有提示詞**；在選擇器中按 `Ctrl+S` 可縮小至目前專案。舊版本預設為僅限目前專案。 |
 | `Ctrl+T` | 切換任務列表檢視 |
 | `Ctrl+B` | 背景執行任務 |
 | `Esc+Esc` | 回溯程式碼/對話 |
@@ -1134,7 +1190,7 @@ Claude Code 支援鍵盤快捷鍵以提升效率。以下是來自官方文件�
 
 總共有 18 個上下文，包括 `Transcript`、`Task`、`ThemePicker`、`Attachments`、`Footer`、`MessageSelector`、`DiffDialog`、`ModelPicker` 以及 `Select`。
 
-### 和弦 (Chord) 支援
+### 和弦（Chord）支援
 
 鍵位綁定支援和弦序列（多鍵組合）：
 
@@ -1144,7 +1200,7 @@ Claude Code 支援鍵盤快捷鍵以提升效率。以下是來自官方文件�
 ```
 
 **按鍵語法**：
-- **修飾鍵**：`ctrl`、`alt` (或 `opt`)、`shift`、`meta` (或 `cmd`)
+- **修飾鍵**：`ctrl`、`alt`（或 `opt`）、`shift`、`meta`（或 `cmd`）
 - **大寫代表 Shift**：`K` 等同於 `shift+k`
 - **特殊鍵**：`escape`、`enter`、`return`、`tab`、`space`、`backspace`、`delete`、方向鍵
 
@@ -1152,13 +1208,13 @@ Claude Code 支援鍵盤快捷鍵以提升效率。以下是來自官方文件�
 
 | 按鍵 | 狀態 | 備註 |
 |-----|--------|-------|
-| `Ctrl+C` | 保留 | 無法重新綁定 (中斷) |
-| `Ctrl+D` | 保留 | 無法重新綁定 (退出) |
+| `Ctrl+C` | 保留 | 無法重新綁定（中斷） |
+| `Ctrl+D` | 保留 | 無法重新綁定（退出） |
 | `Ctrl+B` | 終端機衝突 | tmux 前綴鍵 |
 | `Ctrl+A` | 終端機衝突 | GNU Screen 前綴鍵 |
 | `Ctrl+Z` | 終端機衝突 | 程序暫停 |
 
-> **提示**：如果快捷鍵無法運作，請檢查是否與您的終端機模擬器或多工器 (multiplexer) 發生衝突。
+> **提示**：如果快捷鍵無法運作，請檢查是否與您的終端機模擬器或多工器（multiplexer）發生衝突。
 
 ### Tab 補全
 
@@ -1230,8 +1286,8 @@ User: Deploy to prodcution<Backspace><Backspace>uction
 啟用 Vi/Vim 按鍵綁定以進行文字編輯：
 
 **啟動方式**：
-- 使用 `/vim` 指令或 `/config` 來啟用
-- 使用 `Esc` 切換至 NORMAL 模式，使用 `i/a/o` 切換至 INSERT 模式
+- 透過 `/config`（切換「Editor / Vim mode」）或在 `~/.claude/settings.json` 中設定 `editorMode: "vim"` 來啟用。獨立的 `/vim` 斜線命令已移除（請參閱 [issue #43370](https://github.com/anthropics/claude-code/issues/43370)）；vim 模式現在由配置驅動。
+- 使用 `Esc` 切換至 NORMAL 模式，使用 `i/a/o` 切換至 INSERT 模式，使用 `v` 切換至 VISUAL 模式，使用 `V` 切換至 VISUAL-LINE 模式（v2.1.118+）
 
 **導覽按鍵**：
 - `h` / `l` - 向左/向右移動
@@ -1240,10 +1296,23 @@ User: Deploy to prodcution<Backspace><Backspace>uction
 - `0` / `$` - 移動至行首/行尾
 - `gg` / `G` - 跳至文件開頭/結尾
 
-**文字物件 (Text objects)**：
+**文字物件（Text objects）**：
 - `iw` / `aw` - 內含/包含單字
 - `i"` / `a"` - 內含/包含引號字串
 - `i(` / `a(` - 內含/包含括號
+
+**Visual 模式（v2.1.118+）**：
+
+| 按鍵 | 模式 | 行為 |
+|-----|------|----------|
+| `v` | Visual | 以字元為單位選取並顯示視覺回饋；用移動鍵延伸選取範圍 |
+| `V` | Visual-line | 以行為單位選取；始終選取整行 |
+| `y` | Yank | 複製目前的視覺選取範圍 |
+| `d` / `x` | Delete | 刪除目前的視覺選取範圍 |
+| `c` | Change | 刪除選取範圍並進入 INSERT 模式 |
+| `Esc` | Exit | 返回 NORMAL 模式 |
+
+Visual 選取範圍會在輸入欄位中以高亮顯示，讓您在提交操作前能清楚看到將被複製、刪除或變更的內容。
 
 ### Bash 模式
 
@@ -1255,15 +1324,15 @@ User: Deploy to prodcution<Backspace><Backspace>uction
 ! cat src/index.js
 ```
 
-用於快速執行指令而無需切換上下文 (context)。
+用於快速執行指令而無需切換上下文（context）。
 
 ---
 
-## TUI 模式 (全螢幕)
+## TUI 模式（全螢幕）
 
 > **v2.1.110 新增功能**
 
-TUI (Text User Interface) 模式會以全螢幕方式渲染 Claude Code 並提供無閃爍的輸出 — 非常適合 tmux 或 iTerm2 分割窗格等終端機多工工具。
+TUI（Text User Interface）模式會以全螢幕方式渲染 Claude Code 並提供無閃爍的輸出 — 非常適合 tmux 或 iTerm2 分割窗格等終端機多工工具。
 
 ### 啟用 TUI 模式
 
@@ -1296,7 +1365,7 @@ claude --tui  # 直接以 TUI 模式啟動
 
 ## 語音聽寫
 
-語音聽寫為 Claude Code 提供按住說話 (push-to-talk) 的語音輸入功能，讓您可以直接說出提示詞，而無需打字。
+語音聽寫為 Claude Code 提供按住說話（push-to-talk）的語音輸入功能，讓您可以直接說出提示詞，而無需打字。
 
 ### 啟動語音聽寫
 
@@ -1315,13 +1384,15 @@ claude --tui  # 直接以 TUI 模式啟動
 
 ### 配置
 
-在您的快捷鍵檔案 (`/keybindings`) 中自定義按住說話的快捷鍵。語音聽寫使用您的 Claude.ai 帳戶進行語音轉文字處理。
+在您的快捷鍵檔案（`/keybindings`）中自定義按住說話的快捷鍵。語音聽寫使用您的 Claude.ai 帳戶進行語音轉文字處理。
 
 ---
 
 ## Channels
 
 Channels 是一項研究預覽（Research Preview）功能，透過 MCP servers 將來自外部服務的事件推送到正在執行的 Claude Code 會話中。來源包括 Telegram、Discord、iMessage 以及任意的 webhooks，讓 Claude 無需進行輪詢（polling）即可對即時通知做出反應。
+
+> **驗證（v2.1.128+）**：`--channels` 現在同時支援 Pro/Max OAuth **以及** API-key（console）驗證。舊版需要 OAuth。
 
 ### 訂閱 Channels
 
@@ -1402,11 +1473,11 @@ Chrome 擴充功能管理各個網站的存取權限。您可以隨時透過擴�
 
 ### 運作原理
 
-Claude Code 在一個可見的視窗中控制瀏覽器 —— 您可以即時觀察操作過程。當瀏覽器遇到登入頁面或 CAPTCHA 時，Claude 會暫停並等待您手動處理後再繼續。
+Claude Code 在一個可見的視窗中控制瀏覽器 — 您可以即時觀察操作過程。當瀏覽器遇到登入頁面或 CAPTCHA 時，Claude 會暫停並等待您手動處理後再繼續。
 
 ### 已知限制
 
-- **瀏覽器支援**：僅支援 Chrome 與 Edge —— 不支援 Brave、Arc 及其他 Chromium 瀏覽器
+- **瀏覽器支援**：僅支援 Chrome 與 Edge — 不支援 Brave、Arc 及其他 Chromium 瀏覽器
 - **WSL**：無法在 Windows Subsystem for Linux 中使用
 - **第三方供應商**：不支援 Bedrock、Vertex 或 Foundry API 供應商
 - **Service worker 閒置**：在長時間的會話期間，Chrome 擴充功能的 service worker 可能會進入閒置狀態
@@ -1417,7 +1488,7 @@ Claude Code 在一個可見的視窗中控制瀏覽器 —— 您可以即時觀
 
 ## 遠端控制 (Remote Control)
 
-遠端控制讓您可以從手機、平板電腦或任何瀏覽器中，繼續執行在本地運行的 Claude Code 會話。您的本地會話會持續在您的機器上運行 —— 任何內容都不會移至雲端。此功能適用於 Pro、Max、Team 與 Enterprise 方案 (v2.1.51+)。
+遠端控制讓您可以從手機、平板電腦或任何瀏覽器中，繼續執行在本地運行的 Claude Code 會話。您的本地會話會持續在您的機器上運行 — 任何內容都不會移至雲端。此功能適用於 Pro、Max、Team 與 Enterprise 方案 (v2.1.51+)。
 
 ### 開始遠端控制
 
@@ -1438,14 +1509,14 @@ claude remote-control --name "Auth Refactor"
 /remote-control "Auth Refactor"
 ```
 
-**可用參數 (flags)**：
+**可用參數（flags）**：
 
 | 參數 | 說明 |
 |------|-------------|
 | `--name "title"` | 自定義會話標題，以便識別 |
 | `--verbose` | 顯示詳細的連線日誌 |
 | `--sandbox` | 啟用檔案系統與網路隔離 |
-| `--no-sandbox` | 停用沙盒機制 (預設) |
+| `--no-sandbox` | 停用沙盒機制（預設） |
 
 ### 連線至會話
 
@@ -1453,13 +1524,13 @@ claude remote-control --name "Auth Refactor"
 
 1. **會話 URL** — 當會話啟動時會印在終端機上；請在任何瀏覽器中開啟該 URL
 2. **QR code** — 啟動後按下 `spacebar` 即可顯示可掃描的 QR code
-3. **透過名稱尋找** — 在 claude.ai/code 或 Claude 行動應用程式 (iOS/Android) 中瀏覽您的會話
+3. **透過名稱尋找** — 在 claude.ai/code 或 Claude 行動應用程式（iOS/Android）中瀏覽您的會話
 
 ### 安全性
 
-- **無需開啟任何入站連接埠 (inbound ports)** 在您的機器上
+- **無需開啟任何入站連接埠（inbound ports）** 在您的機器上
 - **僅限出站 HTTPS** 透過 TLS 進行傳輸
-- **範圍限制的憑證 (Scoped credentials)** — 使用多個短暫且範圍狹窄的 token
+- **範圍限制的憑證（Scoped credentials）** — 使用多個短暫且範圍狹窄的 token
 - **會話隔離** — 每個遠端會話都是獨立的
 
 ### 遠端控制 vs Claude Code 網頁版
@@ -1480,17 +1551,37 @@ claude remote-control --name "Auth Refactor"
 
 - 當您不在座位旁時，透過行動裝置或平板電腦控制 Claude Code
 - 在維持本地工具執行的同時，使用更豐富的 claude.ai UI
-- 在移動中利用完整的本地開發環境進行快速程式碼審查 (code reviews)
+- 在移動中利用完整的本地開發環境進行快速程式碼審查（code reviews）
 
 ### 推送通知 (v2.1.110)
 
-當遠端控制處於活動狀態，且在 `/config` 中啟用了「當 Claude 決定時進行推送 (Push when Claude decides)」時，Claude 可以向您的手機發送行動推送通知 — 例如，當長時間任務完成或需要您的輸入時。
+當遠端控制處於活動狀態，且在 `/config` 中啟用了「當 Claude 決定時進行推送（Push when Claude decides）」時，Claude 可以向您的手機發送行動推送通知 — 例如，當長時間任務完成或需要您的輸入時。
 
 如何啟用：
 1. 啟動遠端控制：`/remote-control` 或 `claude --rc`
 2. 開啟 `/config` 並啟用 **Push when Claude decides**
 
 推送通知需要 Claude 訂閱方案與 Claude 行動應用程式。
+
+### 停用遠端控制（`disableRemoteControl`，v2.1.128+）
+
+Team 或 Enterprise 方案的管理員可以透過 `disableRemoteControl` 設定完全封鎖遠端控制。設定為 `true` 時，`claude remote-control` 與 `/remote-control` 均拒絕啟動。
+
+```json
+{
+  "disableRemoteControl": true
+}
+```
+
+此設定在**管理/政策**範圍（例如 macOS 上的 `/Library/Application Support/ClaudeCode/managed-settings.json`）中生效，因此個別使用者無法覆蓋。當需要在整個組織強制執行僅限本地執行時非常有用。
+
+> **遠端控制因 API key 層級而自動停用（v2.1.139）**：當設定了以下任何一項時，即使您同時以 claude.ai 登入，遠端控制也會**靜默停用**：
+>
+> - `ANTHROPIC_API_KEY`
+> - `ANTHROPIC_AUTH_TOKEN`
+> - `apiKeyHelper`（settings.json）
+>
+> 相同條件也會停用 [`/schedule`](#scheduled-tasks)、claude.ai MCP 連接器以及通知偏好設定 — 所有四個透過 claude.ai 橋接的介面都以 OAuth 登入作為有效憑證為前提。請取消設定 API key（或在 Pro/Max OAuth 層級執行）以使用這些功能。
 
 ---
 
@@ -1502,7 +1593,7 @@ Web Sessions 讓您可以在 claude.ai/code 直接於瀏覽器中執行 Claude C
 
 ```bash
 # 從 CLI 建立一個新的 web session
-claud --remote "implement the new API endpoints"
+claude --remote "implement the new API endpoints"
 ```
 
 這會在 claude.ai 上啟動一個 Claude Code 會話，您可以從任何瀏覽器進行存取。
@@ -1536,8 +1627,8 @@ Claude Code Desktop App 提供了一個獨立的應用程式，具備視覺化 d
 ### 安裝
 
 從 [claude.ai](https://claude.ai) 下載適用於您平台的版本：
-- **macOS**: 通用版本（支援 Apple Silicon 與 Intel）
-- **Windows**: 提供 x64 與 ARM64 安裝程式
+- **macOS**：通用版本（支援 Apple Silicon 與 Intel）
+- **Windows**：提供 x64 與 ARM64 安裝程式
 
 請參閱 [Desktop Quickstart](https://code.claude.com/docs/en/desktop-quickstart) 以獲取設定說明。
 
@@ -1558,7 +1649,7 @@ Claude Code Desktop App 提供了一個獨立的應用程式，具備視覺化 d
 | **PR monitoring** | 與 GitHub CLI 整合，可自動修復 CI 失敗，並在檢查通過時自動合併 |
 | **Parallel sessions** | 在側邊欄中管理多個會話，並具備自動 Git worktree 隔離功能 |
 | **Scheduled tasks** | 在應用程式開啟時執行的週期性任務（每小時、每日、工作日、每週） |
-| **Rich rendering** | 具備語法高亮的程式碼、markdown 與圖表渲染 |
+| **Rich rendering** | 具備語法高亮的程式碼、markdown 與圖表渲染；GitHub-Flavored-Markdown 的任務清單核取方塊（`- [ ]` / `- [x]`）會渲染為可勾選的核取方塊（v2.1.149+） |
 
 ### App preview 配置
 
@@ -1599,7 +1690,7 @@ Desktop App 支援與 CLI 相同的 4 種權限模式：
 
 | 模式 | 行為 |
 |------|----------|
-| **Ask permissions** (預設) | 審查並核准每一次的編輯與指令 |
+| **Ask permissions**（預設） | 審查並核准每一次的編輯與指令 |
 | **Auto accept edits** | 檔案編輯自動核准；指令需要手動核准 |
 | **Plan mode** | 在進行任何變更前審查執行方案 |
 | **Bypass permissions** | 自動執行（僅限沙盒環境，由管理員控制） |
@@ -1608,7 +1699,7 @@ Desktop App 支援與 CLI 相同的 4 種權限模式：
 
 - **Admin console**：控制組織內的 Code 頁籤存取權限與權限設定
 - **MDM deployment**：透過 macOS 的 MDM 或 Windows 的 MSIX 進行部署
-- **SSO integration**：要求組織成員使用單一登入 (SSO)
+- **SSO integration**：要求組織成員使用單一登入（SSO）
 - **Managed settings**：集中管理團隊配置與模型可用性
 
 ---
@@ -1688,6 +1779,32 @@ Worktrees 會建立在：
 }
 ```
 
+### 基礎分支參考（`worktree.baseRef`）
+
+**`worktree.baseRef`**（v2.1.133 新增）— 控制 `claude --worktree` 是從 `origin/<default>` 還是從本地 `HEAD` 建立分支。
+
+- `"fresh"`（預設）— 從 `origin/<default-branch>` 建立分支，忽略本地未推送的 commit。**這還原了 v2.1.128 引入的行為**，因此在 v2.1.128 之後依賴本地 HEAD 分支的使用者必須重新選擇加入。
+- `"head"` — 從本地 `HEAD` 建立分支，保留未推送的 commit。
+
+在 `~/.claude/settings.json` 中設定：
+
+```json
+{ "worktree": { "baseRef": "head" } }
+```
+
+### 背景會話隔離（`worktree.bgIsolation`）
+
+**`worktree.bgIsolation`**（v2.1.143 新增）— 控制背景會話（例如來自 `/bg`、`claude --bg` 或 Agent View）是否獲得各自的 worktree，或直接編輯前景工作目錄。
+
+- *（預設）* — 背景會話會在 `<repo>/.claude/worktrees/` 下建立隔離的 worktree，與 `--worktree` 的方式相同。
+- `"none"` — 背景會話直接編輯目前的工作目錄。當 worktrees 不切實際時（例如龐大的原生建置產物），或當背景代理必須與前景會話協調編輯時，請使用此設定。
+
+```json
+{ "worktree": { "bgIsolation": "none" } }
+```
+
+取捨：`"none"` 移除了 worktree 隔離的安全網 — 來自背景和前景會話的並行編輯可能在實際工作目錄中產生合併衝突。
+
 ### Worktree 工具與鉤子
 
 | 項目 | 說明 |
@@ -1735,7 +1852,37 @@ claude --no-sandbox    # 停用 sandboxing
 | `sandbox.filesystem.allowWrite` | 允許寫入存取的路徑 |
 | `sandbox.filesystem.allowRead` | 允許讀取存取的路徑 |
 | `sandbox.filesystem.denyRead` | 禁止讀取存取的路徑 |
+| `sandbox.network.allowedDomains` | Bash 啟動的程序允許連線的網域（支援 `*.` 萬用字元） |
+| `sandbox.network.deniedDomains` | 即使 `allowedDomains` 萬用字元允許也應封鎖的網域（v2.1.113+） |
 | `sandbox.enableWeakerNetworkIsolation` | 在 macOS 上啟用較弱的網路隔離 |
+| `sandbox.bwrapPath` | （v2.1.133+，Linux/WSL）`bubblewrap` 二進位檔的路徑。預設：`$PATH` 查找。 |
+| `sandbox.socatPath` | （v2.1.133+，Linux/WSL）`socat` 二進位檔的路徑。預設：`$PATH` 查找。 |
+
+**Linux/WSL 二進位路徑**（v2.1.133+）— 指向非標準安裝位置：
+
+```json
+{
+  "sandbox": {
+    "bwrapPath": "/opt/bubblewrap/bin/bwrap",
+    "socatPath": "/opt/socat/bin/socat"
+  }
+}
+```
+
+`deniedDomains` 覆蓋廣泛萬用字元的範例（v2.1.113+）：
+
+```json
+{
+  "sandbox": {
+    "network": {
+      "allowedDomains": ["*.example.com"],
+      "deniedDomains": ["evil.example.com"]
+    }
+  }
+}
+```
+
+萬用字元允許 `example.com` 上的所有連線，但 `deniedDomains` 仍會封鎖指定的主機名稱。
 
 ### 設定範例
 
@@ -1769,7 +1916,7 @@ claude --no-sandbox    # 停用 sandboxing
 
 ---
 
-## 管理設定 (企業版)
+## 管理設定（企業版）
 
 管理設定讓企業管理員能夠使用平台原生的管理工具，在整個組織中部署 Claude Code 配置。
 
@@ -1777,10 +1924,10 @@ claude --no-sandbox    # 停用 sandboxing
 
 | 平台 | 方式 | 自從 |
 |----------|--------|-------|
-| macOS | 管理式 plist 檔案 (MDM) | v2.1.51+ |
+| macOS | 管理式 plist 檔案（MDM） | v2.1.51+ |
 | Windows | Windows 登錄檔 | v2.1.51+ |
 | 跨平台 | 管理式配置檔案 | v2.1.51+ |
-| 跨平台 | 管理式 drop-ins (`managed-settings.d/` 目錄) | v2.1.83+ |
+| 跨平台 | 管理式 drop-ins（`managed-settings.d/` 目錄） | v2.1.83+ |
 
 ### 管理式 Drop-ins
 
@@ -1801,6 +1948,8 @@ claude --no-sandbox    # 停用 sandboxing
 | `availableModels` | 限制使用者可以選擇的模型 |
 | `allowedChannelPlugins` | 控制允許使用哪些 channel plugins |
 | `autoMode.environment` | 為 auto mode 配置受信任的基礎設施 |
+| `wslInheritsWindowsSettings` | 僅限 Windows/WSL（v2.1.118+）：設為 `true` 時，在 WSL 內執行的 Claude Code 會繼承 Windows 主機的管理設定，使透過 Registry/MDM 部署的企業政策在 Windows 與 WSL shell 之間統一適用 |
+| `parentSettingsBehavior` | （v2.1.133+，管理員層級）控制 SDK 的 `managedSettings` 如何與父程序設定合併。`"first-wins"` 維持現有優先順序（衝突時較早的設定優先）；`"merge"` 進行深度合併。 |
 | 自定義政策 | 組織特定的權限與工具政策 |
 
 ### 範例：macOS Plist
@@ -1828,9 +1977,9 @@ claude --no-sandbox    # 停用 sandboxing
 
 ### 設定檔位置
 
-1. **全域設定**: `~/.claude/config.json`
-2. **專案設定**: `./.claude/config.json`
-3. **使用者設定**: `~/.config/claude-code/settings.json`
+1. **全域設定**：`~/.claude/config.json`
+2. **專案設定**：`./.claude/config.json`
+3. **使用者設定**：`~/.config/claude-code/settings.json`
 
 ### 完整設定範例
 
@@ -1894,8 +2043,8 @@ claude --no-sandbox    # 停用 sandboxing
 
 ```bash
 # 模型選擇
-export ANTHROPIC_MODEL=claude-opus-4-6
-export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
+export ANTHROPIC_MODEL=claude-opus-4-7
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-7
 export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
 export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5
 
@@ -1904,7 +2053,7 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 # 思考設定
 export MAX_THINKING_TOKENS=16000
-export CLAUDE_CODE_EFFORT_LEVEL=high
+export CLAUDE_CODE_EFFORT_LEVEL=xhigh   # low, medium, high, xhigh (僅限 Opus 4.7，預設), 或 max (支援 Opus 4.7、Opus 4.6、Sonnet 4.6)
 
 # 功能開關
 export CLAUDE_CODE_DISABLE_AUTO_MEMORY=true
@@ -1923,12 +2072,12 @@ export MAX_MCP_OUTPUT_TOKENS=50000
 export ENABLE_TOOL_SEARCH=true
 
 # Prompt 快取
-export ENABLE_PROMPT_CACHING_1H=1      # 使用 1 小時的 prompt 快取 TTL (預設為 5 分鐘)
+export ENABLE_PROMPT_CACHING_1H=1      # 使用 1 小時的 prompt 快取 TTL（預設為 5 分鐘）
 
 # 任務管理
 export CLAUDE_CODE_TASK_LIST_ID=my-project-tasks
 
-# 代理團隊 (實驗性)
+# 代理團隊（實驗性）
 export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 # 子代理與外掛設定
@@ -1941,12 +2090,27 @@ export CLAUDE_CODE_SUBPROCESS_ENV_SCRUB="SECRET_KEY,DB_PASSWORD"
 export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80
 export CLAUDE_STREAM_IDLE_TIMEOUT_MS=30000
 export ANTHROPIC_CUSTOM_MODEL_OPTION=my-custom-model
-```
-
 export SLASH_COMMAND_TOOL_CHAR_BUDGET=50000
+
+# 輸出與套件管理員（v2.1.129+）
+export CLAUDE_CODE_FORCE_SYNC_OUTPUT=1                      # 強制同步輸出，適用於自動偵測失效的終端機（Emacs eat 等）
+export CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE=1            # 啟用 Homebrew/WinGet 安裝的背景升級
+export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1         # 設定 ANTHROPIC_BASE_URL 時選擇加入 /v1/models gateway 探索
+
+# Windows PowerShell 工具（v2.1.143+）— 在 Windows 上對 Bedrock/Vertex/Foundry 預設啟用
+export CLAUDE_CODE_USE_POWERSHELL_TOOL=0                    # 完全停用 PowerShell 工具
+export CLAUDE_CODE_POWERSHELL_RESPECT_EXECUTION_POLICY=1    # 遵守系統 ExecutionPolicy 而非 `-ExecutionPolicy Bypass`
+
+# 工作負載身份聯合（v2.1.141+）
+export ANTHROPIC_WORKSPACE_ID=ws_abc123                     # 當規則涵蓋多個工作區時，將聯合 token 範圍限定至特定工作區
+
+# Stop hook 安全上限（v2.1.143+）
+export CLAUDE_CODE_STOP_HOOK_BLOCK_CAP=8                    # 會話因連續 Stop-hook 阻斷而結束前的最大次數。設為 0 可停用上限。
 ```
 
-> **v2.1.108**: `ENABLE_PROMPT_CACHING_1H=1` — 使用 1 小時的 prompt 快取 TTL，而非預設的 5 分鐘 TTL。這能減少在長時間且穩定的會話中的快取失效。
+> **v2.1.108**：`ENABLE_PROMPT_CACHING_1H=1` — 使用 1 小時的 prompt 快取 TTL，而非預設的 5 分鐘 TTL。這能減少在長時間且穩定的會話中的快取失效。（v2.1.129 修復了 1 小時 TTL 被靜默降級為 5 分鐘的退化問題。）
+
+> **v2.1.129**：`CLAUDE_CODE_FORCE_SYNC_OUTPUT=1` 強制同步輸出，適用於功能自動偵測失效的終端機（例如 Emacs `eat`）。`CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE=1` 啟用 Homebrew/WinGet 安裝的背景升級，這些安裝方式原本不會自動更新。
 
 ### 設定管理命令
 
@@ -1956,9 +2120,9 @@ User: /config
 ```
 
 `/config` 命令提供一個互動式選單，用於切換以下設定：
-- 開啟/關閉進階思考 (Extended thinking)
-- 詳細輸出 (Verbose output)
-- 權限模式 (Permission mode)
+- 開啟/關閉進階思考（Extended thinking）
+- 詳細輸出（Verbose output）
+- 權限模式（Permission mode）
 - 模型選擇
 
 ### 專案特定設定
@@ -2011,10 +2175,10 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ### Agent Teams 如何運作
 
-- **團隊領導者 (team lead)** 負責協調整體任務，並將子任務分配給隊友
-- **隊友 (Teammates)** 獨立工作，每個人都有各自的上下文視窗 (context window)
-- **共享任務列表 (shared task list)** 讓團隊成員之間能夠進行自我協調
-- 使用子代理定義 (`.claude/agents/` 或 `--agents` 旗標) 來定義隊友的角色與專業領域
+- **團隊領導者（team lead）** 負責協調整體任務，並將子任務分配給隊友
+- **隊友（Teammates）** 獨立工作，每個人都有各自的上下文視窗（context window）
+- **共享任務列表（shared task list）** 讓團隊成員之間能夠進行自我協調
+- 使用子代理定義（`.claude/agents/` 或 `--agents` 旗標）來定義隊友的角色與專業領域
 
 ### 顯示模式
 
@@ -2022,8 +2186,8 @@ Agent Teams 支援兩種顯示模式，透過 `--teammate-mode` 旗標進行設�
 
 | 模式 | 說明 |
 |------|-------------|
-| `in-process` (預設) | 隊友在同一個終端機程序內執行 |
-| `tmux` | 每位隊友擁有一個專屬的分隔窗格 (需要 tmux 或 iTerm2) |
+| `in-process`（預設） | 隊友在同一個終端機程序內執行 |
+| `tmux` | 每位隊友擁有一個專屬的分隔窗格（需要 tmux 或 iTerm2） |
 | `auto` | 自動選擇最佳的顯示模式 |
 
 ```bash
@@ -2102,14 +2266,19 @@ claude --teammate-mode in-process
 - [官方 Agent 團隊文件](https://code.claude.com/docs/en/agent-teams)
 
 ---
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+
+**最後更新日期**：2026 年 5 月 25 日
+**Claude Code 版本**：2.1.150
 **來源**：
-- https://code.claude.com/docs/en/ultraplan
-- https://code.claude.com/docs/en/tools-reference
-- https://code.claude.com/docs/en/scheduled-tasks
-- https://code.claude.com/docs/en/remote-control
-- https://code.claude.com/docs/en/agent-teams
-- https://code.claude.com/docs/en/changelog
+- https://code.claude.com/docs/en/permission-modes
+- https://code.claude.com/docs/en/interactive-mode
 - https://code.claude.com/docs/en/settings
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://code.claude.com/docs/en/cli-reference
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://claude.com/blog/introducing-routines-in-claude-code
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.117
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.118
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.139
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.141
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.143
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# MCP (Model Context Protocol)
+# MCP 伺服器（Model Context Protocol）
 
 此資料夾包含關於 MCP 伺服器配置以及在 Claude Code 中使用的完整文件與範例。
 
@@ -97,6 +97,27 @@ claude mcp add --transport stdio myserver -- npx @myorg/mcp-server
 claude mcp add --transport stdio myserver --env KEY=value -- npx server
 ```
 
+#### stdio 伺服器的 `CLAUDE_PROJECT_DIR`（v2.1.139+）
+
+每個 MCP stdio 伺服器在啟動時，其環境中都已設定 `CLAUDE_PROJECT_DIR=<repo 根目錄的絕對路徑>`——與 hooks 使用的慣例相同。外掛及專案的 `.mcp.json` 檔案可在 `command`、`args` 和 `env` 的值中引用 `${CLAUDE_PROJECT_DIR}`，並在 `execve()` 之前完成替換：
+
+```json
+{
+  "mcpServers": {
+    "repo-tools": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PROJECT_DIR}/.claude/mcp/repo-tools.js"],
+      "env": {
+        "REPO_ROOT": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}
+```
+
+當您的 stdio 伺服器需要相對於專案根目錄讀取檔案，且無論 Claude Code 從哪個位置啟動皆適用時，請使用此設定。
+
 ### SSE 傳輸 (已棄用)
 
 Server-Sent Events 傳輸已棄用並改由 `http` 取代，但目前仍受支援：
@@ -164,6 +185,8 @@ claude mcp add --transport http my-service https://my-service.example.com/mcp \
 
 Claude.ai MCP connectors 也可用於 `--print` 模式（v2.1.83+），使其能夠進行非互動式與腳本化使用。
 
+> **啟動注意（v2.1.117+）：** 當本地與 claude.ai MCP 伺服器同時配置時，預設改為並行連線（先前為序列），可在多個伺服器同時使用時降低啟動延遲。
+
 若要在 Claude Code 中停用 Claude.ai MCP servers，請將 `ENABLE_CLAUDEAI_MCP_SERVERS` 環境變數設定為 `false`：
 
 ```bash
@@ -172,7 +195,7 @@ ENABLE_CLAUDEAI_MCP_SERVERS=false claude
 
 > **注意：** 此功能僅適用於使用 Claude.ai 帳戶登入的使用者。
 
-## MCP Setup Process
+## MCP 設定流程
 
 ```mermaid
 sequenceDiagram
@@ -192,6 +215,13 @@ sequenceDiagram
     Claude->>User: ✅ MCP connected!
 ```
 
+### `/mcp` 指令
+
+在工作階段中輸入 `/mcp` 可列出已連線的伺服器、觸發 OAuth 流程，並檢查連線狀態。
+
+- 自 **v2.1.121** 起，MCP 在發生短暫錯誤時，初始連線最多重試 3 次。
+- 自 **v2.1.128** 起，`/mcp` 會顯示每個已連線伺服器的**工具數量**，並以視覺方式標記回報 **0 個工具**的伺服器，讓設定錯誤的伺服器一眼就能發現。
+
 ## MCP Tool Search
 
 當 MCP tool 描述超過 context window 的 10% 時，Claude Code 會自動啟用 tool search，以便在不造成模型 context 過載的情況下，高效地選擇正確的 tools。
@@ -205,17 +235,35 @@ sequenceDiagram
 
 > **注意：** Tool search 需要 Sonnet 4 或更高版本，或 Opus 4 或更高版本。Haiku 模型不支援 tool search。
 
+### 對特定伺服器略過 Tool Search（v2.1.121+）
+
+若特定 MCP 伺服器的工具在每次對話都需要用到，可在其設定中標記 `"alwaysLoad": true`，略過 tool search 的延遲載入，讓其工具始終保持可用：
+
+```json
+{
+  "mcpServers": {
+    "always-on-tool": {
+      "command": "node",
+      "args": ["./tools/always.js"],
+      "alwaysLoad": true
+    }
+  }
+}
+```
+
+請謹慎使用——每個始終載入的工具都會消耗上下文，而這些上下文原本可用於 tool search 以找出更相關的工具。
+
 ## 動態工具更新
 
-Claude Code 支援 MCP `list_changed` 通知。當 MCP server 動態新增、移除或修改其可用工具時，Claude Code 會接收更新並自動調整其工具列表 —— 無需重新連線或重啟。
+Claude Code 支援 MCP `list_changed` 通知。當 MCP server 動態新增、移除或修改其可用工具時，Claude Code 會接收更新並自動調整其工具列表——無需重新連線或重啟。
 
 ## MCP Apps
 
-MCP Apps 是第一個官方 MCP 擴充功能，它讓 MCP 工具呼叫可以回傳互動式 UI 元件，並直接在聊天介面中渲染。MCP server 不再僅限於純文字回應，而是可以提供豐富的儀表板、表單、數據視覺化以及多步驟工作流程 —— 所有內容皆以行內（inline）方式顯示，無需離開對話介面。
+MCP Apps 是第一個官方 MCP 擴充功能，它讓 MCP 工具呼叫可以回傳互動式 UI 元件，並直接在聊天介面中渲染。MCP server 不再僅限於純文字回應，而是可以提供豐富的儀表板、表單、數據視覺化以及多步驟工作流程——所有內容皆以行內（inline）方式顯示，無需離開對話介面。
 
 ## MCP 誘導（Elicitation）
 
-MCP server 可以透過互動式對話向使用者請求結構化輸入（v2.1.49+）。這讓 MCP server 能夠在工作流程中途要求額外資訊 —— 例如，提示進行確認、從選項列表中進行選擇，或填寫必填欄位 —— 為 MCP server 的互動增添了互動性。
+MCP server 可以透過互動式對話向使用者請求結構化輸入（v2.1.49+）。這讓 MCP server 能夠在工作流程中途要求額外資訊——例如，提示進行確認、從選項列表中進行選擇，或填寫必填欄位——為 MCP server 的互動增添了互動性。
 
 ## 工具描述與指令限制
 
@@ -234,6 +282,13 @@ MCP server 可以公開提示詞（prompts），使其在 Claude Code 中以斜�
 ## Server 重複定義處理
 
 當同一個 MCP server 在多個範圍（local、project、user）中被定義時，local 設定將具有最高優先權。這讓您能夠使用 local 自定義設定來覆蓋 project 層級或 user 層級的 MCP 設定，而不會產生衝突。
+
+## 近期生命週期修復（v2.1.136）
+
+v2.1.136 修復了兩個長期存在的 MCP 生命週期錯誤——若您使用多伺服器設定，建議升級：
+
+- **MCP 伺服器在 `/clear` 後持續存在**：透過 `.mcp.json`、外掛或 claude.ai connectors 配置的伺服器，在 VS Code、JetBrains 或 Agent SDK 中執行 `/clear` 後不再消失。舊版本會靜默地將其移除，需要重新啟動才能恢復。
+- **OAuth refresh token 並行刷新修復**：多伺服器 OAuth 設定在多個伺服器同時競相刷新時，不再遺失 refresh token。這消除了影響多個 OAuth 保護 MCP 伺服器設定的「每天早上都要重新驗證」現象。
 
 ## 透過 @ 提及功能使用 MCP Resources
 
@@ -467,7 +522,6 @@ claude mcp add --transport stdio database -- npx @modelcontextprotocol/server-da
 
 ```markdown
 # 使用多個 MCP 的每日報告工作流程
-```
 
 ## 設定
 1. GitHub MCP - 獲取 PR 指標
@@ -507,6 +561,7 @@ WHERE created_at > NOW() - INTERVAL '1 day'
 ✅ 報告已生成並發佈
 📊 本週已合併 47 個 PR
 💰 日銷售額 $12,450
+```
 
 **Setup**:
 ```bash
@@ -608,7 +663,7 @@ export SLACK_TOKEN="xoxb-xxxxxxxxxxxxx"
 }
 ```
 
-## Claude 作為 MCP Server (`claude mcp serve`)
+## Claude 作為 MCP Server（`claude mcp serve`）
 
 Claude Code 本身可以作為其他應用程式的 MCP server。這使得外部工具、編輯器和自動化系統能夠透過標準的 MCP 協定來利用 Claude 的能力。
 
@@ -625,7 +680,7 @@ claude mcp add --transport stdio claude-agent -- claude mcp serve
 
 這對於構建多代理工作流程非常有用，其中一個 Claude 實例負責編排另一個實例。
 
-## 管理式 MCP 設定 (企業版)
+## 管理式 MCP 設定（企業版）
 
 對於企業級部署，IT 管理員可以透過 `managed-mcp.json` 設定檔來強制執行 MCP 伺服器政策。此檔案提供了對全組織範圍內允許或封鎖哪些 MCP 伺服器的排他性控制。
 
@@ -637,6 +692,7 @@ claude mcp add --transport stdio claude-agent -- claude mcp serve
 **功能：**
 - `allowedMcpServers` -- 允許伺服器的白名單
 - `deniedMcpServers` -- 禁止伺服器的黑名單
+- `allowAllClaudeAiMcps` -- 允許在全組織範圍內載入 claude.ai 雲端 MCP connectors 的管理設定（v2.1.149+）
 - 支援透過伺服器名稱、指令與 URL 模式進行比對
 - 在使用者設定之前強制執行全組織範圍的 MCP 政策
 - 防止未經授權的伺服器連線
@@ -859,10 +915,7 @@ console.log(pendingOrders.slice(0, 5)); // 只有 5 列會到達模型
 let found = false;
 while (!found) {
   const messages = await slack.getChannelHistory({
-```
-
-```javascript
-  channel: 'C123456'
+    channel: 'C123456'
   });
   found = messages.some(
     m => m.text.includes('deployment complete')
@@ -1111,8 +1164,11 @@ export GITHUB_TOKEN="your_token"
 - [Claude API Documentation](https://docs.anthropic.com)
 
 ---
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+**最後更新日期**：2026 年 5 月 25 日
+**Claude Code 版本**：2.1.150
 **來源**：
 - https://code.claude.com/docs/en/mcp
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://code.claude.com/docs/en/changelog
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.117
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.139
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

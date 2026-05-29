@@ -3,13 +3,13 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# Checkpoints 與 Rewind
+# Checkpoints 檢查點
 
 Checkpoints 讓您可以儲存對話狀態，並在您的 Claude Code 會話中回溯到先前的點。這對於探索不同的方法、從錯誤中恢復或比較替代方案來說非常寶貴。
 
 ## 概述
 
-Checkpoints 讓您可以儲ว存對話狀態並回溯到先前的點，從而實現安全的實驗以及對多種方法的探索。它們是您對話狀態的快照，包含：
+Checkpoints 讓您可以儲存對話狀態並回溯到先前的點，從而實現安全的實驗以及對多種方法的探索。它們是您對話狀態的快照，包含：
 - 所有交換的訊息
 - 所做的檔案修改
 - 工具使用歷史
@@ -19,7 +19,7 @@ Checkpoints 讓您可以儲ว存對話狀態並回溯到先前的點，從而�
 
 ## 核心概念
 
-| Concept | Description |
+| 概念 | 說明 |
 |---------|-------------|
 | **Checkpoint** | 對話狀態的快照，包含訊息、檔案與上下文 |
 | **Rewind** | 回溯到先前的 checkpoint，並捨棄隨後的變更 |
@@ -207,7 +207,7 @@ Claude Code 會自動管理您的檢查點：
 - 期望檢查點能追蹤外部檔案系統的變更
 - 將檢查點當作 git commit 的替代品
 
-## Configuration
+## 設定
 
 Checkpoints 是 Claude Code 內建的預設行為，不需要任何配置即可啟用。每一次的使用者 prompt 都會自動建立一個 checkpoint。
 
@@ -221,7 +221,16 @@ Checkpoints 是 Claude Code 內建的預設行為，不需要任何配置即可�
 
 - `cleanupPeriodDays`: 保留會話歷史與 checkpoint 的天數（預設值：`30`）
 
-## Limitations
+> **v2.1.117 更新**：`cleanupPeriodDays` 現在管理四個磁碟快取的保留期限，不再僅限於 checkpoints：
+>
+> - 會話 checkpoints
+> - `~/.claude/tasks/` — 持久性工作清單
+> - `~/.claude/shell-snapshots/` — 已擷取的 shell 環境快照
+> - `~/.claude/backups/` — 循環式的設定檔 / CLAUDE.md 備份
+>
+> 單一設定現在會在相同的天數後，統一清理以上四個目錄。
+
+## 限制
 
 Checkpoints 具有以下限制：
 
@@ -229,9 +238,9 @@ Checkpoints 具有以下限制：
 - **外部變更不會被追蹤** - 在 Claude Code 之外（例如在您的編輯器、終端機等）所做的變更不會被記錄
 - **不能取代版本控制** - 請使用 git 對您的程式碼庫進行永久且可審核的變更
 
-## Troubleshooting
+## 疑難排解
 
-### Missing Checkpoints
+### 找不到檢查點
 
 **問題**：找不到預期的 checkpoint
 
@@ -240,7 +249,7 @@ Checkpoints 具有以下限制：
 - 檢查磁碟空間
 - 確保 `cleanupPeriodDays` 設定得夠長（預設值：30 天）
 
-### Rewind Failed
+### 回溯失敗
 
 **問題**：無法回溯（rewind）至 checkpoint
 
@@ -249,7 +258,7 @@ Checkpoints 具有以下限制：
 - 檢查 checkpoint 是否已損壞
 - 嘗試回溯至另一個不同的 checkpoint
 
-## Integration with Git
+## 與 Git 的整合
 
 Checkpoints 是 git 的補充（而非取代）：
 
@@ -315,8 +324,10 @@ Checkpoints 是 Claude Code 中的一項自動化功能，讓您可以安全地�
 請記住：checkpoints 並非 git 的替代品。請將 checkpoints 用於快速實驗，並將 git 用於永久性的程式碼變更。
 
 ---
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+**最後更新日期**：2026 年 5 月 25 日
+**Claude Code 版本**：2.1.150
 **來源**：
 - https://code.claude.com/docs/en/checkpointing
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://code.claude.com/docs/en/settings
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.117
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

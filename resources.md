@@ -122,9 +122,6 @@ _**所有技巧**_
 ```mermaid
 graph TD
     A[Start New Repository] --> B[Initialize Repository Structure]
-```
-
-```mermaid
     B --> C[建立 README, LICENSE, .gitignore]
     C --> D[建立 CLAUDE.md]
     D --> E[記錄架構與指南]
@@ -209,12 +206,10 @@ graph TD
     U --> V[配置斜線命令]
     V --> W[設定自動化鉤子]
     W --> X[與團隊共享會話上下文]
-```
 
-```mermaid
-    X --> Y{More Tasks?}
+    X --> Y{更多任務?}
     Y -->|Yes| H
-    Y -->|No| Z[Workflow Complete]
+    Y -->|No| Z[工作流程完成]
 
     style A fill:#e1f5ff
     style C fill:#ffecec
@@ -234,7 +229,7 @@ graph TD
 
 ---
 
-## 新功能與能力 (2026 年 3 月)
+## 新功能與能力 (2026 年 5 月)
 
 ### 關鍵功能資源
 
@@ -247,18 +242,23 @@ graph TD
 | **Extended Thinking** | 透過 `Alt+T`/`Option+T` 或 `MAX_THINKING_TOKENS` 環境變數切換深度推理 | [Advanced Features](09-advanced-features/) |
 | **Permission Modes** | 細粒度控制：default, acceptEdits, plan, auto, dontAsk, bypassPermissions | [Advanced Features](09-advanced-features/) |
 | **7-Tier Memory** | 管理層級包含：Managed Policy, Project, Project Rules, User, User Rules, Local, Auto Memory | [Memory Guide](02-memory/) |
-| **Hook Events** | 25 個事件：PreToolUse, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStart, SubagentStop, Notification, Elicitation 等 | [Hooks Guide](06-hooks/) |
+| **Hook Events** | 29 個事件：PreToolUse, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStart, SubagentStop, Notification, Elicitation 等 | [Hooks Guide](06-hooks/) |
 | **Agent Teams** | 協調多個代理共同處理複雜任務 | [Subagents Guide](04-subagents/) |
 | **Scheduled Tasks** | 使用 `/loop` 與 cron 工具設定週期性任務 | [Advanced Features](09-advanced-features/) |
 | **Chrome Integration** | 使用 headless Chromium 進行瀏覽器自動化 | [Advanced Features](09-advanced-features/) |
 | **Keyboard Customization** | 自定義按鍵綁定，包含組合鍵序列 | [Advanced Features](09-advanced-features/) |
 | **Monitor Tool** | 監控背景指令的 stdout 串流並對事件做出反應，而非輪詢 (v2.1.98+) | [Advanced Features](09-advanced-features/) |
+| **/goal mode** | 為會話登錄完成條件；Claude 持續作業直到條件達成 (v2.1.139+) | [Slash Commands](01-slash-commands/) |
+| **claude agents（Agent View）** | 從終端機列出、檢視及恢復背景代理；`--json` 可輸出機器可讀格式 (v2.1.139+，`--json` 於 v2.1.145 新增) | [code.claude.com/docs/en/agent-view](https://code.claude.com/docs/en/agent-view) |
+| **/run, /verify, /run-skill-generator** | 內建技能，用於啟動專案、確認修復有效，以及為專案生成 run/verify 技能 (v2.1.145+) | [Skills Guide](03-skills/) |
 
 ---
-**最後更新日期**: 2026 年 4 月 16 日
-**Claude Code 版本**: 2.1.112
+**最後更新日期**: 2026 年 5 月 25 日
+**Claude Code 版本**: 2.1.150
 **來源**:
-- https://docs.anthropic.com/en/docs/claude-code
-- https://www.anthropic.com/news/claude-opus-4-7
-- https://support.claude.com/en/articles/12138966-release-notes
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/changelog
+- https://code.claude.com/docs/en/agent-view
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
 **相容模型**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

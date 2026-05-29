@@ -28,10 +28,10 @@ cp 02-memory/personal-CLAUDE.md ~/.claude/CLAUDE.md
 ### 技能
 ```bash
 # 個人技能
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # 專案技能
-cp -r 03-skills/code-review .claude/skills/
+cp -r 03-skills/code-review-specialist .claude/skills/
 ```
 
 ### 子代理
@@ -113,14 +113,14 @@ claude -r "session"    # 透過名稱/ID 恢復會話
 
 | 功能 | 安裝路徑 | 用法 |
 |---------|-------------|-------|
-| **斜線命令 (55+)** | `.claude/commands/*.md` | `/command-name` |
+| **斜線命令 (60+)** | `.claude/commands/*.md` | `/command-name` |
 | **記憶** | `./CLAUDE.md` | 自動載入 |
 | **技能** | `.claude/skills/*/SKILL.md` | 自動調用 |
 | **子代理** | `.claude/agents/*.md` | 自動委派 |
 | **MCP** | `.mcp.json` (專案) 或 `~/.claude.json` (使用者) | `/mcp__server__action` |
-| **鉤子 (25 個事件)** | `~/.claude/hooks/*.sh` | 事件觸發 (4 種類型) |
+| **鉤子 (29 個事件)** | `~/.claude/hooks/*.sh` | 事件觸發 (5 種類型) |
 | **外掛** | 透過 `/plugin install` | 整合所有功能 |
-| **檢查點** | 內建 | `Esc+Esc` 或 `/rewint` |
+| **檢查點** | 內建 | `Esc+Esc` 或 `/rewind` |
 | **規劃模式** | 內建 | `/plan <task>` |
 | **權限模式 (6 種)** | 內建 | `--allowedTools`, `--permission-mode` |
 | **會話** | 內建 | `/session <command>` |
@@ -130,7 +130,7 @@ claude -r "session"    # 透過名稱/ID 恢復會話
 | **Git Worktrees** | 內建 | `/worktree` |
 | **自動記憶** | 內建 | 自動儲存至 CLAUDE.md |
 | **任務列表** | 內建 | `/task list` |
-| **內建技能 (5 種)** | 內建 | `/simplify`, `/loop`, `/claude-api`, `/voice`, `/browse` |
+| **內建技能 (9 種)** | 內建 | `/batch`, `/claude-api`, `/code-review` *(v2.1.146 起從 `/simplify` 更名)*, `/debug`, `/fewer-permission-prompts`, `/loop`, `/run` *(v2.1.145+)*, `/run-skill-generator` *(v2.1.145+)*, `/verify` *(v2.1.145+)* |
 
 ---
 
@@ -147,7 +147,7 @@ cp 04-subagents/code-reviewer.md .claude/agents/
 # 用法：自動委派
 
 # 方法 3：技能
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 # 用法：自動調用
 
 # 方法 4：外掛 (最佳方案)
@@ -189,7 +189,7 @@ vim CLAUDE.md
 
 ### 自動化與鉤子
 ```bash
-# 安裝鉤子 (25 個事件，4 種類型：command, http, prompt, agent)
+# 安裝鉤子 (29 個事件，5 種類型：command, http, mcp_tool, prompt, agent)
 mkdir -p ~/.claude/hooks
 cp 06-hooks/*.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
@@ -223,7 +223,6 @@ claude --enable-auto-mode -p "Refactor and test the auth module"
 ```
 
 ### CI/CD 整合
-
 ```bash
 # 以無頭模式（非互動式）執行
 claude -p "Run all tests and generate report"
@@ -364,7 +363,7 @@ cp 05-mcp/github-mcp.json .mcp.json
 ### 第二週
 ```bash
 # 安裝技能
-cp -r 03-skills/code-review ~/.claude/skills/
+cp -r 03-skills/code-review-specialist ~/.claude/skills/
 
 # 讓它自動觸發
 # 只要說：「Review this code for issues」
@@ -383,14 +382,14 @@ cp -r 03-skills/code-review ~/.claude/skills/
 
 ---
 
-## 新功能 (2026 年 3 月)
+## 新功能 (2026 年 5 月)
 
 | 功能 | 描述 | 使用方式 |
 |---------|-------------|-------|
 | **Auto Mode** | 具備背景分類器的全自動運作模式 | 使用 `--enable-auto-mode` 旗標，按 `Shift+Tab` 切換模式 |
 | **Channels** | Discord 與 Telegram 整合 | 使用 `--channels` 旗標，透過 Discord/Telegram bots |
 | **Voice Dictation** | 向 Claude 說出指令與上下文 | 使用 `/voice` 命令 |
-| **Hooks (26 events)** | 擴展後的鉤子系統，包含 4 種類型 | 包含 command、http、prompt、agent 鉤子類型 |
+| **Hooks (29 events)** | 擴展後的鉤子系統，包含 5 種類型 | 包含 command、http、mcp_tool、prompt、agent 鉤子類型 |
 | **MCP Elicitation** | MCP servers 可在執行時請求使用者輸入 | 當伺服器需要釐清資訊時會自動提示 |
 | **Plugin LSP** | 為外掛提供 Language Server Protocol 支援 | 使用 `userConfig` 與 `${CLAUDE_PLUGIN_DATA}` 變數 |
 | **Remote Control** | 透過 WebSocket API 控制 Claude Code | 使用 `claude --remote` 進行外部整合 |
@@ -399,11 +398,15 @@ cp -r 03-skills/code-review ~/.claude/skills/
 | **Task List** | 管理背景任務 | `/task list`、`/task status <id>` |
 | **Auto Memory** | 從對話中自動儲存記憶 | Claude 會將關鍵上下文自動儲存至 CLAUDE.md |
 | **Git Worktrees** | 用於平行開發的隔離工作空間 | 使用 `/worktree` 建立隔離的工作空間 |
-| **Model Selection** | 在 Sonnet 4.6、Opus 4.7 與 Haiku 4.5 之間切換 | 使用 `/model` 或 `--model` 旗標 |
+| **Model Selection** | 在 Sonnet 4.6、Opus 4.7 與 Haiku 4.5 之間切換 | `/model` — 自 v2.1.144 起預設僅限本次會話；按 `d` 可設定新的預設值 |
 | **Agent Teams** | 在任務中協調多個代理 | 透過設定環境變數 `CLAUDE_AGENT_TEAMS=1` 啟用 |
 | **Scheduled Tasks** | 使用 `/loop` 進行週期性任務 | `/loop 5m /command` 或使用 CronCreate 工具 |
 | **Chrome Integration** | 瀏覽器自動化 | 使用 `--chrome` 旗標或 `/chrome` 命令 |
 | **Keyboard Customization** | 自定義鍵位綁定 | 使用 `/keybindings` 命令 |
+| **/usage-credits** | 配置額外使用額度 (v2.1.144 起從 `/extra-usage` 更名；舊名稱仍可作為別名使用) | `/usage-credits` |
+| **/run** *(v2.1.145+)* | 啟動此專案的應用程式以確認變更是否正常運作 | `/run` |
+| **/verify** *(v2.1.145+)* | 建置、執行並觀察應用程式，確認修復是否有效 | `/verify` |
+| **/run-skill-generator** *(v2.1.145+)* | 教導 `/run`/`/verify` 如何處理特定專案 | `/run-skill-generator` |
 
 ---
 
@@ -419,7 +422,7 @@ cp -r 03-skills/code-review ~/.claude/skills/
 - 使用 memory 來建立團隊標準
 - 使用 plugins 來實現完整的工作流程
 - 使用 subagents 來處理複雜任務
-- 使用斜線命令 來執行快速任務
+- 使用斜線命令來執行快速任務
 
 ### 除錯
 ```bash
@@ -440,12 +443,12 @@ echo $GITHUB_TOKEN
 
 | 需求 | 使用此功能 | 範例 |
 |------|----------|---------|
-| 快速捷徑 | 斜線命令 (55+) | `01-slash-commands/optimize.md` |
+| 快速捷徑 | 斜線命令 (60+) | `01-slash-commands/optimize.md` |
 | 團隊標準 | memory | `02-memory/project-CLAUDE.md` |
-| 自動工作流程 | 技能 | `03-skills/code-review/` |
+| 自動工作流程 | 技能 | `03-skills/code-review-specialist/` |
 | 特殊任務 | 子代理 | `04-subagents/code-reviewer.md` |
 | 外部數據 | MCP (+ Elicitation) | `05-mcp/github-mcp.json` |
-| 事件自動化 | 鉤子 (26 個事件, 4 種類型) | `06-hooks/pre-commit.sh` |
+| 事件自動化 | 鉤子 (29 個事件, 5 種類型) | `06-hooks/pre-commit.sh` |
 | 完整解決方案 | 外掛 (+ LSP 支援) | `07-plugins/pr-review/` |
 | 安全實驗 | 檢查點 | `08-checkpoints/checkpoint-examples.md` |
 | 完全自主 | 自動模式 | `--enable-auto-mode` 或 `Shift+Tab` |
@@ -458,7 +461,6 @@ echo $GITHUB_TOKEN
 
 - **主指南**: `README.md`
 - **完整索引**: `INDEX.md`
-- **摘要**: `EXAMPLES_SUMMARY.md`
 - **原始指南**: `claude_concepts_guide.md`
 
 ---
@@ -506,10 +508,12 @@ A: 當然可以！它們是用來客製化的範本。
 **此卡片**: 請妥善保存以便快速查閱！
 
 ---
-**最後更新日期**: 2026 年 4 月 16 日
-**Claude Code 版本**: 2.1.112
+**最後更新日期**: 2026 年 5 月 25 日
+**Claude Code 版本**: 2.1.150
 **來源**:
-- https://docs.anthropic.com/en/docs/claude-code
-- https://www.anthropic.com/news/claude-opus-4-7
-- https://support.claude.com/en/articles/12138966-release-notes
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/commands
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
 **相容模型**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
