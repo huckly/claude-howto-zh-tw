@@ -64,7 +64,7 @@ usersWithPosts.forEach(({ user, posts }) => {
 ### 影響分析
 
 | 面向 | 影響 | 嚴重度 |
-|--------|--------|----------|
+|------|------|--------|
 | 效能 | 20 個使用者需要 100+ 個查詢 | High |
 | 使用者體驗 | 頁面載入緩慢 | High |
 | 可擴展性 | 在大規模時崩潰 | Critical |
@@ -80,7 +80,6 @@ usersWithPosts.forEach(({ user, posts }) => {
 
 - [N+1 查詢問題](https://en.wikipedia.org/wiki/N%2B1_problem)
 - [資料庫 Join 文件](https://docs.example.com/joins)
-- [效能最佳化指南](./docs/performance.md)
 
 ### 審查者備註
 

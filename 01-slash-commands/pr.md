@@ -1,3 +1,8 @@
+---
+description: 清理程式碼、暫存變更，並準備 pull request
+allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(npm test:*), Bash(npm run lint:*)
+---
+
 # Pull Request Preparation Checklist
 
 在建立 PR 前，請執行以下步驟：
@@ -5,7 +10,7 @@
 1. 執行 linting: `prettier --write .`
 2. 執行測試: `npm test`
 3. 檢視 git diff: `git diff HEAD`
-4. 階段性新增變更: `git add .`
+4. 暫存變更: `git add .`
 5. 建立符合 conventional commits 的 commit 訊息：
    - `fix:` 用於修正錯誤
    - `feat:` 用於新增功能

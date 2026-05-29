@@ -21,8 +21,8 @@ allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git
 - 密碼：`.env*`, `*.key`, `*.pem`, `credentials.json`, `secrets.yaml`, `id_rsa`, `*.p12`, `*.pfx`, `*.cer`
 - API 金鑰：任何 `*_API_KEY`, `*_SECRET`, `*_TOKEN` 變數具有實際值（而不是佔位符，例如 `your-api-key`、`xxx`、`placeholder`）
 - 大型檔案：`>10MB` 而沒有 Git LFS
-- 構建工件：`node_modules/`, `dist/`, `build/`, `__pycache__/`, `*.pyc`, `.venv/`
-- 臨時檔案：`.DS_Store`, `thumbs.db`, `*.swp`, `*.tmp`
+- 建置產物：`node_modules/`, `dist/`, `build/`, `__pycache__/`, `*.pyc`, `.venv/`
+- 暫存檔案：`.DS_Store`, `thumbs.db`, `*.swp`, `*.tmp`
 
 **API 金鑰驗證：**
 檢查已修改的檔案是否包含以下模式：
@@ -42,7 +42,7 @@ SECRET=${YOUR_SECRET}
 **✅ 驗證：**
 - `.gitignore` 已正確設定
 - 沒有合併衝突
-- 正確的分支 (如果為主要/主分支，則發出警告)
+- 正確的分支（若為 main/master 則發出警告）
 - API 金鑰僅為佔位符
 
 ### 3. 請求確認
@@ -63,12 +63,12 @@ SECRET=${YOUR_SECRET}
 
 **在繼續之前等待明確的 "yes"。**
 
-### 4. 執行 (確認後)
+### 4. 執行（確認後）
 
 順序執行：
 ```bash
 git add .
-git status  # 驗證階段性提交
+git status  # 驗證暫存狀態
 ```
 
 ### 5. 產生 commit 訊息
@@ -119,11 +119,11 @@ Branch: [分支] → origin/[分支]
 ## 錯誤處理
 
 - **git add 失敗**: 檢查權限、鎖定檔案、驗證是否已初始化 Git 倉庫
-- **git commit 失敗**: 修正預提交鉤子、檢查 git 設定 (user.name/email)
+- **git commit 失敗**: 修正預提交鉤子、檢查 git 設定（user.name/email）
 - **git push 失敗**:
   - 非快速前進：`git pull --rebase && git push`
   - 沒有遠端分支：`git push -u origin [branch]`
-  - 保護分支：使用 PR 工作流程
+  - 保護分支：改用 PR 工作流程
 
 ## 何時使用
 
@@ -139,17 +139,17 @@ Branch: [分支] → origin/[分支]
 - 包含機密/敏感資料
 - 保護分支且未經過審查
 - 存在合併衝突
-- 想要粒度化的提交歷史
+- 想要細粒度的提交歷史
 - 預提交鉤子失敗
 
 ## 替代方案
 
-如果使用者想要控制，建議：
-1. **選擇性暫存**: 審查/暫存特定檔案
-2. **互動式暫存**: `git add -p` 用於修補程式選擇
-3. **PR 工作流程**: 建立分支 → 提交 → PR (使用 `/pr` 斜線命令)
+如果使用者想要更多控制，建議：
+1. **選擇性暫存**: 審查並暫存特定檔案
+2. **互動式暫存**: `git add -p` 用於逐塊選擇
+3. **PR 工作流程**: 建立分支 → 推送 → PR（使用 `/pr` 斜線命令）
 
-**⚠️ 提醒**: 提交前請務必審查變更。 如果猶豫不決，請使用個別 git 命令以獲得更多控制。
+**⚠️ 提醒**: 提交前請務必審查變更。如果猶豫不決，請使用個別 git 命令以獲得更多控制。
 
 ---
 **上次更新**: 2026 年 4 月 9 日

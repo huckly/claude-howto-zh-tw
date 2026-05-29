@@ -1324,7 +1324,7 @@ Claude Code 現在內建了 5 個開箱即用的組合技能：
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| **Simplify** | `/simplify` | 簡化複雜的程式碼或解釋 |
+| **Code Review** | `/code-review` | 在指定的努力程度下審查目前 diff 的正確性問題（於 v2.1.146 從 `/simplify` 更名） |
 | **Batch** | `/batch` | 在多個檔案或項目中執行操作 |
 | **Debug** | `/debug` | 系統化地進行問題除錯與根本原因分析 |
 | **Loop** | `/loop` | 設定定時循環任務 |
@@ -2839,17 +2839,21 @@ Hooks 是事件驅動的 shell 命令，會根據 Claude Code 事件自動執行
 
 ### Hook 事件
 
-Claude Code 在四種 hook 類型（command、http、prompt、agent）中支援 **25 個 hook 事件**：
+Claude Code 在五種 hook 類型（command、http、mcp_tool、prompt、agent）中支援 **29 個 hook 事件**：
 
 | Hook 事件 | 觸發條件 | 使用案例 |
 |------------|---------|-----------|
 | **SessionStart** | 會話開始/恢復/清除/壓縮 | 環境設定、初始化 |
+| **Setup** | 初始環境設定（每個會話僅執行一次） | 佈建工具、安裝依賴套件 |
 | **InstructionsLoaded** | CLAUDE.md 或規則檔案載入 | 驗證、轉換、增強 |
 | **UserPromptSubmit** | 使用者提交提示詞 | 輸入驗證、提示詞過濾 |
+| **UserPromptExpansion** | 使用者提示詞展開後（@-mentions、斜線命令已解析） | 轉換或檢視展開後的提示詞 |
 | **PreToolUse** | 在任何工具執行前 | 驗證、審核閘門、記錄 |
 | **PermissionRequest** | 顯示權限對話框時 | 自動核准/拒絕流程 |
+| **PermissionDenied** | 使用者拒絕權限提示時 | 記錄、分析、政策執行 |
 | **PostToolUse** | 工具執行成功後 | 自動格式化、通知、清理 |
 | **PostToolUseFailure** | 工具執行失敗時 | 錯誤處理、記錄 |
+| **PostToolBatch** | 一批工具使用完成後 | 彙總報告、批次驗證 |
 | **Notification** | 發送通知時 | 警示、外部整合 |
 | **SubagentStart** | Subagent 被啟動時 | 上下文注入、初始化 |
 | **SubagentStop** | Subagent 完成時 | 結果驗證、記錄 |
@@ -3148,24 +3152,42 @@ User: \
 
 ---
 
+## 模型與推理努力程度
+
+Claude Code 支援三種模型，並具備自適應的推理努力程度：
+
+| 模型 | 上下文視窗 | 努力程度等級 | Claude Code 預設努力程度 |
+|-------|----------------|---------------|------------------------------|
+| Claude Opus 4.7 | 1M tokens（原生） | `low`、`medium`、`high`、`xhigh`、`max` | `xhigh`（自 Opus 4.7 發布起，2026-04-16） |
+| Claude Sonnet 4.6 | 1M tokens | `low`、`medium`、`high`、`max` | Pro/Max 訂閱者為 `high`（於 v2.1.117 從 `medium` 提升） |
+| Claude Haiku 4.5 | 200K tokens | `low`、`medium`、`high` | `medium` |
+
+> **注意**：v2.1.117 修復了一個錯誤，該錯誤導致 Opus 4.7 會話的 `/context` 計算以 200K 而非原生 1M 視窗為基準——請升級至 v2.1.117 或更新版本，以實際獲得 Opus 4.7 的 1M 上下文。
+
+> **注意**：`/cost` 與 `/stats` 已在 v2.1.118 合併為 `/usage`。`/usage` 現在是具有費用/統計資料等標籤頁的標準命令；`/cost` 與 `/stats` 仍作為捷徑別名保留，會開啟對應的標籤頁。自 v2.1.149 起，費用視圖也會按類別（技能、子代理、外掛及各 MCP 伺服器費用）分解支出。
+
+---
+
 ## Resources
 
 - [Claude Code Documentation](https://code.claude.com/docs/en/overview)
-- [Anthropic Documentation](https://docs.anthropic.com)
+- [Claude Code Changelog](https://code.claude.com/docs/en/changelog)
 - [MCP GitHub Servers](https://github.com/modelcontextprotocol/servers)
 - [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook)
 
 ---
 
-*最後更新日期：2026 年 4 月 16 日*
+*最後更新日期：2026 年 5 月 25 日*
 *適用於 Claude Haiku 4.5, Sonnet 4.6, 與 Opus 4.7*
-*現在包含：Hooks、Checkpoints、Planning Mode、Extended Thinking、Background Tasks、Permission Modes (6 modes)、Headless Mode、Session Management、Auto Memory、Agent Teams、Scheduled Tasks、Chrome Integration、Channels、Voice Dictation 以及 Bundled Skills*
+*現在包含：Hooks、Checkpoints、Planning Mode、Extended Thinking、Background Tasks、Permission Modes (6 modes)、Headless Mode、Session Management、Auto Memory、Agent Teams、Scheduled Tasks、Chrome Integration、Bundled Skills 以及 Models & Reasoning Effort*
 
 ---
-**Last Updated**: April 16, 2026
-**Claude Code Version**: 2.1.112
+**Last Updated**: May 25, 2026
+**Claude Code Version**: 2.1.150
 **Sources**:
-- https://docs.anthropic.com/en/docs/claude-code
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/hooks
 - https://www.anthropic.com/news/claude-opus-4-7
-- https://support.claude.com/en/articles/12138966-release-notes
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
 **Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

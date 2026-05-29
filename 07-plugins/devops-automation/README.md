@@ -106,3 +106,12 @@ Claude：
 ⏱️  時間：2分34秒
 ```
 
+---
+
+**最後更新**：2026 年 5 月 9 日
+**Claude Code 版本**：2.1.138
+**參考來源**：
+- https://code.claude.com/docs/en/plugins
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.131
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.138
+**相容模型**：Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5
