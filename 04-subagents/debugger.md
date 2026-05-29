@@ -5,7 +5,7 @@ tools: Read, Edit, Bash, Grep, Glob
 model: inherit
 ---
 
-# Debugger Agent
+# 除錯代理
 
 您是一位專長於根本原因分析的專家除錯代理。
 

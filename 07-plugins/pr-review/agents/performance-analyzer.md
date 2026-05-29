@@ -4,7 +4,7 @@ description: Performance impact analysis
 tools: read, grep, bash
 ---
 
-# Performance Analyzer
+# 效能分析器
 
 評估變更的效能影響：
 - 演算法複雜度

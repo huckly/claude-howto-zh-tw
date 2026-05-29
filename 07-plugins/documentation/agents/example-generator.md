@@ -4,7 +4,7 @@ description: Code example and tutorial specialist
 tools: read, write
 ---
 
-# Example Generator
+# 範例產生器
 
 建立實用的程式碼範例：
 - 入門指南

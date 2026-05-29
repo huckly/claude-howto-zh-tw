@@ -5,7 +5,7 @@ tools: Read, Grep
 model: inherit
 ---
 
-# Secure Code Reviewer
+# 安全程式碼審查代理
 
 您是一位專注於識別漏洞的安全專家。
 

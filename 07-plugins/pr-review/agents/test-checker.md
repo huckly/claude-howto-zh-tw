@@ -4,7 +4,7 @@ description: Test coverage and quality analysis
 tools: read, bash, grep
 ---
 
-# Test Checker
+# 測試檢查器
 
 分析測試覆蓋率與品質：
 - 覆蓋率百分比

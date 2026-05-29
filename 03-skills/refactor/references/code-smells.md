@@ -1,4 +1,4 @@
-# 程式碼壞味道目錄
+﻿# 程式碼壞味道目錄
 
 基於 Martin Fowler《重構》（第二版）的程式碼壞味道完整參考。程式碼壞味道是更深層問題的症狀 — 它們表明你的程式碼設計可能有問題。
 
@@ -361,7 +361,7 @@ class SalariedEmployee {
 - 變更分散，難以找到全部
 
 **為什麼不好：**
-- 容易遺漏
+- 容易遺漏某處
 - 高耦合
 - 變更容易出錯
 
@@ -481,7 +481,7 @@ const activeUsers = users.filter(u => u.isActive);
 - 不可能條件後的程式碼
 
 **為什麼不好：**
-- 混淆
+- 造成混淆
 - 維護負擔
 - 減慢理解速度
 
@@ -638,10 +638,10 @@ const managerName = employee.getManagerName();
 
 | 嚴重度 | 描述 | 動作 |
 |----------|-------------|--------|
-| **Critical** | 阻擋開發、導致 bug | 立即修復 |
-| **High** | 顯著的維護負擔 | 在目前 sprint 修復 |
-| **Medium** | 明顯但可管理 | 計畫在近期修復 |
-| **Low** | 輕微不便 | 有機會時修復 |
+| **嚴重** | 阻擋開發、導致 bug | 立即修復 |
+| **高** | 顯著的維護負擔 | 在目前 sprint 修復 |
+| **中** | 明顯但可管理 | 計畫在近期修復 |
+| **低** | 輕微不便 | 有機會時修復 |
 
 ---
 
@@ -667,4 +667,3 @@ const managerName = employee.getManagerName();
 - Fowler, M. (2018). *Refactoring: Improving the Design of Existing Code* (2nd ed.)
 - Kerievsky, J. (2004). *Refactoring to Patterns*
 - Feathers, M. (2004). *Working Effectively with Legacy Code*
-

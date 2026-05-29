@@ -21,18 +21,18 @@ description: 從原始碼產生全面且準確的 API 文件。在建立或更�
 ```markdown
 ## GET /api/v1/users/:id
 
-### Description
+### 說明
 此端點功能的簡要說明
 
-### Parameters
+### 參數
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| id | string | Yes | User ID |
+| 名稱 | 類型 | 必填 | 說明 |
+|------|------|------|------|
+| id | string | 是 | 使用者 ID |
 
-### Response
+### 回應
 
-**200 Success**
+**200 成功**
 ```json
 {
   "id": "usr_123",
@@ -42,7 +42,7 @@ description: 從原始碼產生全面且準確的 API 文件。在建立或更�
 }
 ```
 
-**404 Not Found**
+**404 找不到**
 ```json
 {
   "error": "USER_NOT_FOUND",
@@ -50,7 +50,7 @@ description: 從原始碼產生全面且準確的 API 文件。在建立或更�
 }
 ```
 
-### Examples
+### 範例
 
 **cURL**
 ```bash
@@ -74,4 +74,3 @@ response = requests.get(
 user = response.json()
 ```
 ```
-

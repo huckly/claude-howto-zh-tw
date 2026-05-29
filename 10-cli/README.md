@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# CLI Reference
+# CLI 命令列介面
 
 ## 概觀
 

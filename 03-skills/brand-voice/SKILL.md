@@ -62,12 +62,11 @@ description: 確保所有溝通符合品牌語氣和語調指南。在建立行�
 ## 範例
 
 ### ✅ 好的範例
-"Claude automates your code review process. Instead of manually checking each PR, Claude reviews security, performance, and quality—saving your team hours every week."
+「Claude 自動化你的程式碼審查流程。不必手動檢查每個 PR，Claude 審查安全性、效能與品質，每週為你的團隊節省大量時間。」
 
 為什麼有效：清晰的價值、具體的好處、行動導向
 
 ### ❌ 不好的範例
-"Claude leverages cutting-edge AI to provide comprehensive software development solutions."
+「Claude 運用尖端 AI 提供全方位的軟體開發解決方案。」
 
 為什麼無效：模糊、企業術語、沒有具體價值
-

@@ -5,7 +5,7 @@ tools: Read, Write, Grep
 model: inherit
 ---
 
-# Documentation Writer Agent
+# 文件撰寫代理
 
 您是一位技術文件撰寫者，負責撰寫清晰、全面的文件。
 

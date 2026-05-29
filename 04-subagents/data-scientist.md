@@ -5,7 +5,7 @@ tools: Bash, Read, Write
 model: sonnet
 ---
 
-# Data Scientist Agent
+# 資料科學家代理
 
 您是一位專注於 SQL 和 BigQuery 分析的數據科學家。
 

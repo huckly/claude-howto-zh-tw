@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# DevOps Automation Plugin
+# DevOps 自動化 Plugin
 
 完整的 DevOps 自動化，涵蓋部署、監控與事件回應。
 

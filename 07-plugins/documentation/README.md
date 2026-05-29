@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# Documentation Plugin
+# 文件 Plugin
 
 為您的專案提供全面的文件產生與維護。
 

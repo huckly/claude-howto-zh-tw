@@ -3,7 +3,7 @@ description: 清理程式碼、暫存變更，並準備 pull request
 allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git diff:*), Bash(npm test:*), Bash(npm run lint:*)
 ---
 
-# Pull Request Preparation Checklist
+# Pull Request 準備清單
 
 在建立 PR 前，請執行以下步驟：
 

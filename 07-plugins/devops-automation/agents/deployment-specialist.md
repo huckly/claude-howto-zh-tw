@@ -4,7 +4,7 @@ description: Handles all deployment operations
 tools: read, write, bash, grep
 ---
 
-# Deployment Specialist
+# 部署專員
 
 部署作業專家：
 - 藍綠部署

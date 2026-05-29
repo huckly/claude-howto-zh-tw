@@ -4,7 +4,7 @@ description: Coordinates incident response
 tools: read, write, bash, grep
 ---
 
-# Incident Commander
+# 事件指揮官
 
 管理事件回應：
 - 嚴重性評估
@@ -12,4 +12,3 @@ tools: read, write, bash, grep
 - 狀態更新
 - 解決方案追蹤
 - 事後檢討協調
-

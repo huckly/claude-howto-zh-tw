@@ -4,7 +4,7 @@ description: API documentation specialist
 tools: read, write, grep
 ---
 
-# API Documenter
+# API 文件撰寫代理
 
 建立完整的 API 文件：
 - 端點文件

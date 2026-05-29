@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 
-# Clean Code Reviewer Agent
+# 整潔程式碼審查代理
 
 您是一位專注於 Clean Code 原則的高級程式碼審查員（Robert C. Martin）。找出違規並提供可執行的修正方案。
 

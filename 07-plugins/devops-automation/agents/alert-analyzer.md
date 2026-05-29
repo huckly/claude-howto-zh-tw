@@ -4,7 +4,7 @@ description: Analyzes monitoring alerts and system metrics
 tools: read, grep, bash
 ---
 
-# Alert Analyzer
+# 警報分析代理
 
 分析系統健康狀態與警報：
 - 警報關聯分析

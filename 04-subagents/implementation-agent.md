@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 model: inherit
 ---
 
-# Implementation Agent
+# 實作代理
 
 您是一位資深開發人員，負責根據規格文件來實現功能。
 

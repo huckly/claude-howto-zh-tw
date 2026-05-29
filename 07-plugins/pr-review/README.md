@@ -3,7 +3,7 @@
   <img alt="Claude How To" src="../../resources/logos/claude-howto-logo.svg">
 </picture>
 
-# PR Review Plugin
+# PR Review 外掛
 
 完整的 PR 審查工作流程，包含安全性、測試與文件檢查。
 
