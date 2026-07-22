@@ -31,9 +31,9 @@ graph TD
 | `claude` | 啟動互動式 REPL | `claude` |
 | `claude "query"` | 啟動帶有初始提示詞的 REPL | `claude "explain this project"` |
 | `claude -p "query"` | 列印模式 - 執行查詢後退出 | `claude -p "explain this function"` |
-| `cat file \| claude -p "query"` | 處理透過管線傳遞的內容 | `cat logs.txt \| claude -p "explain"` |
-| `claude -c` | 繼續最近一次的會話 | `claude -c` |
-| `claude -c -p "query"` | 在列印模式下繼續會話 | `claude -c -p "check for type errors"` |
+| `cat file \| claude -p "query"` | 處理透過管線傳送的內容 | `cat logs.txt \| claude -p "explain"` |
+| `claude -c` | 繼續最近一次的對話 | `claude -c` |
+| `claude -c -p "query"` | 在列印模式下繼續對話 | `claude -c -p "check for type errors"` |
 | `claude -r "<session>" "query"` | 透過 ID 或名稱恢復會話 | `claude -r "auth-refactor" "finish this PR"` |
 | `claude update` | 更新至最新版本 | `claude update` |
 | `claude mcp` | 配置 MCP 伺服器 | 請參閱 [MCP documentation](../05-mcp/) |
@@ -43,8 +43,8 @@ graph TD
 | `claude remote-control` | 啟動遠端控制伺服器 | `claude remote-control` |
 | `claude plugin` | 管理外掛（安裝、啟用、停用） | `claude plugin install my-plugin` |
 | `claude auth login` | 登入（支援 `--email`、`--sso`） | `claude auth login --email user@example.com` |
-| `claude auth logout` | 登出目前帳戶 | `claude auth logout` |
-| `claude auth status` | 檢查驗證狀態（已登入則回傳 0，未登入則回傳 1） | `claude auth status` |
+| `claude auth logout` | 登出目前帳號 | `claude auth logout` |
+| `claude auth status` | 檢查驗證狀態（若已登入則回傳 0，否則回傳 1） | `claude auth status` |
 
 ## 核心 Flags
 
@@ -61,11 +61,11 @@ graph TD
 | `--remote-control, --rc` | 使用 Remote Control 的互動式會話 | `claude --rc` |
 | `--teleport` | 在本地恢復網頁會話 | `claude --teleport` |
 | `--teammate-mode` | 代理團隊顯示模式 | `claude --teammate-mode tmux` |
-| `--bare` | 最小模式（跳過 hooks、skills、plugins、MCP、自動記憶、CLAUDE.md） | `claude --bare` |
-| `--enable-auto-mode` | 解鎖自動權限模式 | `claude --enable-auto-mode` |
+| `--bare` | 最小化模式（跳過 hooks、skills、plugins、MCP、自動記憶、CLAUDE.md） | `claude --bare` |
+| `--enable-auto-mode` | 解鎖自動權限模式（對於 Opus 4.7 的 Max 訂閱者不再需要） | `claude --enable-auto-mode` |
 | `--channels` | 訂閱 MCP channel plugins | `claude --channels discord,telegram` |
 | `--chrome` / `--no-chrome` | 啟用/停用 Chrome 瀏覽器整合 | `claude --chrome` |
-| `--effort` | 設定思考努力程度 | `claudle --effort high` |
+| `--effort` | 設定思考努力程度 | `claude --effort high` |
 | `--init` / `--init-only` | 執行初始化 hooks | `claude --init` |
 | `--maintenance` | 執行維護 hooks 並退出 | `claude --maintenance` |
 | `--disable-slash-commands` | 停用所有 skills 與斜線命令 | `claude --disable-slash-commands` |
@@ -93,7 +93,7 @@ claude "explain the authentication flow"
 
 **印出模式** (非互動式):
 ```bash
-# 單次查詢後退出
+# 單次查詢，然後退出
 claude -p "what does this function do?"
 
 # 處理檔案內容
@@ -111,12 +111,12 @@ claude -p "list todos" | grep "URGENT"
 | `--fallback-model` | 當負載過重時自動切換備用模型 | `claude -p --fallback-model sonnet "query"` |
 | `--agent` | 指定該會話使用的代理 | `claude --agent my-custom-agent` |
 | `--agents` | 透過 JSON 定義自定義子代理 | 請參閱 [Agents Configuration](#agents-configuration) |
-| `--effort` | 設定投入程度 (low, medium, high, max) | `claude --effort high` |
+| `--effort` | 設定投入程度 (low, medium, high, xhigh, max) | `claude --effort xhigh` |
 
 ### 模型選擇範例
 
 ```bash
-# 使用 Opus 4.6 處理複雜任務
+# 使用 Opus 4.7 處理複雜任務
 claude --model opus "design a caching strategy"
 
 # 使用 Haiku 4.5 處理快速任務
@@ -137,7 +137,7 @@ claude --model opusplan "design and implement the caching layer"
 | 參數 | 說明 | 範例 |
 |------|-------------|---------|
 | `--system-prompt` | 取代整個預設提示詞 | `claude --system-prompt "You are a Python expert"` |
-| `--system-prompt-file` | 從檔案載入提示詞 (僅限 print 模式) | `claude -p --system-prompt-file ./prompt.txt "query"` |
+| `--system-prompt-file` | 從檔案載入提示詞 (列印模式) | `claude -p --system-prompt-file ./prompt.txt "query"` |
 | `--append-system-prompt` | 附加至預設提示詞 | `claude --append-system-prompt "Always use TypeScript"` |
 
 ### System Prompt 範例
@@ -155,17 +155,17 @@ claude -p --system-prompt-file ./prompts/code-reviewer.txt "review main.py"
 
 ### System Prompt 參數比較
 
-| 參數 | 行為 | 互動模式 | Print 模式 |
+| 參數 | 行為 | 互動模式 | 列印模式 |
 |------|----------|-------------|-------|
 | `--system-prompt` | 取代整個預設 system prompt | ✅ | ✅ |
 | `--system-prompt-file` | 以檔案中的提示詞取代 | ❌ | ✅ |
 | `--append-system-prompt` | 附加至預設 system prompt | ✅ | ✅ |
 
-**請僅在 print 模式下使用 `--system-prompt-file`。在互動模式下，請使用 `--system-prompt` 或 `--append-system-prompt`。**
+**請僅在列印模式下使用 `--system-prompt-file`。在互動模式下，請使用 `--system-prompt` 或 `--append-system-prompt`。**
 
 ## 工具與權限管理
 
-| Flag | Description | Example |
+| Flag | 說明 | 範例 |
 |------|-------------|---------|
 | `--tools` | 限制可用的內建工具 | `claude -p --tools "Bash,Edit,Read" "query"` |
 | `--allowedTools` | 無須提示即可執行的工具 | `"Bash(git log:*)" "Read"` |
@@ -193,7 +193,7 @@ claude --disallowedTools "Bash(rm -rf:*)" "Bash(git push --force:*)"
 
 ## 輸出與格式
 
-| Flag | Description | Options | Example |
+| Flag | 說明 | 選項 | 範例 |
 |------|-------------|---------|---------|
 | `--output-format` | 指定輸出格式（列印模式） | `text`, `json`, `stream-json` | `claude -p --output-format json "query"` |
 | `--input-format` | 指定輸入格式（列印模式） | `text`, `stream-json` | `claude -p --input-format stream-json` |
@@ -221,14 +221,14 @@ claude -p --json-schema '{"type":"object","properties":{"bugs":{"type":"array"}}
 
 ## Workspace & Directory
 
-| Flag | Description | Example |
+| 參數 | 說明 | 範例 |
 |------|-------------|---------|
 | `--add-dir` | 新增額外的作業目錄 | `claude --add-dir ../apps ../lib` |
 | `--setting-sources` | 以逗號分隔的設定來源 | `claud --setting-sources user,project` |
 | `--settings` | 從檔案或 JSON 載入設定 | `claude --settings ./settings.json` |
 | `--plugin-dir` | 從目錄載入外掛（可重複使用） | `claude --plugin-dir ./my-plugin` |
 
-### Multi-Directory Example
+### 多目錄範例
 
 ```bash
 # 在多個專案目錄中進行工作
@@ -240,13 +240,13 @@ claude --settings '{"model":"opus","verbose":true}' "complex task"
 
 ## MCP Configuration
 
-| Flag | Description | Example |
+| 參數 | 說明 | 範例 |
 |------|-------------|---------|
 | `--mcp-config` | 從 JSON 載入 MCP servers | `claude --mcp-config ./mcp.json` |
 | `--strict-mcp-config` | 僅使用指定的 MCP config | `claude --strict-mcp-config --mcp-config ./mcp.json` |
 | `--channels` | 訂閱 MCP channel 外掛 | `claude --channels discord,telegram` |
 
-### MCP Examples
+### MCP 範例
 
 ```bash
 # 載入 GitHub MCP server
@@ -258,21 +258,21 @@ claude --strict-mcp-config --mcp-config ./production-mcp.json "deploy to staging
 
 ## Session Management
 
-| Flag | Description | Example |
+| 參數 | 說明 | 範例 |
 |------|-------------|---------|
 | `--session-id` | 使用特定的 session ID (UUID) | `claude --session-id "550e8400-..."` |
 | `--fork-session` | 恢復時建立新的 session | `claude --resume abc123 --fork-session` |
 
-### Session Examples
+### Session 範例
 
 ```bash
-# 繼續最後一次對話
+# 繼續上一次的對話
 claude -c
 
 # 恢復具名的 session
 claude -r "feature-auth" "continue implementing login"
 
-# 分叉 session 以進行實驗
+# 為了實驗而分叉 (fork) session
 claude --resume feature-auth --fork-session "try alternative approach"
 
 # 使用特定的 session ID
@@ -291,11 +291,11 @@ claude --resume abc123 --fork-session "try alternative implementation"
 claude -r "feature-auth" --fork-session "test with different architecture"
 ```
 
-**使用案例：**
-- 在不遺失原始 session 的情況下嘗試替代實作方式
-- 並行實驗不同的方法
-- 從成功的成果建立分支以進行變體開發
-- 在不影響主 session 的情況下測試破壞性變更
+**使用情境：**
+- 在不遺失原始 session 的情況下嘗試不同的實作方式
+- 並行地實驗不同的方法
+- 從成功的成果中建立分支以進行變體開發
+- 在不影響主 session 的情況下測試破壞性變更 (breaking changes)
 
 原始 session 將保持不變，而分叉出的內容會成為一個新的獨立 session。
 
@@ -307,8 +307,8 @@ claude -r "feature-auth" --fork-session "test with different architecture"
 | `--no-chrome` | 停用 Chrome 瀏覽器整合 | `claude --no-chrome` |
 | `--ide` | 若可用則自動連接至 IDE | `claude --ide` |
 | `--max-turns` | 限制代理回合數（非互動式） | `claude -p --max-turns 3 "query"` |
-| `--debug` | 啟用帶有篩選功能的除錯模式 | `claude --debug "api,mcp"` |
-| `--enable-lsp-logging` | 啟用詳細的 LSP 紀錄 | `claude --enable-lsp-logging` |
+| `--debug` | 啟用帶有過濾功能的除錯模式 | `claud --debug "api,mcp"` |
+| `--enable-lsp-logging` | 啟用詳細的 LSP 日誌記錄 | `claude --enable-lsp-logging` |
 | `--betas` | 用於 API 請求的 Beta 標頭 | `claude --betas interleaved-thinking` |
 | `--plugin-dir` | 從目錄載入外掛（可重複使用） | `claude --plugin-dir ./my-plugin` |
 | `--enable-auto-mode` | 解鎖自動權限模式 | `claude --enable-auto-mode` |
@@ -320,20 +320,26 @@ claude -r "feature-auth" --fork-session "test with different architecture"
 | `--max-budget-usd` | 最大支出限制（列印模式） | `claude -p --max-budget-usd 5.00 "query"` |
 | `--json-schema` | 驗證 JSON 輸出 | `claude -p --json-schema '{"type":"object"}' "q"` |
 
+### 平台與主題說明 (v2.1.112)
+
+- **Windows 上的 PowerShell 工具**：專用的 PowerShell 工具正於 Windows 上陸續推出，並可透過環境變數進行控制。
+- **Auto (match terminal) 主題**：全新的「Auto (match terminal)」主題會將 Claude Code 的淺色/深色外觀與您的終端機同步。
+- **更安靜的權限提示**：唯讀的 `Bash` 調用與 `Glob` 模式不再觸發權限提示。
+
 ### 進階範例
 
 ```bash
 # 限制自主行為
 claude -p --max-turns 5 "refactor this module"
 
-# 除錯 API 呼叫
+# 除錯 API 調用
 claude --debug "api" "test query"
 
 # 啟用 IDE 整合
 claude --ide "help me with this file"
 ```
 
-## Agents 配置
+## Agents 設定
 
 `--agents` 旗標接受一個 JSON 物件，用於定義該會話的自定義子代理。
 
@@ -359,7 +365,7 @@ claude --ide "help me with this file"
   - 格式：`["Read", "Grep", "Glob", "Bash"]`
 - `model` - 使用的模型：`sonnet`、`opus` 或 `haiku`
 
-### 完整 Agents 範例
+### 完整的 Agents 範例
 
 ```json
 {
@@ -376,7 +382,7 @@ claude --ide "help me with this file"
     "model": "opus"
   },
   "documenter": {
-    "description": "用於生成指南的文件的專家。",
+    "description": "用於生成指南的技術文件專家。",
     "prompt": "你是一位技術作家。建立清晰且全面的文件。",
     "tools": ["Read", "Write"],
     "model": "haiku"
@@ -391,7 +397,7 @@ claude --ide "help me with this file"
 claude --agents '{
   "security-auditor": {
     "description": "用於漏洞分析的安全專家",
-    "prompt": "你是一位安全專家。找出漏洞並建議修復方法。",
+    "prompt": "你是一位安全專家。尋找漏洞並建議修復方案。",
     "tools": ["Read", "Grep", "Glob"],
     "model": "opus"
   }
@@ -480,7 +486,7 @@ pipeline {
 
 ### 2. 腳本管線 (Script Piping)
 
-透過 Claude 處理檔案、日誌與數據進行分析。
+透過 Claude 處理檔案、日誌與數據以進行分析。
 
 **日誌分析：**
 
@@ -504,11 +510,11 @@ cat src/auth.ts | claude -p "review this authentication code for security issues
 # 生成文件
 cat src/api/*.ts | claude -p "generate API documentation in markdown"
 
-# 尋找 TODO 並排列優先順序
+# 尋找 TODO 並排序優先權
 grep -r "TODO" src/ | claude -p "prioritize these TODOs by importance"
 ```
 
-### 3. 多會話工作流程
+### 3. 多會話工作流程 (Multi-Session Workflows)
 
 透過多個對話執行緒管理複雜專案。
 
@@ -539,113 +545,684 @@ cat > ~/.claude/agents.json << 'EOF'
     "prompt": "Review code for quality, security, and maintainability.",
 ```
 
-```json
-    "model": "opus"
+"model": "opus"
   },
   "documenter": {
-    "description": "文件專家",
-    "prompt": "生成清晰且全面的文件。",
+    "description": "Documentation specialist
+    "prompt": "Generate clear, comprehensive documentation.",
     "model": "sonnet"
   },
   "refactorer": {
-    "description": "程式碼重構專家",
-    "prompt": "建議並實作乾淨的程式碼重構。",
+    "description": "Code refactoring expert
+    "prompt": "Suggest and implement clean code refactor
     "tools": ["Read", "Edit", "Glob"]
   }
 }
 EOF
 
-# 在會話中使用代理
-claude --agents "$(cat ~/.claude/agents.json)" "review the auth module"
-```
+# Use agents in session
+claude --agents "$(cat ~/.claude/agents.json"
+claude --agents "$(cat ~/.clascript-agents.json"
+  },
+  "refactorer": {
+    "description": "Code refactoring expert",
+    "prompt": "Suggest and implement clean code refactoring."
+  }
+}
+EOF
 
-### 5. 批次處理
+# Use agents in session
+claude --agents "$(cat agents.json"
+claude --agents "$(cat agents.json"
+  },
+  "refactorer": {
+    "description": "Code refactoring expert",
+    "prompt": "Suggest and implement clean code refactoring."
+  }
+}
+EOF
 
-使用一致的設定處理多個查詢。
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "refactorer": {
+    "description": "Code refactoring expert",
+    "prompt": "Suggest and implement clean code refactoring."
+  }
+}
+EOF
 
-```bash
-# 處理多個檔案
-for file in src/*.ts; do
-  echo "Processing $file..."
-  claude -p --model haiku "summarize this file: $(cat $file)" >> summaries.md
-done
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "refactorer": {
+    "description": "Code refactoring expert",
+    "prompt": "Suggest and implement clean code refactoring."
+  }
+}
+EOF
 
-# 批次程式碼審查
-find src -name "*.py" -exec sh -c '
-  echo "## $1" >> review.md
-  cat "$1" | claude -p "brief code review" >> review.md
-' _ {} \;
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "refactorer": {
+    "description": "Code refactoring expert",
+    "prompt": "Suggest and implement clean code refactoring."
+  }
+}
+EOF
 
-# 為所有模組生成測試
-for module in $(ls src/modules/); do
-  claude -p "generate unit tests for src/modules/$module" > "tests/$module.test.ts"
-done
-```
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-### 6. 安全意識開發
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-使用權限控制以確保安全操作。
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-```bash
-# 唯讀安全審查
-claude --permission-mode plan \
-  --tools "Read,Grep,Glob" \
-  "audit this codebase for security vulnerabilities"
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 封鎖危險指令
-claude --disallowedTools "Bash(rm:*)" "Bash(curl:*)" "Bash(wget:*)" \
-  "help me clean up this project"
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 受限自動化
-claude -p --max-turns 2 \
-  --allowedTools "Read" "Glob" \
-  "find all hardcoded credentials"
-```
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-### 7. JSON API 整合
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-將 Claude 作為可程式化的 API，並搭配 `jq` 進行解析。
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-```bash
-# 獲取結構化分析
-claude -p --output-format json \
-  --json-schema '{"type":"object","properties":{"functions":{"type":"array"},"complexity":{"type":"string"}}}' \
-  "analyze main.py and return function list with complexity rating"
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 整合 jq 進行處理
-claude -p --output-format json "list all API endpoints" | jq '.endpoints[]'
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 在腳本中使用
-RESULT=$(claude -p --output-format json "is this code secure? answer with {secure: boolean, issues: []}" < code.py)
-if echo "$RESULT" | jq -e '.secure == false' > /dev/null; then
-  echo "Security issues found!"
-  echo "$RESULT" | jq '.issues[]'
-fi
-```
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-### jq 解析範例
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-使用 `jq` 解析並處理 Claude 的 JSON 輸出：
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-```bash
-# 提取特定欄位
-claude -p --output-format json "analyze this code" | jq '.result'
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 過濾陣列元素
-claude -p --output-format json "list issues" | jq -r '.issues[] | select(.severity=="high")'
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 提取多個欄位
-claude -p --output-format json "describe the project" | jq -r '.{name, version, description}'
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 轉換為 CSV
-claude -p --output-format json "list functions" | jq -r '.functions[] | [.name, .lineCount] | @csv'
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 條件式處理
-claude -p --output-format json "check security" | jq 'if .vulnerabilities | length > 0 then "UNSAFE" else "SAFE" end'
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
 
-# 提取巢狀值
-claude -p --output-format json "analyze performance" | jq '.metrics.cpu.usage'
-```
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
+  "description": "Code refactoring expert",
+  "prompt": "Suggest and implement clean code refactoring."
+}
+EOF
+
+# Use agents in session
+claude --agents "$(cat agents.json
+  },
 
 # 處理整個陣列
 claude -p --output-format json "find todos" | jq '.todos | length'
@@ -662,7 +1239,7 @@ Claude Code 支援具有不同能力的複數模型：
 
 | 模型 | ID | 上下文視窗 | 備註 |
 |-------|-----|----------------|-------|
-| Opus 4.6 | `claude-opus-4-6` | 1M tokens | 能力最強，具備適應性努力層級 |
+| Opus 4.7 | `claude-opus-4-7` | 1M tokens | 能力最強，具備適應性努力層級 |
 | Sonnet 4.6 | `claude-sonnet-4-6` | 1M tokens | 速度與能力的平衡 |
 | Haiku 4.5 | `claude-haiku-4-5` | 1M tokens | 最快，適合快速任務 |
 
@@ -681,28 +1258,28 @@ claude --model opusplan "design and implement the API"
 /fast
 ```
 
-### 努力層級 (Opus 4.6)
+### 努力層級 (Opus 4.7)
 
-Opus 4.6 支援具備努力層級的適應性推理：
+Opus 4.7 支援透過努力層級進行適應性推理，由輕到重排序為：`low` (○)、`medium` (◐)、`high` (●)、`xhigh` (v2.1.111 新增)，以及 `max` (僅限 Opus 4.7)。Opus 4.7 的預設值為 `xhigh`。
 
 ```bash
 # 透過 CLI 旗標設定努力層級
-claude --effort high "complex review"
+claude --effort xhigh "complex review"
 
 # 透過斜線命令設定努力層級
-/effort high
+/effort xhigh
 
 # 透過環境變數設定努力層級
-export CLAUDE_CODE_EFFORT_LEVEL=high   # low, medium, high, 或 max (僅限 Opus 4.6)
+export CLAUDE_CODE_EFFORT_LEVEL=xhigh   # low, medium, high, xhigh (Opus 4.7 預設值), 或 max (僅限 Opus 4.7)
 ```
 
-提示詞中的 "ultrathink" 關鍵字會啟動深度推理。`max` 努力層級為 Opus 4.6 專屬。
+提示詞中的 "ultrathink" 關鍵字會啟動深度推理。`max` 努力層級為 Opus 4.7 專屬。
 
 ---
 
 ## 關鍵環境變數
 
-| 變數 | 描述 |
+| 變數 | 說明 |
 |----------|-------------|
 | `ANTHROPIC_API_KEY` | 用於身分驗證的 API key |
 | `ANTHROPIC_MODEL` | 覆蓋預設模型 |
@@ -710,10 +1287,10 @@ export CLAUDE_CODE_EFFORT_LEVEL=high   # low, medium, high, 或 max (僅限 Opus
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | 覆蓋預設 Opus 模型 ID |
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | 覆蓋預設 Sonnet 模型 ID |
 | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | 覆蓋預設 Haiku 模型 ID |
-| `MAX_THINKING_TOKENS` | 設定擴展思考的 token 預算 |
-| `CLAUDE_CODE_EFFORT_LEVEL` | 設定努力層級 (`low`/`medium`/`high`/`max`) |
-| `CLAUDE_CODE_SIMPLE` | 極簡模式，由 `--bare` 旗標設定 |
-| `CLAUDE_CODE_DISABLE_AUTO_MEMORY` | 停用自動 CLAUDE.md 更新 |
+| `MAX_THINKING_TOKENS` | 設定延伸思考的 token 預算 |
+| `CLAUDE_CODE_EFFORT_LEVEL` | 設定努力程度 (`low`/`medium`/`high`/`xhigh`/`max`) — `xhigh` 是 Opus 4.7 的預設值；`max` 僅適用於 Opus 4.7 |
+| `CLAUDE_CODE_SIMPLE` | 最小模式，由 `--bare` 旗標設定 |
+| `CLAUDE_CODE_DISABLE_AUTO_MEMORY` | 停用自動更新 CLAUDE.md |
 | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` | 停用背景任務執行 |
 | `CLAUDE_CODE_DISABLE_CRON` | 停用排程/cron 任務 |
 | `CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS` | 停用 git 相關指令 |
@@ -722,11 +1299,10 @@ export CLAUDE_CODE_EFFORT_LEVEL=high   # low, medium, high, 或 max (僅限 Opus
 | `CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK` | 停用非串流回退機制 |
 | `CLAUDE_CODE_ENABLE_TASKS` | 啟用任務列表功能 |
 | `CLAUDE_CODE_TASK_LIST_ID` | 跨會話共用的具名任務目錄 |
-| `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION` | 切換提示詞建議 (`true`/`false`) |
+| `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION` | 切換提示詞建議功能 (`true`/`false`) |
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | 啟用實驗性代理團隊 |
 | `CLAUDE_CODE_NEW_INIT` | 使用新的初始化流程 |
-| `CLAUDE_CODE_SUBAGENT_MODEL` | 子代理執行的模型 |
-
+| `CLAUDE_CODE_SUBAGENT_MODEL` | 用於子代理執行的模型 |
 | `CLAUDE_CODE_PLUGIN_SEED_DIR` | 外掛種子檔案目錄 |
 | `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` | 從子程序中清除的環境變數 |
 | `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 覆蓋自動壓縮百分比 |
@@ -740,7 +1316,7 @@ export CLAUDE_CODE_EFFORT_LEVEL=high   # low, medium, high, 或 max (僅限 Opus
 
 ## 快速參考
 
-### 最常用的命令
+### 最常用命令
 
 ```bash
 # 互動式會話
@@ -766,16 +1342,16 @@ claude -p --output-format json "query"
 | 快速程式碼審查 | `cat file | claude -p "review"` |
 | 結構化輸出 | `claude -p --output-format json "query"` |
 | 安全探索 | `claude --permission-mode plan` |
-| 具備安全性的自主模式 | `claude --enable-auto-mode --permission-mode auto` |
+| 帶有安全性的自主模式 | `claude --enable-auto-mode --permission-mode auto` |
 | CI/CD 整合 | `claude -p --max-turns 3 --output-format json` |
 | 恢復工作 | `claude -r "session-name"` |
 | 自定義模型 | `claude --model opus "complex task"` |
-| 精簡模式 | `claude --bare "quick query"` |
+| 極簡模式 | `claude --bare "quick query"` |
 | 預算限制執行 | `claude -p --max-budget-usd 2.00 "analyze code"` |
 
 ---
 
-## Troubleshooting
+## 除錯
 
 ### Command Not Found
 
@@ -802,7 +1378,7 @@ claude -p --output-format json "query"
 **解決方案：**
 - 列出可用會話以尋找正確的名稱/ID
 - 會話可能會在一段時間不活動後過期
-- 使用 `-c` 來繼續最近的會話
+- 使用 `-c` 來繼續最近一次的會話
 
 ### Output Format Issues
 
@@ -819,30 +1395,31 @@ claude -p --output-format json "query"
 
 **解決方案：**
 - 檢查 `--permission-mode` 設定
-- 檢查 `--allowedTools` 與 `--disallowedTools` 旗標
+- 檢查 `--allowedTools` 與 `--disallowedTools` 參數
 - 使用 `--dangerously-skip-permissions` 進行自動化（請謹慎使用）
 
 ---
 
-## Additional Resources
+## 其他資源
 
 - **[Official CLI Reference](https://code.claude.com/docs/en/cli-reference)** - 完整的指令參考
 - **[Headless Mode Documentation](https://code.claude.com/docs/en/headless)** - 自動化執行
 - **[Slash Commands](../01-slash-commands/)** - Claude 內部的自定義快捷鍵
-- **[Memory Guide](../02-memory/)** - 透過 CLAUDE.md 實現持久化上下文
+- **[Memory Guide](../02-memory/)** - 透過 CLAUDE.md 實現的持久化上下文
 - **[MCP Protocol](../05-mcp/)** - 外部工具整合
 - **[Advanced Features](../09-advanced-features/)** - 規劃模式、延伸思考
 - **[Subagents Guide](../04-subagents/)** - 委派任務執行
 
 ---
 
-*屬於 [Claude How To](../) 指南系列的一部分*
+*本文件為 [Claude How To](../) 指南系列的一部分*
 
 ---
+
 **最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+**Claude Code 版本**：2.1.112
 **來源**：
-- https://code.claude.com/docs/en/cli-reference
-- https://code.claude.com/docs/en/commands
-- https://code.claude.com/docs/en/headless
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://docs.anthropic.com/en/docs/claude-code
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

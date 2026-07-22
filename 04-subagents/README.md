@@ -5,7 +5,7 @@
 
 # Subagents - 完整參考指南
 
-Subagents 是 Claude Code 可以委派任務的專業化 AI 助手。每個 subagent 都有特定的用途，使用與主對話分離的獨立上下文視窗，並且可以配置特定的工具與自定義的系統提示詞。
+Subagents 是專門的 AI 助手，Claude Code 可以將任務委派給它們。每個 subagent 都有特定的用途，使用與主對話分離的獨立上下文視窗，並且可以配置特定的工具與自定義的系統提示詞。
 
 ## 目錄
 
@@ -16,7 +16,7 @@ Subagents 是 Claude Code 可以委派任務的專業化 AI 助手。每個 suba
 5. [內建 Subagents](#built-in-subagents)
 6. [管理 Subagents](#managing-subagents)
 7. [使用 Subagents](#using-subagents)
-8. [可續行的代理](#resumable-agents)
+8. [可續行的代理 (Resumable Agents)](#resumable-agents)
 9. [鏈結 Subagents](#chaining-subagents)
 10. [Subagents 的持久化記憶](#persistent-memory-for-subagents)
 11. [背景 Subagents](#background-subagents)
@@ -45,7 +45,7 @@ Subagents 透過以下方式在 Claude Code 中實現委派任務執行：
 - 防止複雜任務導致的**上下文污染**
 - 實現多個專業任務的**並行執行**
 
-每個 subagent 都以乾淨的狀態獨立運作，僅接收執行任務所需的特定上下文，然後將結果回傳給主代理進行整合。
+每個 subagent 都以乾淨的狀態獨立運作，僅接收執行任務所需的特定上下文，然後將結果回傳給主代理進行綜合處理。
 
 **快速入門**：使用 `/agents` 斜線命令以互動方式建立、查看、編輯及管理您的 subagents。
 
@@ -59,7 +59,7 @@ Subagents 透過以下方式在 Claude Code 中實現委派任務執行：
 | **專業知識** | 針對特定領域進行微調，具有更高的成功率 |
 | **可重用性** | 可跨不同專案使用並與團隊共享 |
 | **靈活的權限** | 為不同類型的 subagent 提供不同的工具存取層級 |
-| **可擴展性** | 多個代理可同時處理不同面向的任務 |
+| **可擴展性** | 多個代理可同時處理不同的面向 |
 
 ---
 
@@ -70,7 +70,7 @@ Subagent 檔案可以儲存在具有不同範圍的多個位置：
 | 優先順序 | 類型 | 位置 | 範圍 |
 |----------|------|----------|-------|
 | 1 (最高) | **CLI 定義** | 透過 `--agents` 旗標 (JSON) | 僅限當前會話 |
-| 2 | **專案 subagents** | `.claude/agents/` | 目前專案 |
+| 2 | **專案 subagents** | `.claude/agents/` | 當前專案 |
 | 3 | **使用者 subagents** | `~/.claude/agents/` | 所有專案 |
 | 4 (最低) | **外掛代理** | 外掛的 `agents/` 目錄 | 透過外掛使用 |
 
@@ -123,7 +123,7 @@ to solving problems.
 | `description` | 是 | 用自然語言描述用途。包含 "use PROACTIVELY" 以鼓勵自動調用 |
 | `tools` | 否 | 以逗號分隔的特定工具列表。省略則繼承所有工具。支援 `Agent(agent_name)` 語法以限制可產生的 subagents |
 | `disallowedTools` | 否 | 以逗號分隔的 subagent 禁止使用的工具列表 |
-| `model` | 否 | 使用的模型：`sonnet`、`opus`、`haiku`、完整模型 ID 或 `inherit`。預設為已設定的 subagent 模型 |
+| `model` | 否 | 使用的模型：`sonnet`、`opus`、`haiku`、完整模型 ID，或 `inherit`。預設為已設定的 subagent 模型 |
 | `permissionMode` | 否 | `default`、`acceptEdits`、`dontAsk`、`bypassPermissions`、`plan` |
 | `maxTurns` | 否 | subagent 可進行的最大代理回合數 |
 | `skills` | 否 | 以逗號分隔的預載技能列表。啟動時會將完整的技能內容注入 subagent 的上下文 |
@@ -144,112 +144,738 @@ name: full-access-agent
 description: Agent with all available tools
 ```
 
----
-```
-
 **選項 2：指定個別工具**
 ```yaml
 ---
 name: limited-agent
-description: 僅具備特定工具的代理
-tools: Read, Grep, Glob, Bash
----
+description: 僅限於提供對代碼庫-。
+description: 僅限於提供-
 ```
 
 **選項 3：條件式工具存取**
 ```yaml
 ---
 name: conditional-agent
-description: 具有過濾工具存取權限的代理
-tools: Read, Bash(npm:*), Bash(test:*)
+description: 僅限於提供-
+description: 
+```
+
+### CLI-based configuration
+
+使用 `--agents` 旗標定義單一會話中的子代理
+```
+
+**Option 2: Specify Individual Tools
+```yaml
+---
+name: limited-agent
+description: Agent with specific tools only
+tools: Read, Grep, Glob, Bash
 ---
 ```
 
-### 基於 CLI 的配置
+**Option 3: Conditional Tool Access
+```yaml
+---
+name: conditional-agent
+description: Agent with filtered tool access
+tools: Read, Grep, Glob, Bash(npm:
+```
 
-使用 `--agents` 旗標搭配 JSON 格式，為單一會話定義子代理：
+### CLI-Based Configuration
 
+使用 `--agents` 旗標定義單一會話中的 subagents
 ```bash
 claude --agents '{
   "code-reviewer": {
-    "description": "專家級程式碼審查員。在程式碼變更後主動使用。",
-    "prompt": "你是一位資深程式碼審查員。專注於程式碼品質、安全性與最佳實踐。",
-    "tools": ["Read", "Grep", "Glob", "Bash"],
-    "model": "sonnet"
-  }
-}'
+    "description:
 ```
 
-**`--agents` 旗標的 JSON 格式：**
+**JSON Format for `--agents` flag:
 
 ```json
 {
-  "agent-name": {
-    "description": "必填：何時呼叫此代理",
-    "prompt": "必填：代理的系統提示詞",
-    "tools": ["選填", "工具", "陣列"],
-    "model": "選填：sonnet|opus|haiku"
-  }
-}
+  "agent-name:
 ```
 
-**代理定義的優先順序：**
+**Priority of Agent Definitions:
 
-代理定義按以下優先順序載入（先匹配者勝）：
-1. **CLI 定義** - `--agents` 旗標（僅限當前會話，JSON 格式）
-2. **專案層級** - `.claude/agents/`（當前專案）
-3. **使用者層級** - `~/.claude/agents/`（所有專案）
-4. **外掛層級** - 外掛的 `agents/` 目錄
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-only
+```json
+{
+  "agent-name:
+```
 
-這使得 CLI 定義可以在單一會話中覆蓋所有其他來源。
+**Priority of Agent Definitions:
 
----
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
 
-## 內建子代理
+**Priority of Agent Definitions:
 
-Claude Code 包含數個隨時可用的內建子代理：
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
 
-| 代理 | 模型 | 用途 |
-|-------|-------|---------|
-| **general-purpose** | 繼承 | 複雜的多步驟任務 |
-| **Plan** | 繼承 | 規劃模式下的研究 |
-| **Explore** | Haiku | 唯讀程式碼庫探索（快速/中等/極其徹底） |
-| **Bash** | 繼承 | 在獨立上下文中的終端機指令 |
-| **statusline-setup** | Sonnet | 配置狀態列 |
-| **Claude Code Guide** | Haiku | 回答 Claude Code 功能相關問題 |
+**Priority of Agent Definitions:
 
-### General-Purpose 子代理
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
 
-| 屬性 | 值 |
-|----------|-------|
-| **模型** | 繼承自父層 |
-| **工具** | 所有工具 |
-| **用途** | 複雜的研究任務、多步驟操作、程式碼修改 |
+**Priority of Agent Definitions:
 
-**使用時機**：需要同時進行探索與修改，且涉及複雜推理的任務。
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
 
-### Plan 子代理
+**Priority of Agent Definitions:
 
-| 屬性 | 值 |
-|----------|-------|
-| **模型** | 繼承自父層 |
-| **工具** | Read, Glob, Grep, Bash |
-| **用途** | 在規劃模式中自動用於研究程式碼庫 |
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
 
-**使用時機**：當 Claude 在提出計畫前需要理解程式碼庫時。
+**Priority of Agent Definitions:
 
-### Explore 子代理
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--name:
+```
 
-| 屬性 | 值 |
-|----------|-------|
-| **模型** | Haiku (快速、低延遲) |
-| **模式** | 嚴格唯讀 |
-| **工具** | Glob, Grep, Read, Bash (僅限唯讀指令) |
-| **用途** | 快速的程式碼庫搜尋與分析 |
+**Priority of Agent Definitions:
 
-**使用時機**：在不進行任何變更的情況下搜尋或理解程式碼。
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
 
-**徹底程度層級** - 指定探索的深度：
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-name:
+```
+
+**Priority of Agent Definitions:
+
+Agent definitions are loaded with this priority order (first match wins):
+1. **CLI-defined** - `--agents` flag (session-
+```json
+{
+  "agent-
 
 - **"quick"** - 快速搜尋且僅進行極少量的探索，適合尋找特定模式
 - **"medium"** - 中度探索，在速度與徹底性之間取得平衡，為預設方式
@@ -324,16 +950,16 @@ mkdir -p ~/.claude/agents
 
 ---
 
-## 使用 Subagents
+## 使用子代理
 
 ### 自動委派
 
 Claude 會根據以下資訊主動委派任務：
 - 您請求中的任務描述
-- Subagent 設定中的 `description` 欄位
+- 子代理配置中的 `description` 欄位
 - 目前的上下文與可用工具
 
-為了鼓勵主動使用，請在您的 `description` 欄位中加入「use PROACTIVELY」或「MUST BE USED」：
+為了鼓勵主動使用，請在您的 `description` 欄位中包含「use PROACTIVELY」或「MUST BE USED」：
 
 ```yaml
 ---
@@ -344,7 +970,7 @@ description: Expert code review specialist. Use PROACTIVELY after writing or mod
 
 ### 明確調用
 
-您可以明確要求使用特定的 subagent：
+您可以明確要求使用特定的子代理：
 
 ```
 > Use the test-runner subagent to fix failing tests
@@ -354,7 +980,7 @@ description: Expert code review specialist. Use PROACTIVELY after writing or mod
 
 ### @-Mention 調用
 
-使用 `@` 前綴來確保特定的 subagent 被調用（這會繞過自動委派的啟發式演算法）：
+使用 `@` 前綴來確保特定的子代理被調用（這會繞過自動委派的啟發式邏輯）：
 
 ```
 > @"code-reviewer (agent)" review the auth module
@@ -362,7 +988,7 @@ description: Expert code review specialist. Use PROACTIVELY after writing or mod
 
 ### 全會話代理
 
-使用特定的 agent 作為主要代理來執行整個會話：
+使用特定的代理作為主要代理來執行整個會話：
 
 ```bash
 # 透過 CLI 參數
@@ -376,7 +1002,7 @@ claude --agent code-reviewer
 
 ### 列出可用代理
 
-使用 `claude agents` 指令來列出所有來源中已設定的代理：
+使用 `claude agents` 命令來列出所有來源中配置的所有代理：
 
 ```bash
 claude agents
@@ -386,7 +1012,7 @@ claude agents
 
 ## 可續接代理
 
-Subagents 可以繼續之前的對話，並完整保留上下文：
+子代理可以繼續之前的對話，並完整保留上下文：
 
 ```bash
 # 初始調用
@@ -399,12 +1025,12 @@ Subagents 可以繼續之前的對話，並完整保留上下文：
 
 **使用案例**：
 - 跨多個會話的長期研究
-- 不失上下文的迭代精煉
+- 不丟失上下文的迭代精煉
 - 維持上下文的多步驟工作流程
 
 ---
 
-## 串聯子代理
+## 鏈結子代理
 
 依序執行多個子代理：
 
@@ -421,7 +1047,7 @@ Subagents 可以繼續之前的對話，並完整保留上下文：
 
 `memory` 欄位為子代理提供了一個在不同會話之間持續存在的持久化目錄。這讓子代理能夠隨著時間累積知識，儲存筆記、發現以及在不同會話之間持續存在的上下文。
 
-### 記憶範圍 (Memory Scopes)
+### 記憶範圍
 
 | 範圍 | 目錄 | 使用情境 |
 |-------|-----------|----------|
@@ -529,14 +1155,14 @@ graph TB
 ```
 
 - 子代理在獨立分支的專屬 git worktree 中進行操作
-- 如果子代理沒有進行任何變更，worktree 會自動清理
+- 如果子代理沒有進行任何變更，worktree 將會自動清理
 - 如果存在變更，則會將 worktree 路徑與分支名稱回傳給主代理進行審查或合併
 
 ---
 
-## 限制可生成的子代理
+## 限制可產生的子代理
 
-您可以透過在 `tools` 欄位中使用 `Agent(agent_type)` 語法，來控制特定子代理被允許生成的子代理。這提供了一種為委派任務建立特定子代理白名單的方法。
+您可以透過在 `tools` 欄位中使用 `Agent(agent_type)` 語法，來控制特定的子代理允許產生哪些子代理。這提供了一種為委派工作設定特定子代理白名單的方法。
 
 > **注意**：在 v2.1.63 中，`Task` 工具已重新命名為 `Agent`。現有的 `Task(...)` 引用仍可作為別名使用。
 
@@ -553,13 +1179,13 @@ You are a coordinator agent. You can delegate work to the "worker" and
 "researcher" subagents only. Use Read and Bash for your own exploration.
 ```
 
-在此範例中，`coordinator` 子代理只能生成 `worker` 和 `researcher` 子代理。它無法生成任何其他子代理，即使它們是在其他地方定義的。
+在此範例中，`coordinator` 子代理只能產生 `worker` 和 `researcher` 子代理。它無法產生任何其他子代理，即使它們是在其他地方定義的。
 
 ---
 
 ## `claude agents` CLI 命令
 
-`claude agents` 命令會列出所有配置的代理，並按來源（內建、使用者層級、專案層級）進行分組：
+`claude agents` 命令會列出所有已配置的代理，並按來源（內建、使用者層級、專案層級）進行分組：
 
 ```bash
 claude agents
@@ -578,18 +1204,18 @@ Agent Teams 協調多個 Claude Code 實例共同處理複雜任務。與子代�
 
 > **官方文件**：[code.claude.com/docs/en/agent-teams](https://code.claude.com/docs/en/agent-teams)
 
-> **注意**：Agent Teams 是實驗性功能，預設為停用狀態。需要 Claude Code v2.1.32+。請在使用前啟用它。
+> **注意**：Agent Teams 是實驗性功能，預設為禁用狀態。需要 Claude Code v2.1.32+。請在使用前啟用它。
 
 ### 子代理 vs Agent Teams
 
-| 項目 | 子代理 | Agent Teams |
+| 方面 | 子代理 | Agent Teams |
 |--------|-----------|-------------|
 | **委派模型** | 父代理委派子任務，並等待結果 | 團隊領導協調工作，團隊成員獨立執行 |
-| **上下文** | 每個子任務擁有全新的上下文，結果會被提煉回傳 | 每位團隊成員維持其各自的持久性上下文視窗 |
-| **協調方式** | 循序或並行，由父代理管理 | 共享任務列表，具備自動依賴管理功能 |
+| **上下文** | 每個子任務擁有全新的上下文，結果會被提煉回傳 | 每位團隊成員維持各自的持久性上下文視窗 |
+| **協調** | 循序或並行，由父代理管理 | 共享任務列表，具備自動依賴管理功能 |
 | **通訊** | 僅將結果回傳給父代理（無代理間訊息傳遞） | 團隊成員可以透過信箱直接互相傳送訊息 |
 | **會話恢復** | 支援 | 處理中的團隊成員不支援 |
-| **最佳適用場景** | 專注且定義明確的子任務 | 需要代理間通訊與並行執行的複雜工作 |
+| **最佳用途** | 專注且定義明確的子任務 | 需要代理間通訊與並行執行的複雜工作 |
 
 ### 啟用 Agent Teams
 
@@ -615,93 +1241,819 @@ export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 
 ```
 
-User: Build the authentication module. Use a team — one teammate for the API endpoints,
-      one for the database schema, and one for the test suite.
+User: Build the authentication module. Use a team — one teammate for the API endpoints, one for the database schema, and one for the test suite.
 ```
 
-Claude 將會自動建立團隊、分配任務並協調工作。
-
-### 顯示模式
-
-控制隊友活動的顯示方式：
-
-| 模式 | 旗標 | 說明 |
-|------|------|-------------|
-| **Auto** | `--teammate-mode auto` | 自動為您的終端機選擇最佳顯示模式 |
-| **In-process** (預設) | `--teammate-mode in-process` | 在目前的終端機中以行內方式顯示隊友輸出 |
-| **Split-panes** | `--teammate-mode tmux` | 在獨立的 tmux 或 iTerm2 窗格中開啟每個隊友 |
-
-```bash
-claude --teammate-mode tmux
-```
-
-您也可以在 `settings.json` 中設定顯示模式：
-
-```json
-{
-  "teammateMode": "tmux"
-}
-```
-
-> **注意**：Split-pane 模式需要 tmux 或 iTerm2。它不支援 VS Code terminal、Windows Terminal 或 Ghostty。
-
-### 導覽
-
-在 split-pane 模式下，使用 `Shift+Down` 可以在隊友之間進行切換。
-
-### 團隊配置
-
-團隊配置儲存在 `~/.claude/teams/{team-name}/config.json`。
-
-### 架構
-
-```mermaid
-graph TB
-    Lead["Team Lead<br/>(Coordinator)"]
-    TaskList["Shared Task List<br/>(Dependencies)"]
-    Mailbox["Mailbox<br/>(Messages)"]
-    T1["Teammate 1<br/>(Own Context)"]
-    T2["Teammate 2<br/>(Own Context)"]
-    T3["Teammate 3<br/>(Own Context)"]
-
-    Lead -->|assigns tasks| TaskList
-    Lead -->|sends messages| Mailbox
-    TaskList -->|picks up work| T1
-    TaskList -->|picks up work| T2
-    TaskList -->|picks up work| T3
-    T1 -->|reads/writes| Mailbox
-    T2 -->|reads/writes| Mailbox
-    T3 -->|reads/writes| Mailbox
-    T1 -->|updates status| TaskList
-    T2 -->|updates status| TaskList
-    T3 -->|updates status| TaskList
-
-    style Lead fill:#e1f5fe,stroke:#333,color:#333
-    style TaskList fill:#fff9c4,stroke:#333,color:#333
-    style Mailbox fill:#f3e5f5,stroke:#333,color:#333
-    style T1 fill:#e8f5e9,stroke:#333,color:#333
-    style T2 fill:#e8f5e9,stroke:#333,color:#333
-    style T3 fill:#e8f5e9,stroke:#333,color:#333
-```
-
-**關鍵組件**：
-
-- **Team Lead**：主要的 Claude Code 會話，負責建立團隊、分配任務與協調
-- **Shared Task List**：同步的任務列表，具有自動依賴追蹤功能
-- **Mailbox**：代理間的訊息系統，供隊友溝通狀態與進行協調
-- **Teammates**：獨立的 Claude Code 實例，每個實例都有各自的上下文視窗
-
-### 任務分配與訊息傳遞
-
-團隊領導者將工作拆解為任務並分配給隊友。共享任務列表負責處理：
-
-- **自動依賴管理** — 任務會等待其依賴項完成
-- **狀態追蹤** — 隊友在工作時會更新任務狀態
-- **代理間訊息傳遞** — 隊友透過 mailbox 發送訊息進行協調（例如：「資料庫 schema 已就緒，你可以開始撰寫查詢語句了」）
-
-### 計劃審核工作流程
-
-對於複雜任務，團隊領導者會在隊友開始工作前建立執行計劃。使用者會審查並核准該計劃，確保團隊的處理方式符合預期，然後才進行任何程式碼變更。
+Claude will create the team, assign tasks, and coordinate tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
+| tasks and dependencies
 
 ### 團隊的 Hook 事件
 
@@ -717,19 +2069,19 @@ Agent Teams 引入了兩個額外的 [hook 事件](../06-hooks/)：
 - **團隊規模**：將團隊人數維持在 3-5 名隊友，以獲得最佳協調性
 - **任務規模**：將工作拆解為每個任務耗時 5-15 分鐘的任務 — 足夠小以便並行處理，也足夠大以具備意義
 - **避免檔案衝突**：將不同的檔案或目錄指派給不同的隊友，以防止合併衝突
-- **從簡單開始**：在建立第一個團隊時使用 in-process 模式；熟悉後再切換到 split-panes 模式
+- **從簡單開始**：在建立第一個團隊時使用 in-process 模式；熟悉後再切換到 split-panes
 - **清晰的任務描述**：提供具體且可執行的任務描述，以便隊友可以獨立工作
 
 ### 限制
 
 - **實驗性功能**：功能行為可能會在未來的版本中發生變化
-- **無法恢復會話**：in-process 模式下的隊友在會話結束後無法恢復
+- **無法恢復會話**：in-process 隊友在會話結束後無法恢復
 - **單一會話僅限一個團隊**：無法在單一會話中建立巢狀團隊或多個團隊
 - **固定領導地位**：團隊領導角色無法轉移給其他隊友
-- **Split-pane 限制**：需要 tmux/iTerm2；無法在 VS Code terminal、Windows Terminal 或 Ghostty 中使用
+- **Split-pane 限制**：需要 tmux/iTerm2；不支援 VS Code terminal、Windows Terminal 或 Ghostty
 - **無跨會話團隊**：隊友僅存在於當前會話中
 
-> **警告**：Agent Teams 是實驗性功能。請先使用非關鍵性工作進行測試，並監控隊友協調情況以觀察是否有非預期的行為。
+> **警告**：Agent Teams 是實驗性功能。請先使用非關鍵工作進行測試，並監控隊友協調情況以觀察是否有非預期的行為。
 
 ---
 
@@ -739,7 +2091,7 @@ Agent Teams 引入了兩個額外的 [hook 事件](../06-hooks/)：
 
 - `hooks` - 不得定義生命週期鉤子
 - `mcpServers` - 不得配置 MCP servers
-- `permissionMode` - 不得覆寫權限設定
+- `permissionMode` - 不得覆蓋權限設定
 
 這可以防止外掛透過 subagent hooks 進行權限提升或執行任意指令。
 
@@ -815,7 +2167,7 @@ graph TB
 ### 重點
 
 - 每個子代理都會獲得一個**全新的上下文視窗**，且不包含主對話歷史
-- 僅將**相關的上下文**傳遞給子代理以執行其特定任務
+- 僅將**相關的上下文**傳遞給子代理，以處理其特定任務
 - 結果會被**精煉**後回傳給主代理
 - 這能防止在長期專案中發生**上下文 token 耗盡**的問題
 
@@ -904,7 +2256,7 @@ graph TB
 
 ## 此資料夾中的範例子代理
 
-此資料夾包含可直接使用的範例子代理：
+此資料夾包含即插即用的範例子代理：
 
 ### 1. Code Reviewer (`code-reviewer.md`)
 
@@ -966,7 +2318,7 @@ graph TB
 - 資料外洩風險
 - 注入攻擊識別
 
-**使用時機**：當你需要在不具備修改能力的情況下進行安全審核時
+**使用時機**：當你需要在不具備修改能力的情況下進行安全審計時
 
 ---
 
@@ -1030,7 +2382,7 @@ graph TB
 1. 選擇 'Create New Agent'
 2. 選擇專案層級或使用者層級
 3. 詳細描述您的子代理
-4. 選擇要授予存取權的工具（或留空以繼承所有權限）
+4. 選擇要授予存取權的工具（或留白以繼承所有權限）
 5. 儲存並使用
 
 ### 方法 2：複製到專案
@@ -1053,10 +2405,10 @@ rm .claude/agents/README.md
 
 ### 方法 3：複製到使用者目錄
 
-若要讓代理在您所有的專案中皆可用：
+適用於在您所有專案中皆可使用的代理：
 
 ```bash
-# 建立使用者 agents 目錄
+# 建立使用者代理目錄
 mkdir -p ~/.claude/agents
 
 # 複製代理
@@ -1067,7 +2419,7 @@ cp /path/to/04-subagents/debugger.md ~/.claude/agents/
 
 ### 驗證
 
-安裝完成後，驗證代理是否已被識別：
+安裝完成後，驗證代理是否已被辨識：
 
 ```bash
 /agents
@@ -1137,15 +2489,18 @@ graph TD
 
 - [Official Subagents Documentation](https://code.claude.com/docs/en/sub-agents)
 - [CLI Reference](https://code.claude.com/docs/en/cli-reference) - `--agents` 旗標與其他 CLI 選項
-- [Plugins Guide](../07-plugins/) - 用於將 agents 與其他功能進行打包
+- [Plugins Guide](../07-plugins/) - 用於將 agent 與其他功能進行打包
 - [Skills Guide](../03-skills/) - 用於自動觸發的能力
 - [Memory Guide](../02-memory/) - 用於持久化上下文
 - [Hooks Guide](../06-hooks/) - 用於事件驅動的自動化
 
 ---
 **最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+**Claude Code 版本**：2.1.112
 **來源**：
-- https://code.claude.com/docs/en/sub-agents
+- https://docs.anthropic.com/en/docs/claude-code
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+- https://docs.anthropic.com/en/docs/claude-code/sub-agents
 - https://code.claude.com/docs/en/agent-teams
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

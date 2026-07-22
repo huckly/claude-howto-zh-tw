@@ -5,11 +5,11 @@
 
 # Claude Code Plugins
 
-此資料夾包含完整的外掛範例，將多個 Claude Code 功能整合為具備凝聚力且可安裝的套件。
+此資料夾包含完整的外掛範例，將多個 Claude Code 功能打包成具備凝聚力且可安裝的套件。
 
 ## 概觀
 
-Claude Code Plugins 是整合後的自定義集合（包含斜線命令、子代理、MCP servers 與鉤子），只需透過單一指令即可完成安裝。它們代表了最高層級的擴充機制——將多個功能組合為凝聚力強且可共用的套件。
+Claude Code Plugins 是將多種自定義功能（斜線命令、子代理、MCP servers 與鉤子）打包在一起的集合，只需透過單一指令即可完成安裝。它們代表了最高層級的擴充機制——將多個功能整合為凝聚力強且可共用的套件。
 
 ## 外掛架構
 
@@ -58,92 +58,1349 @@ sequenceDiagram
     Tools-->>Claude: Plugin installed ✅
 ```
 
-## 外掛類型與分發
+## 外掛類型與分發方式
 
-| 類型 | 範圍 | 共享對象 | 權限 | 範例 |
+| 類型 | 範圍 | 共享 | 權限 | 範例 |
 |------|-------|--------|-----------|----------|
-| Official | 全域 | 所有使用者 | Anthropic | PR Review, Security Guidance |
-| Community | 公開 | 所有使用者 | 社群 | DevOps, Data Science |
-| Organization | 內部 | 團隊成員 | 公司 | 內部標準、工具 |
-| Personal | 個人 | 單一使用者 | 開發者 | 自定義工作流程 |
-
-## 外掛定義結構
-
-外掛清單使用 `.claude-plugin/plugin.json` 中的 JSON 格式：
-
-```json
-{
-  "name": "my-first-plugin",
-  "description": "A greeting plugin",
-  "version": "1.0.0",
-  "author": {
-    "name": "Your Name"
-  },
-  "homepage": "https://example.com",
-  "repository": "https://github.com/user/repo",
-  "license": "MIT"
-}
-```
-
-## 外掛結構範例
-
-```
-my-plugin/
-├── .claude-plugin/
-│   └── plugin.json       # Manifest (name, description, version, author)
-├── commands/             # 以 Markdown 檔案形式呈現的技能
-│   ├── task-1.md
-│   ├── task-2.md
-│   └── workflows/
-├── agents/               # 自定義代理定義
-│   ├── specialist-1.md
-│   ├── specialist-2.md
-│   └── configs/
-├── skills/               # 包含 SKILL.md 檔案的代理技能
-│   ├── skill-1.md
-│   └── skill-2.md
-├── hooks/                # hooks.json 中的事件處理器
-│   └── hooks.json
-├── .mcp.json             # MCP server 配置
-├── .lsp.json             # 用於程式碼智慧的 LSP server 配置
-├── bin/                  # 當外掛啟用時，會被加入 Bash 工具 PATH 的執行檔
-├── settings.json         # 外掛啟用時套用的預設設定 (目前僅支援 `agent` 鍵)
-├── templates/
-│   └── issue-template.md
-├── scripts/
-│   ├── helper-1.sh
-│   └── helper-2.py
-├── docs/
-│   ├── README.md
-│   └── USAGE.md
-└── tests/
-    └── plugin.test.js
-```
-
-### LSP server 配置
-
-外掛可以包含語言伺服器協定 (LSP) 支援，以提供即時的程式碼智慧。LSP server 在您工作時提供診斷、程式碼導覽與符號資訊。
-
-**配置位置**：
-- 外掛根目錄下的 `.lsp.json` 檔案
-- `plugin.json` 中的內聯 `lsp` 鍵
-
-#### 欄位參考
-
-| 欄位 | 必要 | 說明 |
-|-------|----------|-------------|
-| `command` | 是 | LSP server 執行檔 (必須在 PATH 中) |
-| `extensionToLanguage` | 是 | 將檔案副檔名映射至語言 ID |
-| `args` | 否 | 伺服器的命令列參數 |
-| `transport` | 否 | 通訊方式：`stdio` (預設) 或 `socket` |
-| `env` | 否 | 伺服器進程的環境變數 |
-| `initializationOptions` | 否 | LSP 初始化期間傳送的選項 |
-| `settings` | 否 | 傳遞給伺服器的工作區配置 |
-| `workspaceFolder` | 否 | 覆蓋工作區資料夾路徑 |
-| `startupTimeout` | 否 | 等待伺服器啟動的最大時間 (ms) |
-| `shutdownTimeout` | 否 | 優雅關閉的最大時間 (ms) |
-| `restartOnCrash` | 否 | 若伺服器崩潰則自動重啟 |
-| `maxRestarts` | 否 | 放棄前的最大重啟嘗試次數 |
+| Official | 全域 | 所有人 | 權限 | PR Review, Security Guidance |
+| Community | 公開 | 團隊成員 | 
+| Organization | 內部 | 
+| Personal | 個人 | 
+| 範本 | 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+| 
+|
 
 #### 設定範例
 
@@ -205,10 +1462,10 @@ my-plugin/
 
 #### LSP 功能
 
-配置完成後，LSP servers 提供：
+配置完成後，LSP servers 提供以下功能：
 
 - **即時診斷** — 編輯後立即顯示錯誤與警告
-- **程式碼導覽** — 跳轉至定義、尋找參照、實作
+- **程式碼導覽** — 跳轉至定義、尋找引用、實作
 - **懸停資訊** — 懸停時顯示型別簽章與文件
 - **符號列表** — 瀏覽目前檔案或工作區中的符號
 
@@ -253,7 +1510,7 @@ my-plugin/
 
 ### 背景監控器 (v2.1.105)
 
-外掛可以註冊背景監控器，這些監控器會在會話開始或外掛的技能被呼叫時自動啟動。請在您的外掛 manifest 中加入頂層的 `monitors` 鍵：
+外掛可以註冊背景監控器，當會話開始或外掛的技能被呼叫時，監控器會自動啟動。請在您的外掛 manifest 中加入頂層的 `monitors` 鍵：
 
 ```json
 {
@@ -276,7 +1533,7 @@ my-plugin/
 
 ## 透過設定進行內嵌式外掛 (`source: 'settings'`) (v2.1.80+)
 
-外掛可以透過 `source: 'settings'` 欄位，以市場條目的形式直接定義在設定檔中。這允許直接嵌入外掛定義，而不需要獨立的儲存庫或市場：
+外掛可以透過 `source: 'settings'` 欄位，在設定檔中以市場條目的形式進行內嵌式定義。這允許直接嵌入外掛定義，而不需要獨立的儲存庫或市場：
 
 ```json
 {
@@ -309,12 +1566,12 @@ my-plugin/
 
 ## 獨立模式 vs 外掛模式
 
-| 模式 | 命令名稱 | 配置方式 | 最佳適用場景 |
+| 模式 | 命令名稱 | 配置方式 | 最適合 |
 |----------|---------------|---|---|
-| **獨立模式** | `/hello` | 在 CLAUDE.md 中手動設定 | 個人、特定專案使用 |
-| **外掛模式** | `/plugin-name:hello` | 透過 plugin.json 自動化 | 分享、發布、團隊使用 |
+| **獨立模式** | `/hello` | 在 CLAUDE.md 中手動設定 | 個人、特定專案 |
+| **外掛模式** | `/plugin-name:hello` | 透過 plugin.json 自動化 | 分享、分發、團隊使用 |
 
-對於快速的個人工作流程，請使用**獨立斜線命令**。當您想要打包多個功能、與團隊共享或發布供他人使用時，請使用**外掛**。
+對於快速的個人工作流程，請使用**獨立斜線命令**。當您想要打包多個功能、與團隊共享或發布進行分發時，請使用**外掛**。
 
 ## 實際範例
 
@@ -406,7 +1663,6 @@ devops-automation/
 │   └── prometheus-config.json
 ```
 
-```
 ├── hooks/
 │   ├── pre-deploy.js
 │   ├── post-deploy.js
@@ -417,9 +1673,104 @@ devops-automation/
     └── health-check.sh
 ```
 
-### 範例 3：Documentation 外掛
+### 範例 3: 文件插件
 
-**內含組件：**
+**包含的組件:**
+
+```
+documentation/
+├── commands/
+│   ├── generate-api-docs.md
+│   ├── generate-readme.md
+│   ├── sync-docs.md
+│s/
+    ├── generate-api-docs.md
+    ├── generate-readme.md
+    └── on-error.js
+└── scripts/
+    ├── deploy.sh
+    ├── rollback.sh
+    └── health-check.sh
+```
+
+## 插件市場
+
+官方由 Anthropic 管理的插件目錄為 `anthropics/claude-plugins-official`。企業管理員也可以建立私有插件市場，用於內部分發
+
+```mermaid
+graph TB
+    A["插件市場"]
+    B["官方<br/>anthropics/claude-plugins-official"]
+    C["社群<br/>市場"]
+    D["企業<br/>私有註冊表
+
+    A --> B
+    A --> C
+    A --> D
+
+    B -->|分類| B1["開發"]
+    B -->|分類| B2["DevOps"]
+    B -->|分類| B3["文件"]
+
+    C -->|搜尋| C1["DevOps 自動化"]
+    C -->|搜尋| C2["行動裝置開發"]
+    C -->|搜尋| C3["資料科學"]
+
+    D -->|內部| D1["公司標準
+
+    D -->|內部| D2["舊系統"]
+    D -->|內部| D3["合規性"]
+
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style B fill:#e8f5e9,stroke:#33
+    style C fill:#f3e5f5,stroke:#33
+    style D fill:#fff3e0,stroke:#33
+```
+
+### 市場配置
+
+企業與進階使用者可以透過設定控制市場行為
+
+| 設定 | 說明 |
+|---------|-------------|
+| `extraKnownMarketplaces` | 除了預設值之外，新增額外的市場來源 |
+| `strictKnownMarket│
+
+| 設定 | 說明 |
+|---------|-------------|
+| `extraKnownMarketplaces` | 除了預設值之外，新增額外的市場來源 |
+| `strictKnownMarketplaces` | 控制使用者被允許新增哪些市場 |
+| `deniedPlugins` | 管理員管理的黑名單，以防止特定插件被安裝 |
+
+### 額外市場功能
+
+- **預設 git timeout**：針對大型插件儲存庫從 30s 增加到 120s
+- **自定義 npm 註冊表**：插件可以指定自定義 npm 註冊表 URL 以進行依賴解析
+- **版本鎖定**：將插件鎖定在特定版本以實現可重複的環境
+
+### 市場定義架構
+
+插件市場定義在 `.claude-plugin/marketplace.json`：
+
+```json
+{
+  "name": "my-team",
+  "description": "Enforce team coding standards",
+  "version": "1.2.0",
+  "author": "platform-team"
+}
+```
+
+| 欄位 | 是否必填 | 說明 |
+|---------|-------------|-------------|
+| `name` | 是 | 插件名稱 |
+| `version` | 是 | 版本號碼 |
+| `description` | 否 | 插件描述 |
+```
+
+### 範例 3：文件插件
+
+**包含的組件：**
 
 ```
 documentation/
@@ -441,13 +1792,13 @@ documentation/
     └── adr-template.md
 ```
 
-## 外掛市場 (Plugin Marketplace)
+## 插件市場
 
-由 Anthropic 官方管理的插件目錄為 `anthropics/claude-plugins-official`。企業管理員也可以建立私有的外掛市場進行內部發布。
+由 Anthropic 官方管理的插件目錄為 `anthropics/claude-plugins-official`。企業管理員也可以建立私有插件市場進行內部分發。
 
 ```mermaid
 graph TB
-    A["外掛市場"]
+    A["插件市場"]
     B["官方<br/>anthropics/claude-plugins-official"]
     C["社群<br/>市場"]
     D["企業<br/>私有註冊表"]
@@ -461,11 +1812,11 @@ graph TB
     B -->|分類| B3["文件"]
 
     C -->|搜尋| C1["DevOps 自動化"]
-    C -->|搜尋| C2["行動開發"]
+    C -->|搜尋| C2["行動裝置開發"]
     C -->|搜尋| C3["資料科學"]
 
     D -->|內部| D1["公司標準"]
-    D -->|內部| D2["舊有系統"]
+    D -->|內部| D2["舊系統"]
     D -->|內部| D3["合規性"]
 
     style A fill:#e1f5fe,stroke:#333,color:#333
@@ -482,115 +1833,144 @@ graph TB
 |---------|-------------|
 | `extraKnownMarketplaces` | 除了預設值之外，新增額外的市場來源 |
 | `strictKnownMarketplaces` | 控制使用者被允許新增哪些市場 |
-| `deniedPlugins` | 由管理員管理的黑名單，以防止特定外掛被安裝 |
+| `deniedPlugins` | 管理員管理的黑名單，以防止特定插件被安裝 |
 
-### 其他市場功能
+### 額外市場功能
 
-- **預設 git timeout**：針對大型外掛儲存庫，從 30s 增加至 120s
-- **自定義 npm registries**：外掛可以指定自定義的 npm registry URL 以進行依賴解析
-- **版本鎖定 (Version pinning)**：將外掛鎖定在特定版本，以確保環境的可重現性
+- **預設 git timeout**：針對大型插件儲存庫，從 30s 增加到 120s
+- **自定義 npm 註冊表**：插件可以指定自定義 npm 註冊表 URL 以進行依賴解析
+- **版本鎖定**：將插件鎖定在特定版本，以實現可重複的環境
 
-### 市場定義 Schema
+### 市場定義架構
 
-外掛市場定義在 `.claude-plugin/marketplace.json` 中：
+插件市場定義在 `.claude-plugin/marketplace.json`：
 
 ```json
 {
-  "name": "my-team-plugins",
-  "owner": "my-org",
-  "plugins": [
-    {
-      "name": "code-standards",
-      "source": "./plugins/code-standards",
-      "description": "Enforce team coding standards",
-      "version": "1.2.0",
-      "author": "platform-team"
-    },
-    {
-      "name": "deploy-helper",
-      "source": {
-        "source": "github",
-        "repo": "my-org/deploy-helper",
-        "ref": "v2.0.0"
-      },
-      "description": "Deployment automation workflows"
-    }
-  ]
+  "name": "my-team",
+  "description": "Enforce team coding standards",
+  "version": "1.2.0",
+  "author": "platform-team"
 }
 ```
 
 | 欄位 | 是否必填 | 說明 |
-|-------|----------|-------------|
+|---------|-------------|-------------|
+| `name` | 是 | 插件名稱 |
+| `version` | 是 | 版本號碼 |
+| `description` | 否 | 插件描述 |
 ```
 
-| `name` | 是 | 以 kebab-case 表示的 Marketplace 名稱 |
-| `owner` | 是 | 維護該 marketplace 的組織或使用者 |
-| `plugins` | 是 | 外掛項目陣列 |
-| `plugins[].name` | 是 | 外掛名稱 (kebab-case) |
-| `plugins[].source` | 是 | 外掛來源 (路徑字串或來源物件) |
-| `plugins[].description` | 否 | 外掛簡短描述 |
-| `plugins[].version` | 否 | Semantic 版本字串 |
-| `plugins[].author` | 否 | 外掛作者名稱 |
+| `name` | Yes | Marketplace name in kebab-case |
+| `owner` | Yes | Organization or user who maintains the marketplace |
+| `plugins` | Yes | Array of plugin entries |
+| `plugins[].name | plugins/ name in kebab-case |
+| `plugins[].source | Array of plugin entries |
+| `plugins[].description | Brief plugin description |
+| `plugins[].version | Semantic version string |
+| `plugins[].author | Plugin author name |
+| `plugins[].description | Plugin source (path string |
+| `plugins[].version | Array of plugin entries |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin source |
+| `plugins[].description | Plugin]$
+
+| `name` | Yes | Marketplace name in kebab-case |
+| `owner` | Yes | Organization or user who maintains the marketplace |
+| `plugins` | Yes | Array of plugin entries |
+| `plugins[].name | Plugin name (kebab-case) |
+| `plugins[].source | Plugin source (path string or source object) |
+| `plugins[].description | Brief plugin description |
+| `plugins[].version | Semantic version string |
+| `plugins[].author | Plugin author name |
 
 ### Plugin source types
 
-外掛可以從多個位置取得：
+Plugins can be sourced from multiple locations:
 
-| 來源 | 語法 | 範例 |
+| Source | Syntax | Example |
 |--------|--------|---------|
-| **相對路徑** | 字串路徑 | `"./plugins/my-plugin"` |
-| **GitHub** | `{ "source": "github", "repo": "owner/repo" }` | `{ "source": "github", "repo": "acme/lint-plugin", "ref": "v1.0" }` |
-| **Git URL** | `{ "source": "url", "url": "..." }` | `{ "source": "url", "url": "https://git.internal/plugin.git" }` |
-| **Git 子目錄** | `{ "source": "git-subdir", "url": "...", "path": "..." }` | `{ "source": "git-subdir", "url": "https://github.com/org/monorepo.git", "path": "packages/plugin" }` |
+| **Relative path** | String path | `"./plugins/my-plugin"` |
+| **GitHub** | `{ "source": "github", "repo": "owner/repo" }` | `{ "source": "github", "repo": "acme/lint-plugin" }` |
+| **Git URL** | `{ "source": "url", "url": "..." }` | `{ "source": "url", "url": "..." }` |
+| **Git subdirectory** | `{ "source": "git-subdir", "url": "...", "path": "..." }` | `{ "source": "git-subdir", "url": "https://git.internal/plugin.git", "path": "packages/plugin" }` |
 | **npm** | `{ "source": "npm", "package": "..." }` | `{ "source": "npm", "package": "@acme/claude-plugin", "version": "^2.0" }` |
 | **pip** | `{ "source": "pip", "package": "..." }` | `{ "source": "pip", "package": "claude-data-plugin", "version": ">=1.0" }` |
 
-GitHub 和 git 來源支援選用的 `ref` (分支/標籤) 與 `sha` (commit hash) 欄位，用於固定版本。
+GitHub and git sources support optional `ref` (branch/tag) and `sha` (commit hash) fields for version pinning.
 
 ### Distribution methods
 
-**GitHub (建議)**:
+**GitHub (recommended)**:
 ```bash
-# 使用者新增您的 marketplace
+# Users add your marketplace
 /plugin marketplace add owner/repo-name
 ```
 
-**其他 git 服務** (需要完整 URL):
+**Other git services** (full URL required):
 ```bash
 /plugin marketplace add https://gitlab.com/org/marketplace-repo.git
 ```
 
-**私有儲存庫**: 可透過 git credential helpers 或環境變數 token 支援。使用者必須擁有該儲存庫的讀取權限。
+**Private repositories**: Supported via git credential helpers or environment tokens. Users must have read access to the repository.
 
-**官方 marketplace 提交**: 透過 [claude.ai/settings/plugins/submit](https://claude.ai/settings/plugins/submit) 或 [platform.claude.com/plugins/submit](https://platform.claude.com/plugins/submit) 將外掛提交至 Anthropic 策展的 marketplace，以進行更廣泛的發布。
+**Official marketplace submission**: Submit plugins to the Anthropic-curated marketplace for broader distribution via [claude.ai/settings/plugins/submit](https://claude.ai/settings/plugins/submit) or [platform.claude.com/plugins/submit](https://platform.claude.com/plugins/submit).
 
 ### Strict mode
 
-控制 marketplace 定義如何與本地 `plugin.json` 檔案互動：
+Control how marketplace definitions interact with local `plugin.json` files:
 
-| 設定 | 行為 |
+| Setting | Behavior |
 |---------|----------|
-| `strict: true` (預設) | 本地 `plugin.json` 為權威來源；marketplace 項目作為其補充 |
-| `strict: false` | Marketplace 項目即為完整的外掛定義 |
-
-使用 `strictKnownMarketplaces` 的**組織限制**：
-
-| 值 | 效果 |
-|-------|--------|
-| 未設定 | 無限制 — 使用者可以新增任何 marketplace |
-| 空陣列 `[]` | 鎖定 — 不允許任何 marketplace |
-| 模式陣列 | 白名單 — 僅能新增符合模式的 marketplace |
+| `strict: true` (default) | Local `plugin.json` is authoritative; marketplace entry supplements it |
+| `strict: false` | No restrictions — users can add any marketplaces |
 
 ```json
 {
-  "strictKnownMarketplaces": [
-    "my-org/*",
-    "github.com/trusted-vendor/*"
+  "strict": false,
+  "KnownMarketplaces": [
+    "*.example.com",
+    "github.com/my-org/*"
   ]
 }
 ```
 
-> **警告**：在啟用 `strictKnownMarketplaces` 的嚴格模式下，使用者只能從白名單中的 marketplace 安裝外掛。這對於需要控制外掛發布的企業環境非常有用。
+> **Warning**: In strict mode with `KnownMarketplaces`, users can only install plugins from allowlisted marketplaces. This is useful for enterprise environments requiring controlled plugin distribution.
 
 ## 外掛安裝與生命週期
 
@@ -616,7 +1996,7 @@ graph LR
 | **安裝** | 手動複製 | 手動複製 | 手動設定 | 單一指令 |
 | **設定時間** | 5 分鐘 | 10 分鐘 | 15 分鐘 | 2 分鐘 |
 | **打包方式** | 單一檔案 | 單一檔案 | 單一檔案 | 多個檔案 |
-| **版本管理** | 手動 | 手動 | 手動 | 自動 |
+| **版本控制** | 手動 | 手動 | 手動 | 自動 |
 | **團隊共享** | 複製檔案 | 複製檔案 | 複製檔案 | 安裝 ID |
 | **更新** | 手動 | 手動 | 手動 | 自動可用 |
 | **依賴關係** | 無 | 無 | 無 | 可能包含 |
@@ -625,7 +2005,7 @@ graph LR
 
 ## 外掛 CLI 指令
 
-所有外掛操作皆可透過 CLI 指令執行：
+所有外掛操作皆可透過 CLI 指令進行：
 
 ```bash
 claude plugin install <name>@<marketplace>   # 從 marketplace 安裝
@@ -683,10 +2063,10 @@ graph TD
 
 | 使用案例 | 建議 | 原因 |
 |----------|-----------------|-----|
-| **團隊入職培訓** | ✅ 使用外掛 | 即時設定，包含所有組態 |
+| **團隊新手入職** | ✅ 使用外掛 | 即時設定，包含所有組態 |
 | **框架設定** | ✅ 使用外掛 | 整合框架特定的指令 |
 | **企業標準** | ✅ 使用外掛 | 中央分發，版本控制 |
-| **快速任務自動化** | ❌ 使用指令 | 過度複雜 |
+| **快速任務自動化** | ❌ 使用指令 | 過於複雜 |
 | **單一領域專業知識** | ❌ 使用技能 | 太過笨重，改用技能即可 |
 | **專業化分析** | ❌ 使用子代理 | 手動建立或使用技能 |
 | **即時數據存取** | ❌ 使用 MCP | 應作為獨立功能，不要打包進外掛 |
@@ -734,7 +2114,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 
 ## 外掛安全性
 
-外掛子代理（subagents）在受限的沙盒中執行。在定義外掛子代理時，**不允許**使用以下 frontmatter 鍵值：
+外掛子代理在受限的沙盒中執行。在外掛子代理定義中，**不允許**使用以下 frontmatter 鍵：
 
 - `hooks` -- 子代理無法註冊事件處理常式
 - `mcpServers` -- 子代理無法配置 MCP 伺服器
@@ -814,7 +2194,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 
 ## 最佳實務
 
-### 應該做的事 ✅
+### 應該做的 ✅
 - 使用清晰且具描述性的外掛名稱
 - 包含完整的 README
 - 正確進行外掛版本管理 (semver)
@@ -828,8 +2208,8 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 - 包含全面的測試
 - 記錄所有依賴項目
 
-### 不應該做的事 ❌
-- 不要將無關的功能打包在一起
+### 不應該做的 ❌
+- 不要綑綁無關的功能
 - 不要將憑證寫死在程式碼中
 - 不要跳過測試
 - 不要忘記撰寫文件
@@ -901,11 +2281,11 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 
 以下 Claude Code 功能與外掛協同工作：
 
-- **[Slash Commands](../01-slash-commands/)** - 打包在外掛中的個別命令
+- **[Slash Commands](../01-slash-commands/)** - 綑綁在外掛中的個別命令
 - **[Memory](../02-memory/)** - 為外掛提供的持久化上下文
 - **[Skills](../03-skills/)** - 可封裝進外掛的領域專業知識
 - **[Subagents](../04-subagents/)** - 作為外掛組件包含在內的專業化代理
-- **[MCP Servers](../05-mcp/)** - 打包在外掛中的 Model Context Protocol 整合
+- **[MCP Servers](../05-mcp/)** - 綑綁在外掛中的 Model Context Protocol 整合
 - **[Hooks](../06-hooks/)** - 觸發外掛工作流程的事件處理器
 
 ## 完整範例工作流程
@@ -929,25 +2309,25 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
    📝 12 recommendations provided
 ```
 
-## Troubleshooting
+## 除錯
 
 ### 外掛無法安裝
 - 檢查 Claude Code 版本相容性：`/version`
-- 使用 JSON validator 驗證 `plugin.json` 語法
+- 使用 JSON 驗證器檢查 `plugin.json` 語法
 - 檢查網路連線（針對遠端外掛）
 - 檢查權限：`ls -la plugin/`
 
 ### 組件無法載入
-- 驗證 `plugin.json` 中的路徑與實際目錄結構是否一致
+- 確認 `plugin.json` 中的路徑與實際目錄結構相符
 - 檢查檔案權限：`chmod +x scripts/`
 - 檢查組件檔案語法
 - 檢查日誌：`/plugin debug plugin-name`
 
 ### MCP 連線失敗
-- 驗證環境變數是否設定正確
+- 確認環境變數已正確設定
 - 檢查 MCP 伺服器安裝狀態與健康狀況
 - 使用 `/mcp test` 獨立測試 MCP 連線
-- 檢查 `mcp/` 目錄中的 MCP 設定
+- 檢查 `mcp/` 目錄中的 MCP 配置
 
 ### 安裝後指令無法使用
 - 確保外掛已成功安裝：`/plugin list --installed`
@@ -955,8 +2335,8 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 - 重啟 Claude Code：輸入 `exit` 並重新開啟
 - 檢查是否與現有指令存在命名衝突
 
-### 鉤子（Hook）執行問題
-- 驗證鉤子檔案是否具有正確的權限
+### 鉤子執行問題
+- 確認鉤子檔案具有正確的權限
 - 檢查鉤子語法與事件名稱
 - 查看鉤子日誌以獲取錯誤詳情
 - 若可行，請手動測試鉤子
@@ -972,8 +2352,11 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 - [Hook System Reference](../06-hooks/README.md)
 
 ---
-**最後更新日期**：April 16, 2026
-**Claude Code 版本**：2.1.110
+
+**最後更新日期**：2026 年 4 月 16 日
+**Claude Code 版本**：2.1.112
 **來源**：
-- https://code.claude.com/docs/en/plugins
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://docs.anthropic.com/en/docs/claude-code/plugins
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

@@ -5,7 +5,7 @@
 
 # Agent Skills 指南
 
-Agent Skills 是可重複使用的、基於檔案系統的技能，用於擴充 Claude 的功能。它們將特定領域的專業知識、工作流程與最佳實踐封裝成可被發現的組件，當相關時，Claude 會自動使用這些組件。
+Agent Skills 是可重複使用的、基於檔案系統的技能，用於擴充 Claude 的功能。它們將特定領域的專業知識、工作流程與最佳實踐封裝成可被發現的組件，當相關時 Claude 會自動使用這些組件。
 
 ## 概述
 
@@ -19,9 +19,9 @@ Agent Skills 是可重複使用的、基於檔案系統的技能，用於擴充 
 - **擴展工作流程**：在多個專案與團隊之間重複使用 skills
 - **維持品質**：將最佳實踐直接嵌入您的工作流程中
 
-Skills 遵循 [Agent Skills](https://agentskills.io) 開放標準，該標準適用於多種 AI 工具。Claude Code 擴展了此標準，增加了如呼叫控制、子代理執行與動態上下文注入等額外功能。
+Skills 遵循 [Agent Skills](https://agentskills.io) 開放標準，該標準適用於多種 AI 工具。Claude Code 透過額外功能擴展了此標準，例如調用控制、子代理執行以及動態上下文注入。
 
-> **注意**：自定義的斜線命令已併入 skills。`.claude/commands/` 檔案仍可運作並支援相同的 frontmatter 欄位。建議新開發時使用 Skills。當兩者存在於相同路徑時（例如 `.claude/commands/review.md` 與 `.claude/skills/review/SKILL.md` 並存），將以 skill 為優先。
+> **注意**：自定義的斜線命令已併入 skills。`.claude/commands/` 檔案仍可運作並支援相同的 frontmatter 欄位。建議新開發時使用 Skills。當兩者存在於相同路徑時（例如 `.claude/commands/review.md` 與 `.claude/skills/review/SKILL.md`），skill 將具有優先權。
 
 ## Skills 的運作方式：漸進式揭露
 
@@ -55,9 +55,9 @@ graph TB
 
 | 層級 | 載入時機 | Token 成本 | 內容 |
 |-------|------------|------------|---------|
-| **Level 1: Metadata** | 始終載入（啟動時） | 每個 Skill 約 100 tokens | 來自 YAML frontmatter 的 `name` 與 `description` |
+| **Level 1: Metadata** | 總是（啟動時） | 每個 Skill 約 100 tokens | 來自 YAML frontmatter 的 `name` 與 `description` |
 | **Level 2: Instructions** | 當 Skill 被觸發時 | 低於 5k tokens | 包含指令與引導的 SKILL.md 本體 |
-| **Level 3+: Resources** | 根據需求載入 | 實際上無限制 | 透過 bash 執行的 Bundled files，不會將內容載入上下文 |
+| **Level 3+: Resources** | 根據需要 | 實際上無限制 | 透過 bash 執行的 Bundled files，不會將內容載入上下文 |
 
 這意味著您可以安裝許多 Skills 而不會造成上下文懲罰——在實際觸發之前，Claude 只知道每個 Skill 的存在以及何時使用它。
 
@@ -92,7 +92,7 @@ sequenceDiagram
 | **Project** | `.claude/skills/<skill-name>/SKILL.md` | 團隊 | 是 (透過 git) | 團隊標準 |
 | **Plugin** | `<plugin>/skills/<skill-name>/SKILL.md` | 已啟用的位置 | 視情況而定 | 與外掛綑綁使用 |
 
-當不同層級的技能具有相同名稱時，優先權較高的位置將會勝出：**enterprise > personal > project**。Plugin 技能使用 `plugin-name:skill-name` 命名空間，因此不會產生衝突。
+當不同層級的技能具有相同名稱時，優先級較高的位置將會勝出：**enterprise > personal > project**。Plugin 技能使用 `plugin-name:skill-name` 命名空間，因此不會產生衝突。
 
 ### 自動探索
 
@@ -100,7 +100,7 @@ sequenceDiagram
 
 **`--add-dir` 目錄**：透過 `--add-dir` 新增的目錄中的技能會自動載入，並具備即時變更偵測功能。對這些目錄中技能檔案的任何編輯都會立即生效，無需重新啟動 Claude Code。
 
-**描述預算**：技能描述（第一層 metadata）的上限為 **context window 的 1%**（備用方案：**8,000 個字元**）。如果您安裝了許多技能，描述可能會被縮短。所有的技能名稱都會被包含在內，但描述會被修剪以符合限制。請將關鍵的使用案例放在描述的最前面。您可以使用 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 環境變數來覆蓋此預算。
+**描述預算**：技能描述（第一層 metadata）被限制在 **context window 的 1%**（備用方案：**8,000 個字元**）。如果您安裝了許多技能，描述可能會被縮短。所有的技能名稱都會被包含在內，但描述會被修剪以符合限制。請將關鍵的使用案例放在描述的最前面。您可以使用 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 環境變數來覆蓋此預算。
 
 ## 建立自定義技能
 
@@ -177,7 +177,7 @@ paths: "src/api/**/*.ts"               # 限制技能啟動時機的 Glob 模式
 | `agent` | 當 `context: fork` 時指定的子代理類型（例如 `Explore`、`Plan`、`general-purpose`）。 |
 
 | `shell` | 用於 `!`command`` 取代與腳本的 Shell：`bash` (預設) 或 `powershell`。 |
-| `hooks` | 範圍限制在該技能生命週期內的鉤子 (格式與全域鉤子相同)。 |
+| `hooks` | 範圍限定於此技能生命週期的鉤子 (格式與全域鉤子相同)。 |
 | `paths` | 用於限制技能自動啟動時機的 Glob 模式。以逗號分隔的字串或 YAML 列表形式。格式與路徑特定規則相同。 |
 
 ## 技能內容類型
@@ -202,7 +202,7 @@ When writing API endpoints:
 
 ### Task Content (任務內容)
 
-針對特定動作的逐步指令。通常透過 `/skill-name` 直接調用。
+針對特定動作的逐步指令。通常透過 `/skill-name` 直接呼叫。
 
 ```yaml
 ---
@@ -218,17 +218,17 @@ Deploy the application:
 3. Push to the deployment target
 ```
 
-## 控制技能調用
+## 控制技能呼叫
 
-預設情況下，您與 Claude 都可以調用任何技能。兩個 frontmatter 欄位控制了三種調用模式：
+預設情況下，您與 Claude 都可以呼叫任何技能。兩個 frontmatter 欄位控制了三種呼叫模式：
 
-| Frontmatter | 您可以調用 | Claude 可以調用 |
+| Frontmatter | 您可以呼叫 | Claude 可以呼叫 |
 |---|---|---|
 | (預設) | 是 | 是 |
 | `disable-model-invocation: true` | 是 | 否 |
 | `user-invocable: false` | 否 | 是 |
 
-**對於具有副作用的工作流程**（例如：`/commit`、`/deploy`、`/send-slack-message`），請使用 `disable-model-invocation: true`。您不希望 Claude 因為您的程式碼看起來準備好了就自行決定進行部署。
+**對於具有副作用的工作流程**（例如：`/commit`、`/deploy`、`/send-slack-message`），請使用 `disable-model-invocation: true`。您不希望 Claude 因為覺得您的程式碼看起來準備好了，就自行決定進行部署。
 
 **對於無法作為指令執行的背景知識**，請使用 `user-invocable: false`。例如一個 `legacy-system-context` 技能是用來解釋舊系統如何運作——這對 Claude 很有用，但對使用者來說並非具備意義的操作。
 
@@ -236,13 +236,13 @@ Deploy the application:
 
 技能支援動態值，這些值會在技能內容傳送給 Claude 之前進行解析：
 
-| 變數 | 描述 |
+| 變數 | 說明 |
 |----------|-------------|
 | `$ARGUMENTS` | 呼叫技能時傳入的所有參數 |
 | `$ARGUMENTS[N]` 或 `$N` | 透過索引（從 0 開始）存取特定參數 |
 | `${CLAUDE_SESSION_ID}` | 目前的 session ID |
 | `${CLAUDE_SKILL_DIR}` | 包含該技能 SKILL.md 檔案的目錄 |
-| `` !`command` `` | 動態上下文注入 — 執行 shell 命令並將輸出嵌入內容中 |
+| `` !`command` `` | 動態上下文注入 — 執行 shell 命令並將輸出結果內聯（inline）進來 |
 
 **範例：**
 
@@ -295,7 +295,7 @@ Summarize this pull request...
 | `Explore` | 唯讀研究、程式碼庫分析 |
 | `Plan` | 建立實作計畫 |
 | `general-purpose` | 需要所有工具的廣泛任務 |
-| 自定義代理 | 在您的配置中定義的專業代理 |
+| 自定義代理 | 在您的配置中定義的專業化代理 |
 
 **範例 frontmatter：**
 
@@ -322,7 +322,7 @@ Research $ARGUMENTS thoroughly:
 3. Summarize findings with specific file references
 ```
 
-## 實際範例
+## 實務範例
 
 ### 範例 1：Code Review 技能
 
@@ -396,7 +396,7 @@ description: Comprehensive code review with security, performance, and quality a
 
 ### 範例 2：Codebase Visualizer 技能
 
-一個可以生成互動式 HTML 可視化圖表的技能：
+一個可以生成互動式 HTML 視覺化圖表的技能：
 
 **目錄結構：**
 
@@ -418,7 +418,7 @@ allowed-tools: Bash(python *)
 
 # Codebase Visualizer
 
-生成一個互動式的 HTML 樹狀檢視圖，顯示您的專案檔案結構。
+生成一個互動式的 HTML 樹狀圖，顯示您的專案檔案結構。
 ````
 
 ## 使用方法
@@ -469,7 +469,7 @@ user-invocable: false
 ---
 
 ## Tone of Voice
-- **Friendly but professional** - 親切但不失專業 - 易於親近但不過於隨意
+- **Friendly but professional** - 親切但不失專業 - 易於親近但不隨意
 - **Clear and concise** - 清晰簡潔 - 避免使用術語
 - **Confident** - 自信 - 我們清楚自己在做什麼
 - **Empathetic** - 感同身受 - 理解使用者需求
@@ -507,10 +507,9 @@ description: Create or update CLAUDE.md files following best practices for optim
 
 - **Project Name**：簡短的一行描述
 - **Tech Stack**：主要語言、框架、資料庫
-- **Development Commands**：安裝、測試、建置指令
+- **Development Commands**：安裝、測試、構建指令
 - **Critical Conventions**：僅包含非顯而易見且具高影響力的慣例
 - **Known Issues / Gotchas**：會讓開發者踩坑的事項
-
 ```
 
 ### 範例 6：使用腳本的重構技能
@@ -535,7 +534,7 @@ refactor/
 ```yaml
 ---
 name: code-refactor
-description: Based on Martin Fowler's methodology, systematic code refactoring. Use when users ask to refactor code, improve code structure, reduce technical debt, or eliminate code smells.
+description: Systematic code refactoring based on Martin Fowler's methodology. Use when users ask to refactor code, improve code structure, reduce technical debt, or eliminate code smells.
 ---
 
 # Code Refactoring Skill
@@ -561,7 +560,7 @@ Phase 5: Incremental Implementation → Phase 6: Review & Iteration
 
 ## 輔助檔案
 
-技能（Skills）的目錄中除了 `SKILL.md` 之外，還可以包含多個檔案。這些輔助檔案（範本、範例、腳本、參考文件）能讓您保持主技能檔案的專注度，同時為 Claude 提供可根據需要載入的額外資源。
+技能（Skills）的目錄中除了 `SKILL.md` 之外，還可以包含多個檔案。這些輔助檔案（範本、範例、腳本、參考文件）能讓您保持主技能檔案的專注度，同時為 Claude 提供它可以根據需要載入的額外資源。
 
 ```
 my-skill/
@@ -579,8 +578,8 @@ my-skill/
 輔助檔案指南：
 
 - 將 `SKILL.md` 保持在 **500 行**以內。將詳細的參考資料、大型範例和規範移至獨立檔案中。
-- 使用 **相對路徑** 從 `SKILL.md` 引用額外檔案（例如：`[API reference](references/api-spec.md)`）。
-- 輔助檔案是在 Level 3（根據需要）載入的，因此在 Claude 實際讀取它們之前，不會消耗上下文（context）。
+- 使用**相對路徑**從 `SKILL.md` 引用額外檔案（例如：`[API reference](references/api-spec.md)`）。
+- 輔助檔案是在第 3 層級（根據需要）載入的，因此在 Claude 實際讀取它們之前，不會消耗上下文（context）。
 
 ## 管理技能
 
@@ -626,13 +625,13 @@ code ~/.claude/skills/my-skill/SKILL.md
 code .claude/skills/my-skill/SKILL.md
 ```
 
-### 限制 Claude 的技能存取權限
+### 限制 Claude 的技能存取權
 
 有三種方式可以控制 Claude 可以調用的技能：
 
 **在 `/permissions` 中停用所有技能**：
 ```
-# 加入拒絕規則：
+# 加入至拒絕規則：
 Skill
 ```
 
@@ -648,9 +647,9 @@ Skill(deploy *)
 
 **隱藏個別技能**：在該技能的 frontmatter 中加入 `disable-model-invocation: true`。
 
-## 最佳實踐
+## 最佳實務
 
-### 1. 使描述具體化
+### 1. 讓描述具體化
 
 - **錯誤（模糊）**：「協助處理文件」
 - **正確（具體）**：「從 PDF 檔案中提取文字與表格、填寫表單、合併文件。當處理 PDF 檔案或使用者提到 PDF、表單或文件提取時使用。」
@@ -697,7 +696,7 @@ description: 分析 Excel 表格、產生樞紐分析表、建立圖表。當處
 - 不要為一次性任務建立 skills
 - 不要重複現有的功能
 - 不要將 skills 定義得過於寬泛
-- 不要跳過 description 欄位
+- 不要略過 description 欄位
 - 不要從未經審核的來源安裝 skills
 
 ## 除錯 (Troubleshooting)
@@ -711,7 +710,7 @@ description: 分析 Excel 表格、產生樞紐分析表、建立圖表。當處
 | YAML 錯誤 | 檢查 `---` 標記、縮排，且不可使用 Tab |
 | Skills 衝突 | 在 description 中使用獨特的觸發詞 |
 | 腳本無法執行 | 檢查權限：`chmod +x scripts/*.py` |
-| Claude 沒有看到所有 skills | skills 過多；請執行 `/context` 查看是否有排除警告 |
+| Claude 沒有看到所有 skills | Skills 過多；請執行 `/context` 查看是否有排除警告 |
 
 ### Skill 未觸發
 
@@ -720,7 +719,7 @@ description: 分析 Excel 表格、產生樞紐分析表、建立圖表。當處
 1. 檢查 description 是否包含使用者會自然說出的關鍵字
 2. 確認在詢問「有哪些可用的 skills？」時，該 skill 是否會出現
 3. 嘗試重新措辭您的請求以符合 description
-4. 直接使用 `/skill-name` 進行呼叫測試
+4. 直接使用 `/skill-name` 進行呼叫以進行測試
 
 ### Skill 觸發過於頻繁
 
@@ -731,7 +730,7 @@ description: 分析 Excel 表格、產生樞紐分析表、建立圖表。當處
 
 ### Claude 沒有看到所有 Skills
 
-Skill 的 description 會佔用 **1% 的 context 視窗**（備用方案：**8,000 個字元**）。無論預算如何，每個項目上限為 250 個字元。執行 `/context` 以檢查是否有關於被排除 skills 的警告。您可以使用 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 環境變數來覆蓋此預算。
+Skill 的 description 會佔用 **1% 的 context window**（備案：**8,000 個字元**）。無論預算如何，每個項目上限為 250 個字元。執行 `/context` 以檢查是否有關於被排除 skills 的警告。您可以使用 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 環境變數來覆蓋此預算。
 
 ## 安全考量
 
@@ -751,7 +750,7 @@ Skill 的 description 會佔用 **1% 的 context 視窗**（備用方案：**8,0
 | **Skills** | 自動或 `/name` | 可重複使用的專業知識、工作流程 |
 | **斜線命令** | 使用者啟動的 `/name` | 快速捷徑（已併入 skills） |
 | **Subagents** | 自動委派 | 隔離的任務執行 |
-| **Memory (CLAUDE.md)** | 始終載入 | 持續性的專案上下文 |
+| **Memory (CLAUDE.md)** | 總是載入 | 持續性的專案上下文 |
 | **MCP** | 即時 | 存取外部資料/服務 |
 | **Hooks** | 事件驅動 | 自動化副作用 |
 
@@ -763,9 +762,9 @@ Claude Code 內建了數個無需安裝即可隨時使用的 skills：
 |-------|-------------|
 | `/simplify` | 審查變更後的檔案以進行重用、品質與效率檢查；會產生 3 個並行的審查代理 |
 | `/batch <instruction>` | 使用 git worktrees 在整個程式碼庫中編排大規模的並行變更 |
-| `/debug [description]` | 透過閱讀除錯日誌來排除當前會話的問題 |
+| `/debug [description]` | 透過閱讀除錯日誌來排除目前會話的問題 |
 | `/loop [interval] <prompt>` | 按間隔重複執行提示詞（例如：`/loop 5m check the deploy`） |
-| `/claude-api` | 載入 Claude API/SDK 參考資料；在匯入 `anthropic`/`@anthropic-ai/sdk` 時自動啟動 |
+| `/claude-api` | 載入 Claude API/SDK 參考資料；在匯入 `anthropic`/`@anthropic-ai/sdk` 時會自動啟動 |
 
 這些 skills 為開箱即用，不需要安裝或配置。它們遵循與自定義 skills 相同的 SKILL.md 格式。
 
@@ -775,7 +774,7 @@ Claude Code 內建了數個無需安裝即可隨時使用的 skills：
 
 1. 在 `.claude/skills/` 中建立技能
 2. 提交至 git
-3. 團隊成員執行 pull 取得變更 — 技能立即生效
+3. 團隊成員 pull 更新 — 技能立即生效
 
 ### 個人技能
 
@@ -795,15 +794,15 @@ chmod +x ~/.claude/skills/my-skill/scripts/*.py
 
 當你開始認真構建技能時，兩件事會變得至關重要：一個經過驗證的技能庫，以及一個用來管理它們的工具。
 
-**[luongnv89/skills](https://github.com/luongnv89/skills)** — 我在幾乎所有專案中日常使用的技能集合。亮點包括 `logo-designer`（即時生成專案標誌）和 `ollama-optimizer`（針對你的硬體優化本地 LLM 效能）。如果你想要現成的技能，這是一個很好的起點。
+**[luongnv89/skills](https://github.com/luongnv89/skills)** — 我在幾乎所有專案中日常使用的技能集合。亮點包括 `logo-designer`（即時生成專案標誌）和 `ollama-optimizer`（針對你的硬體優化本地 LLM 效能）。如果你想要現成的技能，這是一個很棒的起點。
 
-**[luongnv89/asm](https://github.com/luongnv89/asm)** — 代理技能管理器（Agent Skill Manager）。處理技能開發、重複檢測與測試。`asm link` 指令讓你可以在任何專案中測試技能而無需來回複製檔案 — 當你擁有的技能超過幾個時，這將變得不可或缺。
+**[luongnv89/asm](https://github.com/luongnv89/asm)** — Agent 技能管理器。處理技能開發、重複檢測與測試。`asm link` 指令讓你可以在任何專案中測試技能而無需來回複製檔案 — 當你擁有的技能超過幾個時，這將變得不可或缺。
 
 ## 其他資源
 
 - [官方技能文件](https://code.claude.com/docs/en/skills)
-- [代理技能架構部落格](https://claude.com/blog/equipping-agents-for-the-real-world-with-agent-skills)
-- [技能儲存庫](https://github.com/luongnv89/skills) - 現成可用技能的集合
+- [Agent 技能架構部落格](https://claude.com/blog/equipping-agents-for-the-real-world-with-agent-skills)
+- [Skills 儲存庫](https://github.com/luongnv89/skills) - 現成可用技能的集合
 - [斜線命令指南](../01-slash-commands/) - 使用者啟動的捷徑
 - [子代理指南](../04-subagents/) - 委派的 AI 代理
 - [記憶指南](../02-memory/) - 持久化上下文
@@ -812,7 +811,10 @@ chmod +x ~/.claude/skills/my-skill/scripts/*.py
 
 ---
 **最後更新日期**: 2026 年 4 月 16 日
-**Claude Code 版本**: 2.1.110
+**Claude Code 版本**: 2.1.112
 **來源**:
-- https://code.claude.com/docs/en/skills
-**相容模型**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://docs.anthropic.com/en/docs/claude-code
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+- https://docs.anthropic.com/en/docs/claude-code/skills
+**相容模型**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

@@ -1,341 +1,342 @@
-# 檢查點範例
+# Checkpoint 範例
 
-在 Claude Code 中有效使用檢查點的實際案例。
+在 Claude Code 中有效使用 checkpoint 的實際案例。
 
-注意：檢查點會在每次使用者提示詞產生時自動建立。您無需手動儲存它們。要回溯，請按兩次 `Esc` (`Esc+Esc`) 或使用 `/rewind` 來開啟檢查點瀏覽器。
+注意：每次使用者輸入提示詞時都會自動建立 checkpoint。您不需要手動儲存。若要回溯，請按兩次 `Esc` (`Esc+Esc`) 或使用 `/rewint` 開啟 checkpoint 瀏覽器。
 
 ## 範例 1：資料庫遷移
 
-### 情境
-您需要從 MySQL 遷移到 PostgreSQL，但想探索直接遷移和逐步雙寫入方法。
+### 場景
+您需要從 MySQL 遷移到 PostgreSQL，但想要同時探索「直接遷移」與「漸進式雙寫（dual-write）」兩種方案。
 
 ### 工作流程
 
 ```
-使用者：我們來實現從 MySQL 到 PostgreSQL 的直接遷移
-      [自動建立檢查點 A]
+User: Let's implement a direct migration from MySQL to PostgreSQL
+      [自動建立 Checkpoint A]
 
-Claude：我將實現直接遷移...
-[變更資料庫驅動程式、更新查詢、修改 Schema]
+Claude: I'll implement the direct migration...
+[更改資料庫驅動程式、更新查詢語句、修改 schema]
 
-使用者：執行測試
-      [自動建立檢查點 B]
+User: Run the tests
+      [自動建立 Checkpoint B]
 
-Claude：執行測試...
-❌ 15 個測試失敗 - 連線池問題
+Claude: Running tests...
+❌ 15 tests failing - connection pool issues
 
-使用者：這個方法有問題。我們來嘗試雙寫入模式。
-[使用者按 Esc+Esc，選取檢查點 A，選擇「還原程式碼和對話」]
+User: This approach has issues. Let's try the dual-write pattern instead.
+[使用者按 Esc+Esc，選擇 Checkpoint A，選擇 "Restore code and conversation"]
 
-使用者：現在實現雙寫入模式，我們將同時寫入兩個資料庫
+User: Now implement a dual-write pattern where we write to both databases
 
-Claude：我將實現雙寫入遷移...
-[實作雙寫入層，逐步遷移策略]
+Claude: I'll implement dual-write migration...
+[實作雙寫層、漸進式遷移策略]
 
-使用者：執行測試
+User: Run the tests
 
-Claude：執行測試...
-✅ 所有測試通過
+Claude: Running tests...
+✅ All tests passing
 
-使用者：雙寫入方法顯然更安全。我們來提交這個。
+User: The dual-write approach is clearly safer. Let's commit this.
 ```
 
 ## 範例 2：效能優化
 
-### 情境
-嘗試多種效能優化策略。
+### 場景
+需要嘗試多種效能優化策略。
 
 ### 工作流程
 
 ```
-使用者：我們來優化 API 回應時間。目前：450ms
-      [自動建立 "Baseline" 檢查點]
+User: Let's optimize the API response time. Current: 450ms
+      [自動建立 Checkpoint "Baseline"]
 
-Claude：我將新增資料庫查詢快取...
+Claude: I'll add database query caching...
 [實作 Redis 快取]
 
-使用者：執行效能測試
+User: Run performance tests
 
-Claude：結果：平均回應時間 280ms (38% 提升)
+Claude: Results: 280ms average response time (38% improvement)
 
-使用者：讓我嘗試不同的方法。
-[使用者按 Esc+Esc，選取 "Baseline" 檢查點，選擇「還原程式碼和對話」]
+User: Let me try a different approach.
+[使用者按 Esc+Esc，選擇 "Baseline" checkpoint，選擇 "Restore code and conversation"]
 
-使用者：嘗試資料庫查詢優化
+User: Try database query optimization instead
 
-Claude：我將優化資料庫查詢...
-[新增索引，優化 N+1 查詢]
+Claude: I'll optimize database queries...
+[新增索引、優化 N+1 查詢]
 
-使用者：執行效能測試
+User: Run performance tests
 
-Claude：結果：平均回應時間 180ms (60% 提升)
+Claude: Results: 180ms average response time (60% improvement)
 
-使用者：讓我也嘗試第三種方法。
-[使用者按 Esc+Esc，選取 "Baseline" 檢查點，選擇「還原程式碼和對話」]
+User: Let me also try a third approach.
+[使用者按 Esc+Esc，選擇 "Baseline" checkpoint，選擇 "Restore code and conversation"]
 
-使用者：嘗試回應壓縮和 CDN
+User: Try response compression and CDN
 
-Claude：我將新增壓縮和 CDN...
-[實作 gzip，設定 CDN]
+Claude: I'll add compression and CDN...
+[實作 gzip、設定 CDN]
 
-使用者：執行效能測試
+User: Run performance tests
 
-Claude：結果：平均回應時間 320ms (29% 提升)
+Claude: Results: 320ms average response time (29% improvement)
 
-使用者：查詢優化是最好的。讓我回溯並將其與快取結合。
-[使用者按 Esc+Esc，選取查詢優化後的檢查點，選擇「還原程式碼和對話」]
+User: Query optimization was the best. Let me go back and combine it with caching.
+[使用者按 Esc+Esc，選擇優化查詢後的 checkpoint，選擇 "Restore code and conversation"]
 
-使用者：現在在這些優化查詢之上新增 Redis 快取
+User: Now add Redis caching on top of these optimized queries
 
-Claude：[在這些優化查詢之上新增 Redis 快取]
+Claude: [在優化後的查詢之上新增 Redis 快取]
 
-使用者：執行效能測試
+User: Run performance tests
 
-Claude：結果：平均回應時間 95ms (79% 提升) 🎉
+Claude: Results: 95ms average response time (79% improvement) 🎉
 
-使用者：完美！這是贏家。我們來提交這個。
+User: Perfect! This is the winner. Let's commit this.
 ```
 
 ## 範例 3：UI/UX 迭代
 
-### 情境
-嘗試不同的儀表板版面配置。
+### 場景
+嘗試不同的儀表板佈局。
 
 ### 工作流程
 
 ```
-使用者：我們來重新設計儀表板，使用側邊欄版面
-      [自動建立「開始」檢查點]
+User: Let's redesign the dashboard with a sidebar layout
+      [Checkpoint "Start" created automatically]
 
-Claude: [實施側邊欄版面]
+Claude: [Implements sidebar layout]
 
-使用者：請顯示螢幕截圖
+User: Show me a screenshot
 
-Claude: [顯示螢幕截圖]
+Claude: [Shows screenshot]
 
-使用者：側邊欄感覺太擁擠了。我們試試頂部導航欄？
-[使用者按下 Esc+Esc，選擇「開始」檢查點，選擇「還原程式碼和對話」]
+User: The sidebar feels cramped. Let's try a top navigation instead.
+[User presses Esc+Esc, selects "Start" checkpoint, chooses "Restore code and conversation"]
 
-使用者：試試頂部導航欄版面
+User: Try a top navigation layout
 
-Claude: [實施頂部導航欄]
+Claude: [Implements top navigation]
 
-使用者：請顯示螢幕截圖
+User: Show me a screenshot
 
-Claude: [顯示螢幕截圖]
+Claude: [Shows screenshot]
 
-使用者：比較好，但我們試試卡片式網格版面？
-[使用者按下 Esc+Esc，選擇「開始」檢查點，選擇「還原程式碼和對話」]
+User: Better, but let's try a card-based grid layout
+[User presses Esc+Esc, selects "Start" checkpoint, chooses "Restore code and conversation"]
 
-使用者：試試卡片式網格版面
+User: Try a card-based grid layout
 
-Claude: [實施卡片式網格]
+Claude: [Implements card grid]
 
-使用者：請顯示螢幕截圖
+User: Show me a screenshot
 
-Claude: [顯示螢幕截圖]
+Claude: [Shows screenshot]
 
-使用者：這很棒！但是我們可以將頂部導航欄與卡片式網格結合嗎？
-[使用者按下 Esc+Esc，選擇卡片式網格之後的檢查點，選擇「還原程式碼和對話」]
+User: This is great! But can we combine the top nav with the card grid?
+[User presses Esc+Esc, selects the checkpoint after the card grid, chooses "Restore code and conversation"]
 
-使用者：將頂部導航欄新增到卡片式網格版面
+User: Add top navigation to the card grid layout
 
-Claude: [將頂部導航欄新增到卡片式網格]
+Claude: [Adds top navigation to card grid]
 
-使用者：完美！這是最終設計。
+User: Perfect! This is the final design.
 ```
 
-## 範例 4：除錯階段
+## 範例 4：除錯會話
 
-### 情境
-追蹤一個棘手的錯誤，並提出多種假設。
+### 場景
+針對多個假設進行複雜的 bug 追蹤。
 
 ### 工作流程
 
 ```
-使用者：應用程式中存在記憶體洩漏
-      [自動建立「除錯前」檢查點]
+User: There's a memory leak in the application
+      [Checkpoint "Before debugging" created automatically]
 
-Claude: 讓我調查一下...
-[分析程式碼]
+Claude: Let me investigate...
+[Analyzes code]
 
-使用者：我想是事件監聽器造成的。我們來修正那些。
+User: I think it's in the event listeners. Let's fix those.
 
-Claude: [修正事件監聽器清理]
+Claude: [Fixes event listener cleanup]
 
-使用者：執行記憶體分析器
+User: Run memory profiler
 
-Claude: 仍然洩漏記憶體 - 事件監聽器並不是問題
+Claude: Still leaking memory - event listeners weren't the issue
 
-使用者：讓我回到之前，嘗試不同的假設。
-[使用者按下 Esc+Esc，選擇「除錯前」檢查點，選擇「還原程式碼和對話」]
+User: Let me go back and try a different hypothesis.
+[User presses Esc+Esc, selects "Before debugging" checkpoint, chooses "Restore code and conversation"]
 
-使用者：或許是資料庫連線造成的？
+User: Maybe it's the database connections?
 
-Claude: [實施連線池修正]
+Claude: [Implements connection pooling fixes]
 
-使用者：執行記憶體分析器
+User: Run memory profiler
 
-Claude: 仍然洩漏 - 並不是連線
+Claude: Still leaking - not the connections either
 
-使用者：讓我回到之前，嘗試另一種方法。
-[使用者按下 Esc+Esc，選擇「除錯前」檢查點，選擇「還原程式碼和對話」]
+User: Let me go back and try another angle.
+[User presses Esc+Esc, selects "Before debugging" checkpoint, chooses "Restore code and conversation"]
 
-使用者：我們來檢查是否有循環參考
+User: Let's check for circular references
 
-Claude: [找到並修正快取中的循環參考]
+Claude: [Finds and fixes circular references in cache]
 
-使用者：執行記憶體分析器
+User: Run memory profiler
 
-Claude: ✅ 記憶體洩漏已修正！快取層中的循環參考是罪魁禍首。
+Claude: ✅ Memory leak fixed! The circular references in the caching layer were the culprit.
 
-使用者：太棒了！我們來提交這個修正。
+User: Excellent! Let's commit this fix.
 ```
 
 ## 範例 5：API 設計演進
 
-### 情境
-設計一個具有多個迭代的 REST API。
+### 場景
+進行多次迭代的 REST API 設計。
 
 ### 工作流程
 
 ```
-User: 建立一個我們部落格平台的 REST API
-      [檢查點 "API 設計前" 自動建立]
+User: 為我們的部落格平台建立一個 REST API
+      [自動建立檢查點 "Before API design"]
 
-Claude: [建立基本的 CRUD API]
+Claude: [建立基礎的 CRUD API]
 
-User: 這樣太簡單了。我們需要新增分頁和篩選
+User: 這太簡單了。讓我們加入分頁與篩選功能
 
-Claude: [新增分頁和篩選]
+Claude: [加入分頁與篩選功能]
 
-User: 我們需要更好的資源關聯
+User: 我們需要更好的資源關聯性
 
 Claude: [實作 HATEOAS 連結]
 
-User: 其實，我們應該嘗試 GraphQL 而不是 REST
-[User 點擊 Esc+Esc，選擇 "API 設計前" 檢查點，選擇 "還原程式碼和對話"]
+User: 事實上，讓我們改用 GraphQL 而不是 REST
+[使用者按下 Esc+Esc，選擇 "Before API design" 檢查點，選擇 "Restore code and conversation"]
 
-User: 建立一個我們部落格平台的 GraphQL API 替代方案
+User: 改為為我們的部落格平台實作 GraphQL API
 
 Claude: [實作 GraphQL API]
 
-User: 我認為 REST 對我們的使用案例更好。
-[User 點擊 Esc+Esc，選擇 HATEOAS 後的檢查點，選擇 "還原程式碼和對話"]
+User: 我覺得 REST 更適合我們的使用案例。
+[使用者按下 Esc+Esc，選擇 HATEOAS 之後的檢查點，選擇 "Restore code and conversation"]
 
-User: 讓我們最終確定 REST 方案。
+User: 讓我們定案 REST 的做法。
 ```
 
-## 範例 6：配置管理
+## 範例 6：組態管理
 
-### 情境
-測試不同的配置方法。
+### 場景
+測試不同的組態管理方法。
 
 ### 工作流程
 
 ```
-User: 將配置移至環境變數
-      [檢查點 "原始配置" 自動建立]
+User: 將組態移至環境變數
+      [自動建立檢查點 "Original config"]
 
-Claude: [實作環境變數配置]
+Claude: [實作環境變數組態]
 
-User: 在開發環境中測試
+User: 在開發環境測試
 
-Claude: 本地有效，但在生產環境中出現部署問題
+Claude: 本地端運作正常，但生產環境部署時有問題
 
 User: 讓我嘗試另一種方法。
-[User 點擊 Esc+Esc，選擇 "原始配置" 檢查點，選擇 "還原程式碼和對話"]
+[使用者按下 Esc+Esc，選擇 "Original config" 檢查點，選擇 "Restore code and conversation"]
 
-User: 嘗試使用驗證的配置檔案方法
+User: 嘗試使用帶有驗證功能的組態檔案方法
 
-Claude: [實作具有 JSON 模式驗證的 YAML 配置]
+Claude: [實作帶有 JSON schema 驗證的 YAML 組態]
 
-User: 在開發環境中測試
+User: 在開發環境測試
 
-Claude: ✅ 在本地運行良好，驗證錯誤良好
+Claude: ✅ 運作良好，驗證錯誤訊息正確
 
-User: 我們是否也可以支援敏感值的環境變數？
+User: 我們可以同時支援使用環境變數來處理敏感數值嗎？
 
-Claude: [新增機密值的環境變數覆寫]
+Claude: [為 secrets 加入環境變數覆蓋功能]
 
 User: 測試部署
 
-Claude: ✅ 所有環境都正常運作
+Claude: ✅ 所有環境皆運作正常
 
-User: 完美！這已經可以投入生產了。
+User: 太棒了！這已經可以投入生產環境。
 ```
 
 ## 範例 7：測試策略
 
-### 情境
+### 場景
 實施全面的測試。
 
 ### 工作流程
 
 ```
-User: 為 auth 模組新增單元測試
-      [自動建立檢查點]
+User: Add unit tests for the auth module
+      [Checkpoint created automatically]
 
-Claude: [新增 Jest 單元測試]
+Claude: [Adds Jest unit tests]
 
-User: 執行測試
+User: Run tests
 
-Claude: 45 個測試通過，涵蓋率 78%
+Claude: 45 tests passing, 78% coverage
 
-User: 也要新增整合測試
+User: Add integration tests too
 
-Claude: [新增整合測試]
+Claude: [Adds integration tests]
 
-User: 執行測試
+User: Run tests
 
-Claude: 89 個測試通過，涵蓋率 92%，但測試速度很慢（3 分鐘）
+Claude: 89 tests passing, 92% coverage, but tests are slow (3 minutes)
 
-User: 測試速度太慢了。我們來優化一下。
+User: The tests are too slow. Let's optimize.
 
-Claude: [優化測試設定，新增平行執行]
+Claude: [Optimizes test setup, adds parallel execution]
 
-User: 執行測試
+User: Run tests
 
-Claude: 89 個測試通過，涵蓋率 92%，35 秒 ✅
+Claude: 89 tests passing, 92% coverage, 35 seconds ✅
 
-User: 太棒了！現在新增關鍵路徑的 E2E 測試
+User: Great! Now add E2E tests for critical paths
 
-Claude: [新增 Playwright E2E 測試]
+Claude: [Adds Playwright E2E tests]
 
-User: 執行所有測試
+User: Run all tests
 
-Claude: 112 個測試通過，涵蓋率 94%，2 分鐘
+Claude: 112 tests passing, 94% coverage, 2 minutes
 
-User: 涵蓋率和速度的完美平衡！
+User: Perfect balance of coverage and speed!
 ```
 
-## 範例 8：從檢查點摘要
+## 範例 8：使用 Summarize from Checkpoint
 
-### 情境
-在長時間的除錯階段後，您想縮短對話，同時保留上下文。
+### 場景
+在長時間的除錯會話之後，您想要在保留上下文的同時壓縮對話內容。
 
 ### 工作流程
 
 ```
-User: [經過 20+ 條訊息的除錯和探索]
+User: [After 20+ messages of debugging and exploration]
 
-[使用者按下 Esc+Esc，選擇早期的檢查點，選擇「從這裡摘要」]
-[可選地提供指示：「專注於我們嘗試過的事情以及哪些有效」]
+[User presses Esc+Esc, selects an early checkpoint, chooses "Summarize from here"]
+[Optionally provides instructions: "Focus on what we tried and what worked"]
 
-Claude: [從該點開始產生對話摘要]
-[原始訊息保存在記錄中]
-[摘要取代可見的對話，減少上下文視窗使用量]
+Claude: [Generates a summary of the conversation from that point forward]
+[Original messages are preserved in the transcript]
+[The summary replaces the visible conversation, reducing context window usage]
 
-User: 現在讓我們繼續使用有效的方法。
+User: Now let's continue with the approach that worked.
 ```
 
-## 關鍵要點
+## 重點摘要
 
-1. **檢查點是自動的**: 每次使用者提示都會建立一個檢查點--無需手動儲存
-2. **使用 Esc+Esc 或 /rewind**: 這是存取檢查點瀏覽器的兩種方法
-3. **選擇正確的還原選項**: 根據您的需求，還原程式碼、對話、都還原或摘要
-4. **不要害怕實驗**: 檢查點使您可以安全地嘗試激進的變更
-5. **與 git 結合**: 使用檢查點進行探索，使用 git 進行最終化的工作
-6. **摘要長時間的階段**: 使用「從這裡摘要」來保持對話可管理性
+1. **Checkpoints 是自動化的**：每個使用者提示詞都會建立一個 checkpoint —— 不需要手動儲存
+2. **使用 Esc+Esc 或 /rewind**：這是兩種存取 checkpoint 瀏覽器的方式
+3. **選擇正確的還原選項**：根據您的需求選擇還原程式碼、對話、兩者皆是，或進行摘要
+4. **不要害怕實驗**：Checkpoints 讓嘗試激進的變更變得安全
+5. **與 git 結合使用**：使用 checkpoints 進行探索，使用 git 進行最終定案的工作
+6. **摘要長會話**：使用 "Summarize from here" 來保持對話內容易於管理
+
 ---
-**上次更新**: 2026 年 4 月 9 日
+**最後更新日期**：2026 年 4 月 9 日

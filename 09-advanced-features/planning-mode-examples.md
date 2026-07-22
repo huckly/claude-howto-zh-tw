@@ -1,539 +1,538 @@
-# 規劃模式範例
+# Planning Mode 範例
 
-以下提供實際案例，說明在 Claude Code 中有效利用規劃模式。
+展示在 Claude Code 中有效使用 planning mode 的實際案例。
 
 ## 範例 1：建立 REST API
 
-### 未使用規劃模式
+### 沒有使用 Planning Mode
 
 ```
-User: 建立一個部落格的 REST API
+User: Build a REST API for a blog
 
-Claude: 我將建立 API...
-[立即開始編碼，可能錯過需求]
+Claude: I'll create the API...
+[立即開始寫程式，可能會遺漏需求]
 ```
 
-### 使用規劃模式
+### 使用 Planning Mode
 
 ```
-User: /plan 建立一個部落格的 REST API
+User: /plan Build a REST API for a blog
 
-Claude: 讓我為部落格 API 建立一個全面的計畫。
+Claude: Let me create a comprehensive plan for the blog API.
 
-## 部落格 REST API 實施計畫
+## Blog REST API Implementation Plan
 
-### 第一階段：專案設定 (15 分鐘)
-1. 初始化 Node.js 專案，使用 Express
-2. 設定 TypeScript 設定
-3. 安裝相依項 (express, pg, jwt, joi)
-4. 設定環境變數
-5. 設定專案結構
+### Phase 1: Project Setup (15 min)
+1. Initialize Node.js project with Express
+2. Set up TypeScript configuration
+3. Install dependencies (express, pg, jwt, joi)
+4. Configure environment variables
+5. Set up project structure
 
-### 第二階段：資料庫層 (30 分鐘)
-6. 設計資料庫模式
-   - users 表格 (id, email, password_hash, created_at)
-   - posts 表格 (id, user_id, title, content, published, created_at, updated_at)
-   - comments 表格 (id, post_id, user_id, content, created_at)
-7. 建立遷移檔案
-8. 設定資料庫連線池
-9. 實作資料庫模型
+### Phase 2: Database Layer (30 min)
+6. Design database schema
+   - users table (id, email, password_hash, created_at)
+   - posts table (id, user_id, title, content, published, created_at, updated_at)
+   - comments table (id, post_id, user_id, content, created_at)
+7. Create migration files
+8. Set up database connection pool
+9. Implement database models
 
-### 第三階段：驗證 (45 分鐘)
-10. 實作使用者註冊端點
-11. 實作登入端點，使用 JWT
-12. 建立驗證中間件
-13. 使用 bcrypt 進行密碼雜湊
-14. 實作 token 重新整理邏輯
+### Phase 3: Authentication (45 min)
+10. Implement user registration endpoint
+11. Implement login endpoint with JWT
+12. Create authentication middleware
+13. Add password hashing with bcrypt
+14. Implement token refresh logic
 
-### 第四階段：Posts API (40 分鐘)
-15. GET /api/posts - 列出所有已發布的貼文 (帶有分頁)
-16. GET /api/posts/:id - 取得單一貼文
-17. POST /api/posts - 建立新的貼文 (需要驗證)
-18. PUT /api/posts/:id - 更新貼文 (需要驗證，檢查所有權)
-19. DELETE /api/posts/:id - 刪除貼文 (需要驗證，檢查所有權)
-20. GET /api/users/:id/posts - 取得使用者的貼文
+### Phase 4: Posts API (40 min)
+15. GET /api/posts - List all published posts (with pagination)
+16. GET /api/posts/:id - Get single post
+17. POST /api/posts - Create new post (auth required)
+18. PUT /api/posts/:id - Update post (auth required, ownership check)
+19. DELETE /api/posts/:id - Delete post (auth required, ownership check)
+20. GET /api/users/:id/posts - Get user's posts
 
-### 第五階段：Comments API (30 分鐘)
-21. GET /api/posts/:id/comments - 取得貼文的評論
-22. POST /api/posts/:id/comments - 新增評論 (需要驗證)
-23. DELETE /api/comments/:id - 刪除評論 (需要驗證，檢查所有權)
+### Phase 5: Comments API (30 min)
+21. GET /api/posts/:id/comments - Get post comments
+22. POST /api/posts/:id/comments - Add comment (auth required)
+23. DELETE /api/comments/:id - Delete comment (auth required, ownership check)
 
-### 第六階段：驗證與錯誤處理 (30 分鐘)
-24. 使用 Joi 進行請求驗證
-25. 實作全域錯誤處理器
-26. 新增輸入 Sanitization
-27. 實作速率限制
+### Phase 6: Validation & Error Handling (30 min)
+24. Add request validation with Joi
+25. Implement global error handler
+26. Add input sanitization
+27. Implement rate limiting
 
-### 第七階段：測試 (60 分鐘)
-28. 為模型撰寫單元測試
-29. 為驗證端點撰寫整合測試
-30. 為貼文端點撰寫整合測試
-31. 為評論端點撰寫整合測試
-32. 達成 80%+ 的程式碼覆蓋率
+### Phase 7: Testing (60 min)
+28. Write unit tests for models
+29. Write integration tests for auth endpoints
+30. Write integration tests for posts endpoints
+31. Write integration tests for comments endpoints
+32. Achieve 80%+ code coverage
 
-### 第八階段：文件與部署 (30 分鐘)
-33. 使用 Swagger 產生 API 文件
-34. 建立 README，其中包含設定說明
-35. 新增 Docker 設定
-36. 設定 CI/CD 流程
+### Phase 8: Documentation & Deployment (30 min)
+33. Generate API documentation with Swagger
+34. Create README with setup instructions
+35. Add Docker configuration
+36. Set up CI/CD pipeline
 
-**預估時間**: 4.5 小時
-**需要建立的檔案**: ~25
-**主要技術**: Express, PostgreSQL, JWT, TypeScript
+**Estimated Time**: 4.5 hours
+**Files to Create**: ~25
+**Key Technologies**: Express, PostgreSQL, JWT, TypeScript
 
-**API 端點摘要**:
-- 驗證: 2 個端點
-- 貼文: 6 個端點
-- 評論: 3 個端點
-- 總計: 11 個端點
+**API Endpoints Summary**:
+- Authentication: 2 endpoints
+- Posts: 6 endpoints
+- Comments: 3 endpoints
+- Total: 11 endpoints
 
-準備好繼續了嗎？ (yes/no/modify)
+Ready to proceed? (yes/no/modify)
 
 User: yes
 
-Claude: 開始第一階段：專案設定...
-[有系統地實作每個階段]
+Claude: Starting Phase 1: Project Setup...
+[系統性地執行每個階段]
 ```
 
 ## 範例 2：資料庫遷移
 
-### 搭配規劃模式
+### 使用規劃模式 (Planning Mode)
 
 ```
-User: /plan 遷移 MongoDB 到 PostgreSQL
+User: /plan 從 MongoDB 遷移至 PostgreSQL
 
-Claude: 這是個複雜的遷移。讓我創建一份詳細的計畫。
+Claude: 這是一個複雜的遷移任務。讓我建立一個詳細的計畫。
 
-## MongoDB 到 PostgreSQL 遷移計畫
+## MongoDB 遷移至 PostgreSQL 計畫
 
 ### 第一階段：分析與準備 (第 1 天)
-1. 分析目前的 MongoDB 結構
-2. 識別資料關係和限制
-3. 記錄目前資料量和成長率
-4. 設計等效的 PostgreSQL 結構
-5. 規劃資料類型對應
+1. 分析目前的 MongoDB schema
+2. 識別資料關聯性與約束條件
+3. 記錄目前的資料量與成長率
+4. 設計對應的 PostgreSQL schema
+5. 規劃資料類型映射 (mapping)
 6. 識別潛在的遷移挑戰
 
 ### 第二階段：PostgreSQL 設定 (第 1 天)
 7. 設定 PostgreSQL 資料庫
-8. 建立結構表、索引和限制
-9. 設定連線池
-10. 設定備份策略
+8. 建立包含資料表、索引、約束條件的 schema
+9. 設定連線池 (connection pooling)
+10. 配置備份策略
 
-### 第三階段：雙寫實作 (第 2-3 天)
+### 第三階段：雙寫 (Dual-Write) 實作 (第 2-3 天)
 11. 建立資料庫抽象層
-12. 實作雙寫到兩個資料庫
-13. 增加資料一致性檢查
-14. 將雙寫部署到測試環境
+12. 實作同時寫入兩個資料庫的雙寫機制
+13. 加入資料一致性檢查
+14. 將雙寫機制部署至 staging 環境
 15. 監控問題
 
 ### 第四階段：資料遷移 (第 4 天)
-16. 建立用於 MongoDB 的資料匯出腳本
-17. 建立用於 PostgreSQL 的資料匯入腳本
+16. 建立 MongoDB 的資料匯出腳本
+17. 建立 PostgreSQL 的資料匯入腳本
 18. 實作資料轉換邏輯
-19. 在生產資料的副本上執行初始遷移
-20. 驗證遷移資料的完整性
+19. 在生產資料的副本上執行初步遷移
+20. 驗證遷移後的資料完整性
 
-### 第五階段：逐步轉換 (第 5-7 天)
-21. 在生產環境中啟用雙寫
-22. 批次遷移歷史資料
+### 第五階段：逐步切換 (第 5-7 天)
+21. 在生產環境啟用雙寫機制
+22. 分批遷移歷史資料
 23. 持續驗證資料一致性
-24. 監控兩個資料庫
-25. 修正任何資料同步問題
+24. 同時監控兩個資料庫
+25. 修復任何資料同步問題
 
-### 第六階段：PostgreSQL 成為主要資料庫 (第 8 天)
-26. 將讀取操作切換到 PostgreSQL
+### 第六階段：將 PostgreSQL 設為主資料庫 (第 8 天)
+26. 將讀取操作切換至 PostgreSQL
 27. 監控查詢效能
-28. 優化慢速查詢
-29. 繼續雙寫以確保安全
+28. 優化慢查詢
+29. 為求安全，繼續維持雙寫機制
 
-### 第七階段：MongoDB 淘汰 (第 9-10 天)
+### 第七階段：停用 MongoDB (第 9-10 天)
 30. 停止寫入 MongoDB
-31. 將 MongoDB 保持為備份 2 週
-32. 從程式碼中移除 MongoDB 依賴
+31. 將 MongoDB 作為備份保留 2 週
+32. 從程式碼中移除 MongoDB 的依賴
 33. 封存 MongoDB 資料
-34. 停用 MongoDB 執行個體
+34. 停用 MongoDB 實例
 
-**預估時間**: 10 天
-**風險等級**: 高
-**回退策略**: 保持 MongoDB 執行雙寫
-**成功標準**:
-- 沒有資料遺失
-- <5% 效能回歸
-- 所有測試都通過
+**預估時間**：10 天
+**風險等級**：高
+**回滾策略**：維持 MongoDB 運行並保持雙寫機制
+**成功標準**：
+- 零資料遺失
+- 效能退化 <5%
+- 所有測試通過
 
-**主要風險**:
-1. 遷移期間資料不一致
-2. 查詢效能降低
+**關鍵風險**：
+1. 遷移過程中的資料不一致
+2. 查詢效能下降
 3. 應用程式停機時間
 4. 資料遺失
 
-**緩解**:
-- 雙寫模式以確保安全
-- 逐步轉換
+**緩解措施**：
+- 使用雙寫模式確保安全
+- 逐步切換
 - 持續監控
-- 快速回退能力
+- 具備快速回滾能力
 
-是否繼續此計畫？ (yes/no/modify)
+是否繼續執行此計畫？(yes/no/modify)
 
-User: Modify - let's add a rollback plan for each phase
+User: Modify - 為每個階段增加回滾計畫
 
-Claude: Updated plan with rollback procedures for each phase...
+Claude: 已更新計畫，包含每個階段的回滾程序...
 ```
 
 ## 範例 3：前端重構
 
 ```
-User: /plan 重構我們的 React 應用程式，從類別組件轉換到鉤子
+User: /plan 將我們的 React app 從 class components 重構為 hooks
 
 Claude: 我將建立一個系統性的重構計畫。
 
-## React 類別到鉤子的遷移計畫
+## React Class to Hooks 遷移計畫
 
 ### 第一階段：準備與分析 (2 小時)
-1. 審核所有類別組件 (找出所有 .jsx/.tsx 檔案)
+1. 審查所有 class components (尋找所有 .jsx/.tsx 檔案)
 2. 依複雜度分類：
-   - 簡單 (僅有狀態)：~15 個組件
-   - 中等 (生命週期方法)：~23 個組件
-   - 複雜 (多個生命週期、refs)：~8 個組件
-3. 找出需要更新的第三方函式庫
-4. 建立組件相依性圖
-5. 規劃遷移順序 (先處理葉節點)
+   - 簡單 (僅含 state): ~15 個組件
+   - 中等 (含生命週期方法): ~23 個組件
+   - 複雜 (多個生命週期、refs): ~8 個組件
+3. 識別需要更新的第三方函式庫
+4. 建立組件依賴圖
+5. 規劃遷移順序 (從葉節點開始)
 
 ### 第二階段：設定與工具 (1 小時)
-6. 更新 React 到 v18+
+6. 將 React 更新至 v18+
 7. 設定 hooks 的 ESLint 規則
 8. 建立轉換範本
 9. 設定自動化測試
 10. 在開始前建立檢查點
 
 ### 第三階段：遷移簡單組件 (4 小時)
-11. 轉換簡單狀態組件 (15 個組件)
+11. 轉換簡單的有狀態組件 (15 個組件)
 12. 將 this.state 替換為 useState
-13. 將 this.setState 替換為狀態設定器
+13. 將 this.setState 替換為 state setters
 14. 轉換後測試每個組件
 15. 更新測試
 
 ### 第四階段：遷移中等組件 (8 小時)
-16. 轉換具有生命週期方法的組件 (23 個組件)
+16. 轉換含有生命週期方法的組件 (23 個組件)
 17. 將 componentDidMount 替換為 useEffect
 18. 將 componentDidUpdate 替換為 useEffect
-19. 將 componentWillUnmount 替換為 useEffect 清理
-20. 徹底測試
+19. 將 componentWillUnmount 替換為 useEffect cleanup
+20. 進行徹底測試
 
 ### 第五階段：遷移複雜組件 (12 小時)
 21. 轉換複雜組件 (8 個組件)
 22. 將 refs 替換為 useRef
-23. 提取共享邏輯的自訂鉤子
-24. 處理邊緣案例 (多個 useEffect)
-25. 進行廣泛測試
+23. 提取自定義 hooks 以處理共用邏輯
+24. 處理邊際情況 (多個 useEffect)
+25. 廣泛測試
 
-### 第六階段：提取共享邏輯 (6 小時)
-26. 找出組件之間重複的邏輯
-27. 建立自訂鉤子：
+### 第六階段：共用邏輯提取 (6 小時)
+26. 識別組件間重複的邏輯
+27. 建立自定義 hooks：
     - useAuth
     - useFetch
     - useLocalStorage
     - useDebounce
-28. 重構組件以使用自訂鉤子
-29. 獨立測試自訂鉤子
+28. 重構組件以使用自定義 hooks
+29. 獨立測試自定義 hooks
 
 ### 第七階段：效能優化 (4 小時)
-30. 在需要時新增 React.memo
+30. 在需要時加入 React.memo
 31. 使用 useCallback 進行優化
 32. 使用 useMemo 進行優化
-33. 分析並修正效能回歸
+33. 分析並修復效能退化
 
-### 第八階段：清理與文件 (2 小時)
-34. 移除未使用的類別組件工具程式碼
+### 第八階段：清理與文件化 (2 小時)
+34. 移除未使用的 class component 工具函式
 35. 更新文件
-36. 更新編碼指南
-37. 建立團隊遷移指南
+36. 更新編碼規範
+37. 為團隊建立遷移指南
 
 **預估時間**: 5 天 (39 小時)
-**需要修改的檔案**: 46 個組件
+**需修改的檔案**: 46 個組件
 **風險等級**: 中等
 
 **遷移順序**:
-1. 葉節點組件 (沒有相依性)
-2. 中階層組件
-3. 頂層容器組件
+1. 葉組件 (無依賴項)
+2. 中層組件
+3. 高層容器組件
 4. App.jsx (最後)
 
 **測試策略**:
 - 每個組件的單元測試
-- 用戶流程的整合測試
+- 使用者流程的整合測試
 - 視覺回歸測試
-- 效能基準
+- 效能基準測試
 
 **成功指標**:
 - 所有測試通過
-- 沒有視覺回歸
-- 效能維持或改善
-- Bundle 大小未顯著增加
+- 無視覺回歸
+- 效能維持或提升
+- Bundle size 未顯著增加
 
-繼續？ (yes/no/modify)
+是否繼續？(yes/no/modify)
 ```
 
 ## 範例 4：安全性實作
 
 ```
-User: /plan 實作我們網頁應用程式的全面安全性
+User: /plan 為我們的 Web 應用程式實作全面的安全性
 
-Claude: 讓我創建一份全面的安全性實作計畫。
+Claude: 讓我建立一個詳盡的安全性實作計畫。
 
-## 網頁應用程式安全性實作計畫
+## Web 應用程式安全性實作計畫
 
-### 第一階段：安全性審核 (第 1 天)
-1. 執行自動安全性掃描器 (npm audit, Snyk)
-2. 審查相依性是否存在漏洞
-3. 檢查 OWASP Top 10 規範是否符合
-4. 審查驗證流程
+### 第一階段：安全性稽核 (第 1 天)
+1. 執行自動化安全性掃描器 (npm audit, Snyk)
+2. 審查依賴項是否存在漏洞
+3. 檢查是否符合 OWASP Top 10
+4. 稽核身分驗證流程
 5. 審查資料處理實務
-6. 記錄目前的安全漏洞
+6. 記錄目前的安全性缺口
 
-### 第二階段：驗證強化 (第 2-3 天)
+### 第二階段：身分驗證強化 (第 2-3 天)
 7. 實作強密碼要求
-8. 增加密碼強度計量表
-9. 實作登入速率限制
-10. 嘗試失敗後增加帳戶鎖定
+8. 加入密碼強度計量器
+9. 實作登入速率限制 (rate limiting)
+10. 加入登入失敗後的帳號鎖定機制
 11. 實作 2FA (TOTP)
-12. 增加會話管理改善
+12. 加入會話管理改進
 13. 實作安全的密碼重設流程
 
 ### 第三階段：授權與存取控制 (第 3-4 天)
 14. 實作 RBAC (基於角色的存取控制)
-15. 在所有端點新增權限檢查
+15. 在所有端點加入權限檢查
 16. 實作最小權限原則
-17. 為敏感操作新增稽核記錄
-18. 實作資源層級權限
+17. 為敏感操作加入稽核日誌
+18. 實作資源層級的權限控制
 
 ### 第四階段：資料保護 (第 4-5 天)
-19. 實作靜態資料加密 (敏感欄位)
-20. 確保所有通訊使用 TLS/SSL
+19. 實作靜態加密 (敏感欄位)
+20. 確保所有通訊皆使用 TLS/SSL
 21. 實作安全的會話儲存
-22. 在記錄中新增 PII 資料遮罩
+22. 在日誌中加入 PII 資料遮罩
 23. 實作資料保留政策
-24. 實作安全的檔案上傳處理
+24. 加入安全的檔案上傳處理
 
-### 第五階段：輸入驗證與過濾 (第 5-6 天)
+### 第五階段：輸入驗證與清理 (第 5-6 天)
 25. 在所有端點實作輸入驗證
-26. 新增 XSS 保護 (Content Security Policy)
+26. 加入 XSS 防護 (內容安全政策 Content Security Policy)
 27. 實作 SQL 注入防護 (參數化查詢)
-28. 新增 CSRF 保護
+28. 加入 CSRF 防護
 29. 實作請求大小限制
-30. 新增檔案上傳類型驗證
+30. 加入檔案上傳類型驗證
 
-### 第六階段：安全性標頭與設定 (第 6 天)
-31. 新增安全性標頭：
+### 第六階段：安全性標頭與配置 (第 6 天)
+31. 加入安全性標頭：
     - Strict-Transport-Security
     - X-Content-Type-Options
     - X-Frame-Options
     - X-XSS-Protection
     - Content-Security-Policy
-32. 妥善設定 CORS
+32. 正確配置 CORS
 33. 停用不必要的 HTTP 方法
 34. 移除伺服器版本標頭
 
-### 第七階段：監控與記錄 (第 7 天)
-35. 實作安全性事件記錄
-36. 新增異常偵測
-37. 設定入侵偵測
-38. 實作即時警報
+### 第七階段：監控與日誌 (第 7 天)
+35. 實作安全性事件日誌記錄
+36. 加入異常檢測
+37. 設定入侵檢測
+38. 實作即時告警
 39. 建立安全性儀表板
 
 ### 第八階段：測試與文件 (第 8-9 天)
-40. 執行滲透測試
+40. 進行滲透測試
 41. 執行安全性掃描器
 42. 測試所有安全性功能
 43. 建立安全性文件
-44. 訓練團隊使用安全性實務
+44. 對團隊進行安全性實務培訓
 45. 建立事件應變計畫
 
-### 第九階段：符合性與政策 (第 10 天)
-46. GDPR 符合性檢查
+### 第九階段：合規性與政策 (第 10 天)
+46. GDPR 合規性檢查
 47. 建立隱私權政策
 48. 實作資料主體權利
-49. 新增 Cookie 同意
+49. 加入 Cookie 同意機制
 50. 建立安全性政策文件
 
-**預估時間**: 10 天
-**風險等級**: 嚴重
-**優先順序**: 高
+**預估時間**：10 天
+**風險等級**：極高 (Critical)
+**優先級**：高 (High)
 
-**安全性改善摘要**:
-- 驗證：7 項增強
+**安全性改進摘要**：
+- 身分驗證：7 項增強
 - 授權：5 項增強
 - 資料保護：6 項增強
 - 輸入驗證：6 項增強
-- 基礎架構：9 項增強
+- 基礎設施：9 項增強
 - 監控：5 項增強
 
-**符合性**: OWASP Top 10, GDPR
+**合規性**：OWASP Top 10, GDPR
 
-**成功標準**:
-- 沒有任何重大漏洞
+**成功標準**：
+- 零個關鍵漏洞
 ```
 
-- 所有 OWASP Top 10 漏洞都已緩解
+- 已緩解所有 OWASP Top 10 風險
 - 安全評分 >90/100
-- 所有滲透測試問題都已解決
+- 所有滲透測試問題已解決
 
-Proceed? (yes/no/modify)
+是否繼續？(yes/no/modify)
 ```
 
-## 範例 5：效能優化
+## Example 5: Performance Optimization
 
 ```
 User: /plan 優化我們緩慢的電子商務網站
 
-Claude: 讓我創建一個全面的效能優化計畫。
+Claude: 讓我建立一個全面的效能優化計畫。
 
 ## 電子商務效能優化計畫
 
-### 第一階段：效能審核 (4 小時)
-1. 執行 Lighthouse 審核
-2. 分析 Chrome DevTools 效能分析
-3. 測量核心網頁指標：
-   - LCP (最大內容繪製時間)
-   - FID (首次輸入延遲)
-   - CLS (累積版面配置位移)
-4. 找出效能瓶頸
+### Phase 1: Performance Audit (4 hours)
+1. 執行 Lighthouse 稽核
+2. 分析 Chrome DevTools 效能設定檔
+3. 測量 Core Web Vitals：
+   - LCP (Largest Contentful Paint)
+   - FID (First Input Delay)
+   - CLS (Cumulative Layout Shift)
+4. 識別效能瓶頸
 5. 建立基準效能指標
 
-**目前指標**:
-- LCP: 4.2s (目標：<2.5s)
-- FID: 280ms (目標：<100ms)
-- CLS: 0.25 (目標：<0.1)
-- 頁面載入時間: 8.3s (目標：<3s)
+**Current Metrics**:
+- LCP: 4.2s (target: <2.5s)
+- FID: 280ms (target: <100ms)
+- CLS: 0.25 (target: <0.1)
+- Page Load: 8.3s (target: <3s)
 
-### 第二階段：圖片優化 (6 小時)
+### Phase 2: Image Optimization (6 hours)
 6. 將圖片轉換為 WebP 格式
 7. 實作響應式圖片
-8. 為圖片新增延遲載入
-9. 優化圖片大小 (壓縮)
-10. 實作圖片 CDN
-11. 新增圖片佔位符
+8. 為圖片加入延遲載入 (lazy loading)
+9. 優化圖片大小（壓縮）
+10. 為圖片實作 CDN
+11. 加入圖片佔位符 (placeholders)
 
-**預期影響**: -40% 載入時間
+**Expected Impact**: -40% load time
 
-### 第三階段：程式碼分割與延遲載入 (8 小時)
-12. 實作基於路由的程式碼分割
+### Phase 3: Code Splitting & Lazy Loading (8 hours)
+12. 實作基於路由的程式碼分割 (code splitting)
 13. 延遲載入非關鍵組件
-14. 分割供應商套件
-15. 優化區塊大小
-16. 實作動態匯入
-17. 為關鍵資源新增預先載入
+14. 分割 vendor bundles
+15. 優化 chunk 大小
+16. 實作動態匯入 (dynamic imports)
+17. 為關鍵資源加入預載 (preloading)
 
-**預期影響**: -30% 初始套件大小
+**Expected Impact**: -30% initial bundle size
 
-### 第四階段：快取策略 (6 小時)
+### Phase 4: Caching Strategy (6 hours)
 18. 實作瀏覽器快取 (Cache-Control)
-19. 新增服務工作者以支援離線功能
+19. 加入 service worker 以支援離線功能
 20. 實作 API 回應快取
-21. 為資料庫查詢新增 Redis 快取
+21. 為資料庫查詢加入 Redis 快取
 22. 實作 stale-while-revalidate
 23. 設定 CDN 快取
 
-**預期影響**: -50% API 回應時間
+**Expected Impact**: -50% API response time
 
-### 第五階段：資料庫優化 (8 小時)
-24. 新增資料庫索引
-25. 優化緩慢查詢 (>100ms)
+### Phase 5: Database Optimization (8 hours)
+24. 加入資料庫索引 (indexes)
+25. 優化慢查詢 (>100ms)
 26. 實作查詢結果快取
-27. 新增連線池
-28. 適當時進行非正規化
-29. 實作資料庫唯讀複本
+27. 加入連線池 (connection pooling)
+28. 在適當情況下進行反正規化 (Denormalize)
+29. 實作資料庫讀取副本 (read replicas)
 
-**預期影響**: -60% 資料庫查詢時間
+**Expected Impact**: -60% database query time
 
-### 第六階段：前端優化 (10 小時)
+### Phase 6: Frontend Optimization (10 hours)
 30. 最小化並壓縮 JavaScript
 31. 最小化並壓縮 CSS
 32. 移除未使用的 CSS (PurgeCSS)
-33. 實作關鍵 CSS
-34. 延遲非關鍵 JavaScript
+33. 實作關鍵 CSS (critical CSS)
+34. 延遲執行非關鍵 JavaScript
 35. 減少 DOM 大小
 36. 優化 React 渲染 (memo, useMemo)
-37. 實作虛擬滾動以處理長列表
+37. 為長列表實作虛擬捲動 (virtual scrolling)
 
-**預期影響**: -35% JavaScript 執行時間
+**Expected Impact**: -35% JavaScript execution time
 
-### 第七階段：網路優化 (4 小時)
+### Phase 7: Network Optimization (4 hours)
 38. 啟用 HTTP/2
 39. 實作資源提示 (preconnect, prefetch)
 40. 減少 HTTP 請求數量
 41. 啟用 Brotli 壓縮
 42. 優化第三方腳本
 
-**預期影響**: -25% 網路時間
+**Expected Impact**: -25% network time
 
-### 第八階段：監控與測試 (4 小時)
+### Phase 8: Monitoring & Testing (4 hours)
 43. 設定效能監控 (Datadog/New Relic)
-44. 新增真實使用者監控 (RUM)
-45. 建立效能預算
-46. 設定自動 Lighthouse CI
-47. 在真實裝置上測試
+44. 加入真實使用者監測 (RUM)
+45. 建立效能預算 (performance budgets)
+46. 設定自動化 Lighthouse CI
+47. 在真實裝置上進行測試
 
-**預估時間**: 50 小時 (2 週)
+**Estimated Time**: 50 hours (2 weeks)
 
-**目標指標** (90th percentile):
-- LCP: <2.0s (從 4.2s) ✅
-- FID: <50ms (從 280ms) ✅
-- CLS: <0.05 (從 0.25) ✅
-- 頁面載入時間: <2.5s (從 8.3s) ✅
+**Target Metrics** (90th percentile):
+- LCP: <2.0s (from 4.2s) ✅
+- FID: <50ms (from 280ms) ✅
+- CLS: <0.05 (from 0.25) ✅
+- Page Load: <2.5s (from 8.3s) ✅
 
-**預期收入影響**:
+**Expected Revenue Impact**:
 
-- 100ms 更快 = 1% 的轉換率提升
-- 目標：5.8s 的改進 = ~58% 的轉換率提升
-- 預估額外收入：顯著
+- 100ms 加快 = 1% 轉換率提升
+- 目標：改善 5.8s = 約 58% 轉換率提升
+- 預估額外營收：顯著
 
-**優先順序**:
-1. 圖片優化 (快速成果)
-2. 程式碼分割 (高影響力)
-3. 快取 (高影響力)
+**優先順序**：
+1. 圖片優化 (快速獲益)
+2. Code splitting (高影響力)
+3. Caching (高影響力)
 4. 資料庫優化 (關鍵)
 5. 前端優化 (完善)
 
-是否繼續此計畫？ (是/否/修改)
-```
+是否按照此計畫進行？(yes/no/modify)
 
-## 關鍵要點
+## 重點摘要
 
-### 規劃模式的優點
+### Planning Mode 的優點
 
-1. **清晰度**: 開始前有明確的規劃路線
-2. **估算**: 時間和精力估算
-3. **風險評估**: 提早識別潛在問題
-4. **優先順序**: 任務的邏輯順序
-5. **批准**: 在執行前審查和批准
-6. **修改**: 根據回饋調整計畫
+1. **清晰度**：在開始前擁有明確的路線圖
+2. **估算**：時間與工作量估算
+3. **風險評估**：及早識別潛在問題
+4. **優先順序**：任務的邏輯順序
+5. **審核**：在執行前進行審查與核准
+6. **修改**：根據回饋調整計畫
 
-### 何時使用規劃模式
+### 何時使用 Planning Mode
 
-✅ **務必使用於**:
-- 跨日期的專案
+✅ **務必使用於**：
+- 多日期的專案
 - 團隊協作
 - 關鍵系統變更
 - 學習新概念
 - 複雜的重構
 
-❌ **不要用於**:
-- 錯誤修正
-- 簡單的調整
+❌ **不要使用於**：
+- Bug fixes
+- 微小的調整
 - 簡單的查詢
-- 快速的實驗
+- 快速實驗
 
-### 最佳實踐
+### 最佳實務
 
-1. **仔細審查** 計畫，再批准
-2. **修改** 計畫，當您發現問題時
-3. **分解** 複雜的任務
-4. **估算** 實際的時間範圍
-5. **包含回退** 策略
-6. **新增成功** 標準
-7. **規劃每個階段的測試**
+1. 在核准前**仔細審查計畫**
+2. 當發現問題時**修改計畫**
+3. 將複雜任務**拆解**
+4. **估算現實的**時間範圍
+5. **包含回滾**策略
+6. **加入成功**標準
+7. 為每個階段**規劃測試**
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**最後更新日期**：2026 年 4 月 9 日

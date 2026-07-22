@@ -5,27 +5,27 @@
 
 # Hooks
 
-Hooks 是自動化腳本，會在 Claude Code 會話期間針對特定事件執行。它們可以實現自動化、驗證、權限管理以及自定義工作流程。
+Hooks 是在 Claude Code 會話期間，針對特定事件執行的自動化腳本。它們可以實現自動化、驗證、權限管理以及自定義工作流程。
 
-## 概觀
+## 概述
 
-Hooks 是自動化動作（shell 命令、HTTP webhooks、LLM 提示詞或子代理評估），當 Claude Code 中發生特定事件時會自動執行。它們接收 JSON 輸入，並透過結束代碼（exit codes）和 JSON 輸出進行結果通訊。
+Hooks 是自動化動作（shell 命令、HTTP webhooks、LLM 提示詞或子代理評估），當 Claude Code 中發生特定事件時會自動執行。它們接收 JSON 輸入，並透過結束代碼（exit codes）和 JSON 輸出進行結果傳遞。
 
 **關鍵特性：**
 - 事件驅動的自動化
 - 基於 JSON 的輸入/輸出
-- 支援 command、prompt、HTTP 和 agent 類型的 hook
-- 針對特定工具的 pattern matching
+- 支援 command、prompt、HTTP 和 agent 類型的 hooks
+- 針對特定工具的 hooks 模式匹配
 
 ## 配置
 
-Hooks 在設定檔中以特定結構進行配置：
+Hooks 在設定檔中以特定的結構進行配置：
 
-- `~/.claude/settings.json` - 使用者設定（所有專案）
-- `.claude/settings.json` - 專案設定（可共用、已提交）
-- `.claude/settings.local.json` - 本地專案設定（未提交）
+- `~/.claude/settings.json` - 使用者設定（適用於所有專案）
+- `.claude/settings.json` - 專案設定（可共用、可提交至 git）
+- `.claude/settings.local.json` - 本地專案設定（不提交至 git）
 - Managed policy - 組織範圍的設定
-- Plugin `hooks/hooks.json` - Plugin 範圍的 hooks
+- Plugin `hooks/hooks.json` - 外掛範圍的 hooks
 - Skill/Agent frontmatter - 元件生命週期 hooks
 
 ### 基本配置結構
@@ -53,29 +53,29 @@ Hooks 在設定檔中以特定結構進行配置：
 
 | 欄位 | 說明 | 範例 |
 |-------|-------------|---------|
-| `matcher` | 用於比對工具名稱的模式（區分大小寫） | `"Write"`, `"Edit\|Write"`, `"*"` |
-| `hooks` | hook 定義的陣列 | `[{ "type": "command", ... }]` |
+| `matcher` | 用於匹配工具名稱的模式（區分大小寫） | `"Write"`, `"Edit\|Write"`, `"*"` |
+| `hooks` | Hook 定義的陣列 | `[{ "type": "command", ... }]` |
 | `type` | Hook 類型：`"command"` (bash), `"prompt"` (LLM), `"http"` (webhook), 或 `"agent"` (subagent) | `"command"` |
 | `command` | 要執行的 shell 命令 | `"$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh"` |
-| `timeout` | 選填的秒數超時設定（預設 60） | `30` |
-| `once` | 若為 `true`，則每個會話僅執行一次 hook | `true` |
+| `timeout` | 選填，以秒為單位的逾時時間（預設 60） | `30` |
+| `once` | 若為 `true`，則每個會話僅執行一次該 hook | `true` |
 
-### Matcher Patterns
+### 匹配模式 (Matcher Patterns)
 
 | 模式 | 說明 | 範例 |
 |---------|-------------|---------|
-| 精確字串 | 比對特定工具 | `"Write"` |
-| Regex 模式 | 比對多個工具 | `"Edit\|Write"` |
-| 通配符 | 比對所有工具 | `"*"` 或 `""` |
+| 精確字串 | 匹配特定工具 | `"Write"` |
+| 正規表示式模式 | 匹配多個工具 | `"Edit\|Write"` |
+| 通配符 | 匹配所有工具 | `"*"` 或 `""` |
 | MCP 工具 | 伺服器與工具模式 | `"mcp__memory__.*"` |
 
-**InstructionsLoaded matcher 值：**
+**InstructionsLoaded 匹配值：**
 
-| Matcher 值 | 說明 |
+| 匹配值 | 說明 |
 |---------------|-------------|
 | `session_start` | 在會話啟動時載入的指令 |
 | `nested_traversal` | 在巢狀目錄遍歷期間載入的指令 |
-| `path_glob_match` | 透過路徑 glob 模式比對載入的指令 |
+| `path_glob_match` | 透過路徑 glob 模式匹配載入的指令 |
 
 ## Hook 類型
 
@@ -145,67 +145,1642 @@ LLM 會評估該提示詞並回傳結構化的決策（詳情請參閱 [Prompt-B
 
 **關鍵屬性：**
 - `"type": "agent"` -- 將此識別為 agent hook
-- `"prompt"` -- 給予子代理的任務描述
-- 代理可以使用工具（Read, Grep, Bash 等）來執行其評估
+- `"prompt"` -- 給子代理的任務描述
+- 代理可以使用工具（Read、Grep、Bash 等）來執行其評估
 - 回傳與 prompt hooks 類似的結構化決策
 
-## Hook Events
+## 鉤子事件
 
-Claude Code 支援 **26 個 hook events**：
+Claude Code 支持 **26 個鉤子事件
 
-| Event | 觸發時機 | Matcher 輸入 | 是否可阻斷 | 常見用途 |
-|-------|---------------|---------------|-----------|------------|
-| **SessionStart** | 會話開始/恢復/清除/壓縮 | startup/resume/clear/compact | 否 | 環境設定 |
-| **InstructionsLoaded** | CLAUd.md 或規則檔案載入後 | (無) | 否 | 修改/過濾指令 |
-| **UserPromptSubmit** | 使用者提交 prompt | (無) | 是 | 驗證 prompt |
-| **PreToolUse** | 工具執行前 | 工具名稱 | 是 (允許/拒絕/詢問) | 驗證、修改輸入 |
-| **PermissionRequest** | 顯示權限對話框時 | 工具名稱 | 是 | 自動核准/拒絕 |
-| **PermissionDenied** | 使用者拒絕權限提示時 | 工具名稱 | 否 | 紀錄、分析、政策執行 |
-| **PostToolUse** | 工具執行成功後 | 工具名稱 | 否 | 新增上下文、回饋 |
-| **PostToolUseFailure** | 工具執行失敗時 | 工具名稱 | 否 | 錯誤處理、紀錄 |
-| **Notification** | 發送通知時 | 通知類型 | 否 | 自定義通知 |
-| **SubagentStart** | 子代理啟動時 | 代理類型名稱 | 否 | 子代理設定 |
-| **SubagentStop** | 子代理結束時 | 代理類型名稱 | 是 | 子代理驗證 |
-| **Stop** | Claude 完成回應時 | (無) | 是 | 任務完成檢查 |
-| **StopFailure** | API 錯誤導致回合結束時 | (無) | 否 | 錯誤恢復、紀錄 |
-| **TeammateIdle** | 代理團隊中的隊友閒置時 | (無) | 是 | 隊友協調 |
-| **TaskCompleted** | 任務被標記為完成時 | (無) | 是 | 任務後續動作 |
-| **TaskCreated** | 透過 TaskCreate 建立任務時 | (無) | 否 | 任務追蹤、紀錄 |
-| **ConfigChange** | 設定檔變更時 | (無) | 是 (政策除外) | 對設定更新做出反應 |
-| **CwdChanged** | 工作目錄變更時 | (無) | 否 | 特定目錄的設定 |
-| **FileChanged** | 被監控的檔案變更時 | (無) | 否 | 檔案監控、重新構建 |
-| **PreCompact** | 上下文壓縮前 | manual/auto | 否 | 壓縮前動作 |
-| **PostCompact** | 壓縮完成後 | (無) | 否 | 壓縮後動作 |
-| **WorktreeCreate** | 正在建立 Worktree 時 | (無) | 是 (路徑回傳) | Worktree 初始化 |
-| **WorktreeRemove** | 正在移除 Worktree 時 | (無) | 否 | Worktree 清理 |
-| **Elicitation** | MCP server 要求使用者輸入時 | (無) | 是 | 輸入驗證 |
-| **ElicitationResult** | 使用者回應 elicitation 時 | (無) | 是 | 回應處理 |
-| **SessionEnd** | 會話終止時 | (無) | 否 | 清理、最終紀錄 |
+| 事件
 
-### PreToolUse
+| 觸發時機 | 匹配器輸入
 
-在 Claude 建立工具參數之後且在處理之前執行。使用此功能來驗證或修改工具輸入。
+| 阻斷
 
-**Configuration:**
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+| 常見用途
 
-**常見 matchers:** `Task`, `Bash`, `Glob`, `Grep`, `Read`, `Edit`, `Write`, `WebFetch`, `WebSearch`
+| 匹配器
+
+| 阻斷
+
+| 匹配器
+
+| 阻斷
+
+| 匹配器
+
+| 阻斷
+
+| 阻動
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻斷
+
+| 阻
 
 **輸出控制：**
 - `permissionDecision`: `"allow"`、`"deny"` 或 `"ask"`
@@ -389,7 +1964,7 @@ hooks:
 
 **組件鉤子支援的事件：** `PreToolUse`、`PostToolUse`、`Stop`
 
-這允許直接在使用的組件中定義鉤子，將相關程式碼集中在一起。
+這允許直接在使用的組件中定義鉤子，使相關程式碼保持在一起。
 
 ### Hooks in Subagent Frontmatter
 
@@ -451,7 +2026,7 @@ hooks:
 }
 ```
 
-**常見欄位：**
+**常用欄位：**
 
 | 欄位 | 說明 |
 |-------|-------------|
@@ -492,231 +2067,16 @@ hooks:
 
 ## 環境變數
 
-| 變數 | 可用性 | 描述 |
+| 變數名稱 | 可用性 | 說明 |
 |----------|-------------|-------------|
 | `CLAUDE_PROJECT_DIR` | 所有 hooks | 專案根目錄的絕對路徑 |
-| `CLAUDE_ENV_FILE` | SessionStart, CwdChanged, FileChanged | 用於持久化環境變數的檔案路徑 |
-| `CLAUDE_CODE_REMOTE` | 所有 hooks | 若在遠端環境執行，則為 `"true"` |
-| `${CLAUDE_PLUGIN_ROOT}` | Plugin hooks | 外掛目錄的路徑 |
-| `${CLAUDE_PLUGIN_DATA}` | Plugin hooks | 外掛資料目錄的路徑 |
-| `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | SessionEnd hooks | 可設定的 SessionEnd hooks 超時時間（以毫秒為單位，會覆蓋預設值） |
+| `CLAUDE_ENV_FILE_PATH_TO_be_used_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_persisting_env_vars_for_env_vars_for_persisting_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars__for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars_for_env_vars
 
-## 基於提示詞的 hooks
-
-對於 `Stop` 和 `SubagentStop` 事件，您可以使用基於 LLM 的評估：
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Review if all tasks are complete. Return your decision.",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**LLM 回應結構：**
-```json
-{
-  "decision": "approve",
-  "reason": "All tasks completed successfully",
-  "continue": false,
-  "stopReason": "Task complete"
-}
-```
-
-## 範例
-
-### 範例 1：Bash 指令驗證器 (PreToolUse)
-
-**檔案：** `.claude/hooks/validate-bash.py`
-
-```python
-#!/usr/bin/env python3
-import json
-import sys
-import re
-
-BLOCKED_PATTERNS = [
-    (r"\brm\s+-rf\s+/", "Blocking dangerous rm -rf / command"),
-    (r"\bsudo\s+rm", "Blocking sudo rm command"),
-]
-
-def main():
-    input_data = json.load(sys.stdin)
-
-    tool_name = input_data.get("tool_name", "")
-    if tool_name != "Bash":
-        sys.exit(0)
-
-    command = input_data.get("tool_input", {}).get("command", "")
-
-    for pattern, message in BLOCKED_PATTERNS:
-        if re.search(pattern, command):
-            print(message, file=sys.stderr)
-            sys.exit(2)  # Exit 2 = blocking error
-
-    sys.exit(0)
-
-if __name__ == "__main__":
-    main()
-```
-
-**設定：**
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py\""
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### 範例 2：安全性掃描器 (PostToolUse)
-
-**檔案：** `.claude/hooks/security-scan.py`
-
-```python
-#!/usr/bin/env python3
-import json
-import sys
-import re
-
-SECRET_PATTERNS = [
-    (r"password\s*=\s*['\"][^'\"]+['\"]", "Potential hardcoded password"),
-    (r"api[_-]?key\s*=\s*['\"][^'\"]+['\"]", "Potential hardcoded API key"),
-]
-
-def main():
-    input_data = json.load(sys.stdin)
-
-    tool_name = input_data.get("tool_name", "")
-    if tool_name not in ["Write", "Edit"]:
-        sys.exit(0)
-
-    tool_input = input_data.get("tool_input", {})
-    content = tool_input.get("content", "") or tool_input.get("new_string", "")
-    file_path = tool_input.get("file_path", "")
-
-    warnings = []
-    for pattern, message in SECRET_PATTERNS:
-        if re.search(pattern, content, re.IGNORECASE):
-```
-
-```python
-            warnings.append(message)
+warnings.append(message)
 
     if warnings:
         output = {
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": f"Security warnings for {file_path}: " + "; ".join(warnings)
-            }
-        }
-        print(json.dumps(output))
-
-    sys.exit(0)
-
-if __name__ == "__main__":
-    main()
-```
-
-### 範例 3：自動格式化程式碼 (PostToolUse)
-
-**檔案：** `.claude/hooks/format-code.sh`
-
-```bash
-#!/bin/bash
-
-# Read JSON from stdin
-INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | python3 -c "import sys, json; print(json.load(sys.stdin).get('tool_name', ''))")
-FILE_PATH=$(echo "$INPUT" | python3 -c "import sys, json; print(json.load(sys.stdin).get('tool_input', {}).get('file_path', ''))")
-
-if [ "$TOOL_NAME" != "Write" ] && [ "$TOOL_NAME" != "Edit" ]; then
-    exit 0
-fi
-
-# Format based on file extension
-case "$FILE_PATH" in
-    *.js|*.jsx|*.ts|*.tsx|*.json)
-        command -v prettier &>/dev/null && prettier --write "$FILE_PATH" 2>/dev/null
-        ;;
-    *.py)
-        command -v black &>/dev/null && black "$FILE_PATH" 2>/dev/null
-        ;;
-    *.go)
-        command -v gofmt &>/dev/null && gofmt -w "$FILE_PATH" 2>/dev/null
-        ;;
-esac
-
-exit 0
-```
-
-### 範例 4：提示詞驗證器 (UserPromptSubmit)
-
-**檔案：** `.claude/hooks/validate-prompt.py`
-
-```python
-#!/usr/bin/env python3
-import json
-import sys
-import re
-
-BLOCKED_PATTERNS = [
-    (r"delete\s+(all\s+)?database", "Dangerous: database deletion"),
-    (r"rm\s+-rf\s+/", "Dangerous: root deletion"),
-]
-
-def main():
-    input_data = json.load(sys.stdin)
-    prompt = input_data.get("user_prompt", "") or input_data.get("prompt", "")
-
-    for pattern, message in BLOCKED_PATTERNS:
-        if re.search(pattern, prompt, re.IGNORECASE):
-            output = {
-                "decision": "block",
-                "reason": f"Blocked: {message}"
-            }
-            print(json.dumps(output))
-            sys.exit(0)
-
-    sys.exit(0)
-
-if __name__ == "__main__":
-    main()
-```
-
-### 範例 5：智慧停止鉤子 (基於提示詞)
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Review if Claude completed all requested tasks. Check: 1) Were all files created/modified? 2) Were there unresolved errors? If incomplete, explain what's missing.",
-            "timeout": 30
-          }
+            "hookSpecificOutput:
         ]
       }
     ]
@@ -724,24 +2084,17 @@ if __name__ == "__main__":
 }
 ```
 
-### 範例 6：上下文使用追蹤器 (鉤子組合)
+### Example 6: Token Usage Tracker (PostToolUse)
 
-結合使用 `UserPromptSubmit`（訊息前）與 `Stop`（回應後）鉤子來追蹤每次請求的 token 消耗量。
+Track token usage per request.
 
-**檔案：** `.claude/hooks/context-tracker.py`
+**File:** `.claude/hooks/token-tracker.py
 
 ```python
 #!/usr/bin/env python3
-"""
-Context Usage Tracker - Tracks token consumption per request.
-
-Uses UserPromptSubmit as "pre-message" hook and Stop as "post-response" hook
-to calculate the delta in token usage for each request.
-
-Token Counting Methods:
-1. Character estimation (default): ~4 chars per token, no dependencies
-2. tiktoken (optional): More accurate (~90-95%), requires: pip install tiktoken
-```
+# Read JSON from stdin
+INPUT=$(cat)
+TOOL_NAME=$(echo "$INPUT_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_name_ID_NAME_ID_NAME_ID_name_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_NAME_ID_
 
 ```python
 import json
@@ -750,8 +2103,8 @@ import sys
 import tempfile
 
 # Configuration
-CONTEXT_LIMIT = 128000  # Claude 的上下文視窗 (請根據您的模型進行調整)
-USE_TIKTOKEN = False    # 如果已安裝 tiktoken 以獲得更高的準確度，請設為 True
+CONTEXT_LIMIT = 128000  # Claude 的上下文視窗（根據您的模型進行調整）
+USE_TIKTOKEN = False    # 如果安裝了 tiktoken 以獲得更高的準確度，請設為 True
 
 
 def get_state_file(session_id: str) -> str:
@@ -763,8 +2116,8 @@ def count_tokens(text: str) -> int:
     """
     計算文本中的 token 數量。
 
-    如果可用，將使用具有 p50k_base 編碼的 tiktoken（準確度約 90-95%），
-    否則將回退至字元估算法（準ق度約 80-90%）。
+    如果可用，則使用具有 p50k_base 編碼的 tiktoken（準確度約 90-95%），
+    否則回退至字元估算法（準ق度約 80-90%）。
     """
     if USE_TIKTOKEN:
         try:
@@ -774,7 +2127,7 @@ def count_tokens(text: str) -> int:
         except ImportError:
             pass  # 回退至估算法
 
-    # 基於字元的估算法：英文約每 4 個字元為 1 個 token
+    # 基於字元的估算法：英文約每 4 個字元為一個 token
     return len(text) // 4
 
 
@@ -804,7 +2157,7 @@ def read_transcript(transcript_path: str) -> str:
 
 
 def handle_user_prompt_submit(data: dict) -> None:
-    """訊息前鉤子 (Pre-message hook)：在請求前儲存目前的 token 計數。"""
+    """訊息前鉤子：在請求前儲存目前的 token 計數。"""
     session_id = data.get("session_id", "unknown")
     transcript_path = data.get("transcript_path", "")
 
@@ -818,7 +2171,7 @@ def handle_user_prompt_submit(data: dict) -> None:
 
 
 def handle_stop(data: dict) -> None:
-    """回應後鉤子 (Post-response hook)：計算並回報 token 差值。"""
+    """回應後鉤子：計算並回報 token 差值。"""
     session_id = data.get("session_id", "unknown")
     transcript_path = data.get("transcript_path", "")
 
@@ -833,8 +2186,7 @@ def handle_stop(data: dict) -> None:
             with open(state_file, "r") as f:
 ```
 
-```python
-                state = json.load(f)
+state = json.load(f)
                 pre_tokens = state.get("pre_tokens", 0)
         except (json.JSONDecodeError, IOError):
             pass
@@ -876,7 +2228,7 @@ if __name__ == "__main__":
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/context-tracker.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/context-tracker.py"
           }
         ]
       }
@@ -886,7 +2238,7 @@ if __name__ == "__main__":
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/context-tracker.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/context-tracker.py"
           }
         ]
       }
@@ -895,41 +2247,41 @@ if __name__ == "__main__":
 }
 ```
 
-**工作原理：**
-1. `UserPromptSubmit` 在您的提示詞被處理前觸發 — 儲存目前的 token 數量
-2. `Stop` 在 Claude 回應後觸發 — 計算差值並回報使用量
-3. 每個會話透過暫存檔名中的 `session_id` 進行隔離
+**How it works:**
+1. `UserPromptSubmit` fires before your prompt is processed - saves current token count
+2. `Stop` fires after Claude responds - calculates delta and reports usage
+3. Each session is isolated via `session_id` in the temp filename
 
-**Token 計數方法：**
+**Token Counting Methods:**
 
-| 方法 | 準確度 | 依賴項目 | 速度 |
+| Method | Accuracy | Dependencies | Speed |
 |--------|----------|--------------|-------|
-| 字元估算 | ~80-90% | 無 | <1ms |
+| Character estimation | ~80-90% | None | <1ms |
 | tiktoken (p50k_base) | ~90-95% | `pip install tiktoken` | <10ms |
 
-> **注意：** Anthropic 尚未發布官方的離線 tokenizer。這兩種方法都是近似值。對話紀錄包含使用者提示詞、Claude 的回應以及工具輸出，但不包含系統提示詞或內部上下文。
+> **Note:** Anthropic hasn't released an official offline tokenizer. Both methods are approximations. The transcript includes user prompts, Claude's responses, and tool outputs, but NOT system prompts or internal context.
 
-### Example 7: Seed Auto-Mode Permissions (一次性設定腳本)
+### Example 7: Seed Auto-Mode Permissions (One-Time Setup Script)
 
-一個一次性的設定腳本，用於在 `~/.claude/settings.json` 中植入約 67 個安全權限規則，等同於 Claude Code 的自動模式基準線 — 不含任何鉤子，也不會記住未來的選擇。執行一次即可；可重複執行（會跳過已存在的規則）。
+A one-time setup script that seeds `~/.claude/settings.json` with ~67 safe permission rules equivalent to Claude Code's auto-mode baseline — without any hook, without remembering future choices. Run it once; safe to re-run.
 
-**檔案：** `09-advanced-features/setup-auto-mode-permissions.py`
+**File:** `09-advanced-features/setup-auto-mode-permissions.py`
 
 ```bash
-# 預覽將會新增的內容
+# Preview what would be added
 python3 09-advanced-features/setup-auto-mode-permissions.py --dry-run
 
-# 套用設定
+# Apply
 python3 09-advanced-features/setup-auto-mode-permissions.py
 ```
 
-**新增內容：**
+**What gets added:**
 
-| 類別 | 範例 |
+| Category | Examples |
 |----------|---------|
-| 內建工具 | `Read(*)`, `Edit(*)`, `Write(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)` |
-| Git 讀取 | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)` |
-| Git 寫入 (本地) | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
+| Built-in tools | `Read(*)`, `Edit(*)`, `Write(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)` |
+| Git read | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)` |
+| Git write (local) | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
 
 | Package managers | `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(cargo build:*)` |
 | Build & test | `Bash(make:*)`, `Bash(pytest:*)`, `Bash(go test:*)` |
@@ -1007,18 +2359,18 @@ MCP 工具遵循 `mcp__<server>__<tool>` 的模式：
 
 - **需要工作區信任：** `statusLine` 與 `fileSuggestion` 鉤子的輸出命令現在需要先接受工作區信任後才會生效。
 - **HTTP 鉤子與環境變數：** HTTP 鉤子需要明確的 `allowedEnvVars` 列表，才能在 URL 中使用環境變數插值。這可以防止敏感的環境變數意外洩漏到遠端端點。
-- **管理設定層級：** `disableAllHooks` 設定現在會遵循管理設定層級，這意味著組織層級的設定可以強制禁用鉤子，且個人使用者無法覆蓋。
+- **管理設定層級：** `disableAllHooks` 設定現在遵循管理設定層級，這意味著組織層級的設定可以強制禁用鉤子，且個人使用者無法覆蓋。
 
 ### 最佳實務
 
 | 應該 (Do) | 不應該 (Don't) |
 |-----|-------|
 | 驗證並清理所有輸入 | 盲目信任輸入資料 |
-| 為 shell 變數加上引號：`"$VAR"` | 使用未加引號的變數：`$VAR` |
+| 為 shell 變數加上引號：`"$VAR"` | 使用未加引號的：`$VAR` |
 | 阻斷路徑穿越 (`..`) | 允許任意路徑 |
 | 使用帶有 `$CLAUDE_PROJECT_DIR` 的絕對路徑 | 硬編碼路徑 |
 | 跳過敏感檔案 (`.env`, `.git/`, keys) | 處理所有檔案 |
-| 先進行隔離測試 | 部署未經測試的鉤子 |
+| 先在隔離環境測試鉤子 | 部署未經測試的鉤子 |
 | 為 HTTP 鉤子使用明確的 `allowedEnvVars` | 將所有環境變數暴露給 webhooks |
 
 ## 除錯
@@ -1045,7 +2397,7 @@ echo '{"tool_name": "Bash", "tool_input": {"command": "ls -la"}}' | python3 .cla
 echo $?
 ```
 
-## 完整設定範例
+## 完整配置範例
 
 ```json
 {
@@ -1119,7 +2471,7 @@ echo $?
 
 | 項目 | 行為 |
 |--------|----------|
-| **Timeout** | 預設 60 秒，可針對每個指令進行設定 |
+| **Timeout** | 預設 60 秒，可針對每個指令進行配置 |
 | **Parallelization** | 所有符合條件的鉤子將並行執行 |
 | **Deduplication** | 相同的鉤子指令會進行去重 |
 | **Environment** | 在目前目錄與 Claude Code 的環境中執行 |
@@ -1131,7 +2483,7 @@ echo $?
 - 檢查 matcher 模式是否與工具名稱相符
 - 確保腳本存在且具備執行權限：`chmod +x script.sh`
 - 執行 `claude --debug` 以查看 hook 執行日誌
-- 確認 hook 是從 stdin 讀取 JSON（而非透過命令參數）
+- 確認 hook 是從 stdin 讀取 JSON（而非從命令參數讀取）
 
 ### Hook 意外阻斷
 - 使用範例 JSON 測試 hook：`echo '{"tool_name": "Write", ...}' | ./hook.py`
@@ -1175,8 +2527,11 @@ chmod +x ~/.claude/hooks/*.sh
 - **[Memory Guide](../02-memory/)** - 持久化上下文配置指南
 
 ---
+
 **Last Updated**: April 16, 2026
-**Claude Code Version**: 2.1.110
+**Claude Code Version**: 2.1.112
 **Sources**:
-- https://code.claude.com/docs/en/hooks
-**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://docs.anthropic.com/en/docs/claude-code/hooks
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

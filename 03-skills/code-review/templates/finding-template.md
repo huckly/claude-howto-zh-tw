@@ -1,25 +1,25 @@
-# 程式碼審查發現模板
+# Code Review 發現事項範本
 
-在程式碼審查中記錄每個發現的問題時使用此模板。
+當你在記錄程式碼審查（code review）過程中發現的每個問題時，請使用此範本。
 
 ---
 
 ## 問題：[標題]
 
-### 嚴重度
-- [ ] Critical（阻擋部署）
-- [ ] High（合併前應修復）
-- [ ] Medium（應盡快修復）
-- [ ] Low（改善建議）
+### 嚴重程度
+- [ ] Critical (阻礙部署)
+- [ ] High (應在合併前修復)
+- [ ] Medium (應儘快修復)
+- [ ] Low (建議修復)
 
 ### 類別
-- [ ] 安全性
-- [ ] 效能
-- [ ] 程式碼品質
-- [ ] 可維護性
-- [ ] 測試
-- [ ] 設計模式
-- [ ] 文件
+- [ ] Security
+- [ ] Performance
+- [ ] Code Quality
+- [ ] Maintainability
+- [ ] Testing
+- [ ] Design Pattern
+- [ ] Documentation
 
 ### 位置
 **檔案：** `src/components/UserCard.tsx`
@@ -30,13 +30,13 @@
 
 ### 問題描述
 
-**什麼：** 描述問題是什麼。
+**內容：** 描述問題是什麼。
 
-**為什麼重要：** 解釋影響以及為什麼需要修復。
+**重要性：** 解釋其影響以及為什麼需要修復。
 
-**目前行為：** 展示有問題的程式碼或行為。
+**目前行為：** 顯示有問題的程式碼或行為。
 
-**預期行為：** 描述應該發生什麼。
+**預期行為：** 描述應該發生的行為。
 
 ### 程式碼範例
 
@@ -51,7 +51,7 @@ users.forEach(user => {
 });
 ```
 
-#### 建議修復
+#### 建議修復方式
 
 ```typescript
 // Optimized with JOIN query
@@ -63,12 +63,12 @@ usersWithPosts.forEach(({ user, posts }) => {
 
 ### 影響分析
 
-| 面向 | 影響 | 嚴重度 |
+| 項目 | 影響 | 嚴重程度 |
 |--------|--------|----------|
-| 效能 | 20 個使用者需要 100+ 個查詢 | High |
-| 使用者體驗 | 頁面載入緩慢 | High |
-| 可擴展性 | 在大規模時崩潰 | Critical |
-| 可維護性 | 難以除錯 | Medium |
+| Performance | 20 個使用者會產生 100+ 次查詢 | High |
+| User Experience | 頁面載入緩慢 | High |
+| Scalability | 規模擴大時會失效 | Critical |
+| Maintainability | 難以除錯 | Medium |
 
 ### 相關問題
 
@@ -78,11 +78,10 @@ usersWithPosts.forEach(({ user, posts }) => {
 
 ### 額外資源
 
-- [N+1 查詢問題](https://en.wikipedia.org/wiki/N%2B1_problem)
-- [資料庫 Join 文件](https://docs.example.com/joins)
-- [效能最佳化指南](./docs/performance.md)
+- [N+1 Query Problem](https://en.wikipedia.org/wiki/N%2B1_problem)
+- [Database Join Documentation](https://docs.example.com/joins)
 
-### 審查者備註
+### 審查者筆記
 
 - 這是此程式碼庫中的常見模式
 - 考慮將此加入程式碼風格指南
@@ -92,22 +91,22 @@ usersWithPosts.forEach(({ user, posts }) => {
 
 *由程式碼作者填寫：*
 
-- [ ] 修復已在提交中實作：`abc123`
-- [ ] 修復狀態：完成 / 進行中 / 需要討論
+- [ ] 已在 commit 中實作修復：`abc123`
+- [ ] 修復狀態：已完成 / 進行中 / 需要討論
 - [ ] 問題或疑慮：（描述）
 
 ---
 
-## 發現統計（供審查者）
+## 發現統計（供審查者使用）
 
-審查多個發現時，追蹤：
+在審查多個發現時，請追蹤：
 
-- **發現的問題總數：** X
-- **Critical：** X
-- **High：** X
-- **Medium：** X
-- **Low：** X
+- **發現問題總數：** X
+- **緊急 (Critical)：** X
+- **高 (High)：** X
+- **中 (Medium)：** X
+- **低 (Low)：** X
 
-**建議：** ✅ 核准 / ⚠️ 請求變更 / 🔄 需要討論
+**建議：** ✅ 核准 / ⚠️ 要求變更 / 🔄 需要討論
 
-**整體程式碼品質：** 1-5 星
+**整體程式碼品質：** 1-5 顆星

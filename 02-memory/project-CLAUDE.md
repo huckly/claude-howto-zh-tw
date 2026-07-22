@@ -1,91 +1,91 @@
-# 專案配置
+# Project Configuration
 
-## 專案概觀
-- **名稱**: 電商平台
-- **技術堆疊**: Node.js, PostgreSQL, React 18, Docker
+## Project Overview
+- **名稱**: E-commerce Platform
+- **技術棧**: Node.js, PostgreSQL, React 18, Docker
 - **團隊規模**: 5 位開發人員
-- **截止日期**: 2025 年第四季
+- **截止日期**: 2025 年 Q4
 
-## 架構
+## Architecture
 @docs/architecture.md
 @docs/api-standards.md
 @docs/database-schema.md
 
-## 開發標準
+## Development Standards
 
-### 程式碼樣式
+### Code Style
 - 使用 Prettier 進行格式化
-- 使用 ESLint 搭配 airbnb 設定
-- 最大行長度：100 個字元
+- 使用帶有 airbnb 設定的 ESLint
+- 最大行長：100 字元
 - 使用 2 個空格縮排
 
-### 命名規則
+### Naming Conventions
 - **檔案**: kebab-case (user-controller.js)
 - **類別**: PascalCase (UserService)
 - **函式/變數**: camelCase (getUserById)
 - **常數**: UPPER_SNAKE_CASE (API_BASE_URL)
-- **資料庫表格**: snake_case (user_accounts)
+- **資料庫資料表**: snake_case (user_accounts)
 
-### Git 工作流程
+### Git Workflow
 - 分支名稱：`feature/description` 或 `fix/description`
-- 提交訊息：遵循 conventional commits
-- PR 才能合併
-- 所有 CI/CD 檢查都必須通過
-- 最低需要 1 項批准
+- Commit 訊息：遵循 conventional commits
+- 合併前須提交 PR
+- 所有 CI/CD 檢查必須通過
+- 至少需要 1 個審核通過 (approval)
 
-### 測試需求
+### Testing Requirements
 - 最低 80% 程式碼覆蓋率
-- 所有關鍵路徑都必須有測試
+- 所有關鍵路徑必須包含測試
 - 使用 Jest 進行單元測試
 - 使用 Cypress 進行 E2E 測試
 - 測試檔案名稱：`*.test.ts` 或 `*.spec.ts`
 
-### API 標準
-- 僅限 RESTful 端點
+### API Standards
+- 僅限使用 RESTful 端點
 - JSON 請求/回應
 - 正確使用 HTTP 狀態碼
-- 版本 API 端點：`/api/v1/`
-- 使用範例記錄所有端點
+- API 端點版本化：`/api/v1/`
+- 為所有端點提供包含範例的說明文件
 
-### 資料庫
-- 對於 schema 變更，使用遷移
-- 永遠不要硬編碼憑證
-- 使用連線池
-- 在開發環境中啟用查詢記錄
-- 定期備份必要
+### Database
+- 使用 migrations 進行結構變更
+- 絕不將憑證寫死在程式碼中
+- 使用連線池 (connection pooling)
+- 在開發環境中啟用查詢日誌 (query logging)
+- 需要定期備份
 
-### 部署
+### Deployment
 - 基於 Docker 的部署
-- Kubernetes 協調
-- 藍綠部署策略
-- 失敗時自動回滾
-- 在部署前執行資料庫遷移
+- Kubernetes 編排
+- Blue-green 部署策略
+- 失敗時自動回滾 (rollback)
+- 在部署前執行資料庫 migrations
 
 ## 常用命令
 
-| 指令 | 目的 |
+| 命令 | 用途 |
 |---------|---------|
 | `npm run dev` | 啟動開發伺服器 |
 | `npm test` | 執行測試套件 |
-| `npm run lint` | 檢查程式碼樣式 |
-| `npm run build` | 為生產環境建置 |
+| `npm run lint` | 檢查程式碼風格 |
+| `npm run build` | 建置生產版本 |
 | `npm run migrate` | 執行資料庫遷移 |
 
 ## 團隊聯絡人
-- 技術負責人: Sarah Chen (@sarah.chen)
-- 產品經理: Mike Johnson (@mike.j)
+- Tech Lead: Sarah Chen (@sarah.chen)
+- Product Manager: Mike Johnson (@mike.j)
 - DevOps: Alex Kim (@alex.k)
 
 ## 已知問題與解決方案
 - PostgreSQL 連線池在尖峰時段限制為 20
 - 解決方案：實作查詢佇列
-- Safari 14 與非同步產生器相容性問題
-- 解決方案：使用 Babel 轉譯器
+- Safari 14 與 async generators 的相容性問題
+- 解決方案：使用 Babel transpiler
 
 ## 相關專案
-- 分析儀表板: `/projects/analytics`
-- 行動應用程式: `/projects/mobile`
-- 管理面板: `/projects/admin`
+- Analytics Dashboard: `/projects/analytics`
+- Mobile App: `/projects/mobile`
+- Admin Panel: `/projects/admin`
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**最後更新日期**：2026 年 4 月 9 日

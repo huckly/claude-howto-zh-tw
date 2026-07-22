@@ -18,13 +18,13 @@
 
 ## 內建命令參考
 
-內建命令是常用操作的捷徑。目前提供 **60 多個內建命令** 與 **5 個內建技能**。在 Claude Code 中輸入 `/` 即可查看完整列表，或在 `/` 後輸入任何字母進行篩選。
+內建命令是常用操作的捷徑。目前提供 **60 多個內建命令** 和 **5 個內建技能**。在 Claude Code 中輸入 `/` 即可查看完整列表，或輸入 `/` 後接任何字母進行篩選。
 
 | 命令 | 用途 |
 |---------|---------|
 | `/add-dir <path>` | 新增工作目錄 |
 | `/agents` | 管理代理配置 |
-| `/branch [name]` | 將對話分支到新的會話（別名：`/fork`）。注意：`/fork` 在 v2.1.77 中已重新命名為 `/branch` |
+| `/branch [name]` | 將對話分支到新的會話（別名：`/fork`）。注意：`/fork` 在 v2.1.77 中重新命名為 `/branch` |
 | `/btw <question>` | 提出附帶問題而不加入歷史紀錄 |
 | `/chrome` | 配置 Chrome 瀏覽器整合 |
 | `/clear` | 清除對話（別名：`/reset`、`/new`） |
@@ -37,7 +37,7 @@
 | `/desktop` | 在桌面應用程式中繼續（別名：`/app`） |
 | `/diff` | 未提交變更的互動式 diff 查看器 |
 | `/doctor` | 診斷安裝健康狀況 |
-| `/effort [low\|medium\|high\|max\|auto]` | 設定努力程度。`max` 需要 Opus 4.6 |
+| `/effort [low\|medium\|high\|xhigh\|max\|auto]` | 透過互動式方向鍵滑桿設定努力程度。等級：`low` → `medium` → `high` → `xhigh` (v2.1.111 新增) → `max`。在 Opus 4.7 上預設為 `xhigh`；`max` 需要 Opus 4.7 |
 | `/exit` | 退出 REPL（別名：`/quit`） |
 | `/export [filename]` | 將當前對話匯出到檔案或剪貼簿 |
 | `/extra-usage` | 配置額外使用量以應對速率限制 |
@@ -47,19 +47,20 @@
 | `/help` | 顯示說明 |
 | `/hooks` | 查看鉤子配置 |
 | `/ide` | 管理 IDE 整合 |
-| `/init` | 初始化 `CLAUDE.md`。設定 `CLAUDE_CODE_NEW_INIT=1` 以進行互動式流程 |
+| `/init` | 初始化 `CLAUDE.md`。設定 `CLAUDE_CODE_NEW_INIT=1` 可進行互動式流程 |
 | `/insights` | 生成會話分析報告 |
-| `/install-github-app` | 設定 GitHub Actions 應用程式 |
-| `/install-slack-app` | 安裝 Slack 應用程式 |
-| `/keybindings` | 開啟按鍵綁定配置 |
 
+| `/install-github-app` | 設定 GitHub Actions app |
+| `/install-slack-app` | 安裝 Slack app |
+| `/keybindings` | 開啟快捷鍵設定 |
+| `/less-permission-prompts` | 分析最近的 Bash/MCP 工具呼叫，並將優先權清單新增至 `.claude/settings.json` 以減少權限提示 (新增於 v2.1.111) |
 | `/login` | 切換 Anthropic 帳號 |
-| `/logout` | 從您的 Anthropic 帳號登出 |
+| `/logout` | 從您的 Anthakropic 帳號登出 |
 | `/mcp` | 管理 MCP 伺服器與 OAuth |
 | `/memory` | 編輯 `CLAUDE.md`，切換自動記憶功能 |
-| `/mobile` | 行動應用程式的 QR code (別名: `/ios`, `/android`) |
-| `/model [model]` | 選擇模型，使用左右箭頭調整投入程度 |
-| `/passes` | 分享一週的 Claude Code 免費使用權 |
+| `/mobile` | 行動應用程式 QR code (別名: `/ios`, `/android`) |
+| `/model [model]` | 使用左右方向鍵選擇模型以調整投入程度 |
+| `/passes` | 分享 Claude Code 免費週使用權 |
 | `/permissions` | 查看/更新權限 (別名: `/allowed-tools`) |
 | `/plan [description]` | 進入計畫模式 |
 | `/plugin` | 管理外掛 |
@@ -67,14 +68,14 @@
 | `/powerup` | 透過帶有動畫示範的互動式課程探索功能 |
 | `/privacy-settings` | 隱私設定 (僅限 Pro/Max 使用者) |
 | `/release-notes` | 查看變更日誌 |
-| `/recap` | 返回會話時顯示會話摘要 / 總結 (新增於 v2.1.108) |
+| `/recap` | 返回會話時顯示會話回顧 / 摘要 (新增於 v2.1.108) |
 | `/reload-plugins` | 重新載入啟用的外掛 |
 | `/remote-control` | 從 claude.ai 進行遠端控制 (別名: `/rc`) |
-| `/remote-env` | 配置預設的遠端環境 |
-| `/rename [name]` | 重命名會話 |
+| `/remote-env` | 設定預設遠端環境 |
+| `/rename [name]` | 重新命名會話 |
 | `/resume [session]` | 恢復對話 (別名: `/continue`) |
 | `/review` | **已棄用** — 請改為安裝 `code-review` 外掛 |
-| `/rewind` | 回溯對話及/或程式碼 (別name: `/checkpoint`) |
+| `/rewind` | 回溯對話與/或程式碼 (別名: `/checkpoint`) |
 | `/sandbox` | 切換沙盒模式 |
 | `/schedule [description]` | 建立/管理雲端排程任務 |
 | `/security-review` | 分析分支是否存在安全性漏洞 |
@@ -82,70 +83,75 @@
 | `/stats` | 將每日使用量、會話、連續紀錄視覺化 |
 | `/stickers` | 訂購 Claude Code 貼紙 |
 | `/status` | 顯示版本、模型、帳號 |
-| `/statusline` | 配置狀態列 |
+| `/statusline` | 設定狀態列 |
 | `/tasks` | 列出/管理背景任務 |
-| `/team-onboarding` | 根據專案的 Claude Code 設定生成團隊成員上手指南 (新增於 v2.1.101) |
-| `/terminal-setup` | 配置終端機快捷鍵 |
+| `/team-onboarding` | 根據專案的 Claude Code 設定產生團隊成員上手指南 (新增於 v2.1.101) |
+| `/terminal-setup` | 設定終端機快捷鍵 |
 | `/theme` | 更改配色主題 |
 | `/tui` | 切換無閃爍渲染的全螢幕 TUI (文字使用者介面) 模式 (新增於 v2.1.110) |
 | `/ultraplan <prompt>` | 在 ultraplan 會話中草擬計畫，並在瀏覽器中審查 |
+| `/ultrareview` | 透過多代理分析進行全面的雲端程式碼審查 (新增於 v2.1.111) |
 | `/undo` | `/rewind` 的別名 (新增於 v2.1.108) |
-| `/upgrade` | 開啟升級頁面以獲取更高階的方案 |
+| `/upgrade` | 開啟升級頁面以取得更高階方案 |
 | `/usage` | 顯示方案使用限制與速率限制狀態 |
 | `/voice` | 切換按住說話語音輸入功能 |
 
 ### Bundled Skills
 
-這些技能隨 Claude Code 一起發佈，並可像斜線命令一樣呼叫：
+這些技能隨 Claude Code 一起發佈，並可像斜線命令一樣被呼叫：
 
 | 技能 | 用途 |
 |-------|---------|
 | `/batch <instruction>` | 使用 worktrees 編排大規模的並行變更 |
 | `/claude-api` | 載入專案語言的 Claude API 參考文件 |
+
 | `/debug [description]` | 啟用除錯日誌 |
 | `/loop [interval] <prompt>` | 按間隔重複執行提示詞 |
-| `/simplify [focus]` | 審查變更檔案的程式碼品質 |
+| `/simplify [focus]` | 檢查變更檔案的程式碼品質 |
 
-### Deprecated Commands
+### 已棄用的命令
 
 | 命令 | 狀態 |
 |---------|--------|
-| `/review` | 已棄用 — 已被 `code-review` 外掛取代 |
+| `/review` | 已棄用 — 已由 `code-review` 外掛取代 |
 | `/output-style` | 自 v2.1.73 起已棄用 |
 | `/fork` | 已重新命名為 `/branch` (別名仍可使用，v2.1.77) |
-
 | `/pr-comments` | 已在 v2.1.91 中移除 — 請直接詢問 Claude 以查看 PR 評論 |
 | `/vim` | 已在 v2.1.92 中移除 — 請使用 /config → Editor mode |
 
-### 最近變更
+### 最近的變更
 
-- `/fork` 更名為 `/branch`，並保留 `/fork` 作為別名 (v2.1.77)
+- `/fork` 重新命名為 `/branch`，並保留 `/fork` 作為別名 (v2.1.77)
 - `/output-style` 已棄用 (v2.1.73)
 - `/review` 已棄用，改由 `code-review` 外掛取代
-- 新增 `/effort` 命令，其中 `max` 層級需要 Opus 4.6
-- 新增 `/voice` 命令，用於按住說話（push-to-talk）語音聽寫
+- 新增 `/effort` 命令，其中 `max` 層級需要 Opus 4.7 (原僅限 Opus 4.6)
+- 新增 `/voice` 命令，用於按住說話的語音聽寫
 - 新增 `/schedule` 命令，用於建立/管理排程任務
-- 新增 `/color` 命令，用於自定義提示詞列
-- /pr-comments 已在 v2.1.91 中移除 — 請直接詢問 Claude 以查看 PR 評論
-- /vim 已在 v2.1.92 中移除 — 請改用 /config → Editor mode
+- 新wall `/color` 命令，用於自定義提示詞列
+- v2.1.91 移除 /pr-comments — 請直接詢問 Claude 以查看 PR 評論
+- v2.1.92 移除 /vim — 改用 /config → Editor mode
 - 新增 /ultraplan，用於基於瀏覽器的計畫審查與執行
 - 新增 /powerup，用於互動式功能課程
 - 新增 /sandbox，用於切換沙盒模式
 - `/model` 選取器現在顯示易讀的標籤（例如「Sonnet 4.6」）而非原始模型 ID
-- `/resume` 支援 `/continue` 別名
-- MCP 提示詞現在可透過 `/mcp__<server>__<prompt>` 命令使用（參閱 [MCP Prompts as Commands](#mcp-prompts-as-commands)）
+- `/resume` 現在支援 `/continue` 別名
+- MCP 提示詞現在可作為 `/mcp__<server>__<prompt>` 命令使用（參閱 [MCP Prompts as Commands](#mcp-prompts-as-commands)）
 - 新增 `/team-onboarding`，用於自動生成團隊成員上手指南 (v2.1.101)
 - 新增 `/tui` 命令，用於無閃爍的全螢幕 TUI 渲染 (v2.1.110)
 - 新增 `/focus` 命令，用於切換專注檢視模式；`Ctrl+O` 現在僅切換詳細逐字稿 (v2.1.110)
 - 新增 `/recap` 命令，用於手動觸發會話上下文摘要 (v2.1.108)
 - `/undo` 已新增為 `/rewind` 的別名 (v2.1.108)
 - `/proactive` 已新增為 `/loop` 的別名 (v2.1.105)
+- `/effort` 獲得了互動式方向鍵滑桿，並在 `high` 與 `max` 之間新增了 `xhigh` 層級；Opus 4.7 計畫的預設努力程度提升至 `xhigh` (v2.1.111)
+- 新增 `/ultrareview`，用於全面的雲端多代理程式碼審查 (v2.1.111)
+- 新增 `/less-permission-prompts`，用於分析 Bash/MCP 工具呼叫，並透過 `.claude/settings.json` 中的允許清單來減少權限提示 (v2.1.111)
+- 對於 Opus 4.7 的 Max 訂閱者，自動模式不再需要 `--enable-auto-mode` 旗標 (v2.1.112)
 
 ### `/team-onboarding` — 團隊成員上手指南
 
 > **v2.1.101 新增功能**
 
-使用 `/team-onboarding` 可以根據您專案中本地的 Claude Code 使用情況來生成團隊成員上手指南。此命令會檢查您的 `CLAUDE.md`、已安裝的技能、子代理、鉤子以及最近的工作流程，然後生成一份入職文件，幫助新開發人員快速上手。
+使用 `/team-onboarding` 可以根據您專案中本地的 Claude Code 使用情況來生成團隊成員上手指南。該命令會檢查您的 `CLAUDE.md`、已安裝的技能、子代理、鉤子以及最近的工作流程，然後生成一份新手開發者指南，幫助他們快速上手。
 
 這是內建命令 — 無需安裝。
 
@@ -158,49 +164,49 @@ claude /team-onboarding
 生成的指南摘要包含：
 
 - 來自 [`CLAUDE.md`](../02-memory/README.md) 的專案目的與關鍵慣例
-- 可用的 [skills](../03-skills/README.md) 以及它們何時會被自動調用
+- 可用的 [skills](../03-skills/README.md) 以及它們何時會被自動觸發
 - 已配置的 [subagents](../04-subagents/README.md) 及其職責
-- 在常見事件中執行的 [Hooks](../06-hooks/README.md)
-- 新手應該了解的常見工作流程
+- 在常見事件上執行的 [Hooks](../06-hooks/README.md)
+- 新手應了解的常見工作流程
 
-**可用性：** 隨 Claude Code v2.1.101 發佈 (2026 年 4 月 11 日)。
+**可用性：** 已於 Claude Code v2.1.101 (2026 年 4 月 11 日) 發佈。
 
-## 自定義命令（現為技能）
+## 自定義命令 (現為 Skills)
 
-自定義斜線命令已**整合至技能（skills）中**。兩種方式都能建立您可以透過 `/command-name` 呼叫的命令：
+自定義斜線命令已**整合至 skills 中**。這兩種方式都能建立您可以透過 `/command-name` 呼叫的命令：
 
 | 方式 | 位置 | 狀態 |
 |----------|----------|--------|
-| **技能 (建議)** | `.claude/skills/<name>/SKILL.md` | 目前標準 |
-| **舊版命令** | `.claude/commands/<name>.md` | 仍可運作 |
+| **Skills (推薦)** | `.claude/skills/<name>/SKILL.md` | 目前標準 |
+| **Legacy Commands** | `.claude/commands/<name>.md` | 仍可運作 |
 
-如果技能與命令名稱相同，**技能將具有優先權**。例如，當 `.claude/commands/review.md` 與 `.claude/skills/review/SKILL.md` 同時存在時，將使用技能版本。
+如果一個 skill 與一個 command 同名，**skill 將具有優先權**。例如，當 `.claude/commands/review.md` 與 `.claude/skills/review/SKILL.md` 同時存在時，將使用 skill 版本。
 
 ### 遷移路徑
 
-您現有的 `.claude/commands/` 檔案可以繼續運作而無需更改。若要遷移至技能：
+您現有的 `.claude/commands/` 檔案可以繼續運作而無需更改。若要遷移至 skills：
 
-**之前 (命令)：**
+**之前 (Command):**
 ```
 .claude/commands/optimize.md
 ```
 
-**之後 (技能)：**
+**之後 (Skill):**
 ```
 .claude/skills/optimize/SKILL.md
 ```
 
-### 為什麼要使用技能？
+### 為什麼選擇 Skills？
 
-與舊版命令相比，技能提供了額外功能：
+與舊版命令相比，skills 提供更多額外功能：
 
-- **目錄結構**：可封裝腳本、範本與參考檔案
-- **自動呼叫**：當相關時，Claude 可以自動觸發技能
+- **目錄結構**：可以封裝腳本、範本與參考檔案
+- **自動觸發**：當相關時，Claude 可以自動觸發 skills
 - **呼叫控制**：可選擇由使用者、Claude 或兩者皆可呼叫
-- **子代理執行**：透過 `context: fork` 在隔離的上下文中執行技能
+- **Subagent 執行**：透過 `context: fork` 在隔離的上下文中執行 skills
 - **漸進式揭露**：僅在需要時才載入額外檔案
 
-### 將自定義命令建立為技能
+### 將自定義命令建立為 Skill
 
 建立一個包含 `SKILL.md` 檔案的目錄：
 
@@ -213,16 +219,16 @@ mkdir -p .claude/skills/my-command
 ```yaml
 ---
 name: my-command
-description: 此命令的功能以及何時使用
+description: What this command does and when to use it
 ---
 
 # My Command
 
-當此命令被呼叫時，Claude 需遵循的指令。
+Instructions for Claude to follow when this command is invoked.
 
-1. 第一步
-2. 第二步
-3. 第三步
+1. First step
+2. Second step
+3. Third step
 ```
 
 ### Frontmatter 參考
@@ -230,42 +236,44 @@ description: 此命令的功能以及何時使用
 | 欄位 | 用途 | 預設值 |
 |-------|---------|---------|
 | `name` | 命令名稱 (將成為 `/name`) | 目錄名稱 |
-| `description` | 簡短描述 (幫助 Claude 判斷何時使用) | 第一段文字 |
+| `description` | 簡短描述 (幫助 Claude 知道何時使用它) | 第一段文字 |
 | `argument-hint` | 用於自動完成的預期參數 | 無 |
-| `allowed-tools` | 命令無需許可即可使用的工具 | 繼承 |
+| `allowed-tools` | 該命令無需許可即可使用的工具 | 繼承 |
 | `model` | 指定使用的模型 | 繼承 |
 | `disable-model-invocation` | 若為 `true`，則只有使用者可以呼叫 (Claude 不行) | `false` |
 | `user-invocable` | 若為 `false`，則從 `/` 選單中隱藏 | `true` |
-| `context` | 設定為 `fork` 以在隔離的子代理中執行 | 無 |
+| `context` | 設定為 `fork` 以在隔離的 subagent 中執行 | 無 |
 | `agent` | 使用 `context: fork` 時的代理類型 | `general-purpose` |
-| `hooks` | 技能範圍內的鉤子 (PreToolUse, PostToolUse, Stop) | 無 |
+| `hooks` | Skill 範圍內的鉤子 (PreToolUse, PostToolUse, Stop) | 無 |
 
 ### 參數
 
 命令可以接收參數：
 
-**所有參數使用 `$ARGUMENTS`：**
+**所有帶有 `$ARGUMENTS` 的參數：**
 
 ```yaml
 ---
 name: fix-issue
-description: 透過編號修復 GitHub issue
+description: Fix a GitHub issue by number
+```
+
 ---
 
-按照我們的編碼標準修復 issue #$ARGUMENTS
+根據我們的編碼標準修復問題 #$ARGUMENTS
 ```
 
 用法：`/fix-issue 123` → `$ARGUMENTS` 變為 "123"
 
-**個別參數使用 `$0`、`$1` 等：**
+**使用 `$0`、`$1` 等個別參數：**
 
 ```yaml
 ---
 name: review-pr
-description: 優先審查 PR
+description: Review a PR with priority
 ---
 
-優先審查 PR #$0，優先級為 $1
+Review PR #$0 with priority $1
 ```
 
 用法：`/review-pr 456 high` → `$0`="456", `$1`="high"
@@ -277,23 +285,23 @@ description: 優先審查 PR
 ```yaml
 ---
 name: commit
-description: 建立帶有上下文的 git commit
+description: Create a git commit with context
 allowed-tools: Bash(git *)
 ---
 
 ## Context
 
-- 目前 git 狀態：!`git status`
-- 目前 git diff：!`git diff HEAD`
-- 目前分支：!`git branch --show-current`
-- 最近的 commits：!`git log --oneline -5`
+- Current git status: !`git status`
+- Current git diff: !`git diff HEAD`
+- Current branch: !`git branch --show-current`
+- Recent commits: !`git log --oneline -5`
 
 ## Your task
 
-根據上述變更，建立單一的 git commit。
+Based on the above changes, create a single git commit.
 ```
 
-### File References
+### 檔案引用
 
 使用 `@` 包含檔案內容：
 
@@ -302,7 +310,7 @@ Review the implementation in @src/utils/helpers.js
 Compare @src/old-version.js with @src/new-version.js
 ```
 
-## Plugin Commands
+## 外掛命令
 
 外掛可以提供自定義命令：
 
@@ -318,9 +326,9 @@ Compare @src/old-version.js with @src/new-version.js
 /commit-commands:commit
 ```
 
-## MCP Prompts as Commands
+## 將 MCP 提示詞作為命令
 
-MCP 伺服器可以將提示詞作為斜線命令公開：
+MCP 伺服器可以將提示詞公開為斜線命令：
 
 ```
 /mcp__<server-name>__<prompt-name> [arguments]
@@ -333,15 +341,15 @@ MCP 伺服器可以將提示詞作為斜線命令公開：
 /mcp__jira__create_issue "Bug title" high
 ```
 
-### MCP Permission Syntax
+### MCP 權限語法
 
-在權限設定中控制 MCP 伺服器存取權：
+在權限設定中控制 MCP 伺服器存取：
 
 - `mcp__github` - 存取整個 GitHub MCP 伺服器
 - `mcp__github__*` - 使用萬用字元存取所有工具
 - `mcp__github__get_issue` - 存取特定工具
 
-## Command Architecture
+## 命令架構
 
 ```mermaid
 graph TD
@@ -389,7 +397,7 @@ sequenceDiagram
 **用法：**
 ```
 /optimize
-[貼上您的程式碼]
+[Paste your code]
 ```
 
 ### 2. `/pr` - Pull Request 準備
@@ -406,7 +414,7 @@ sequenceDiagram
 
 ### 3. `/generate-api-docs` - API 文件產生器
 
-從原始碼產生完整的 API 文件。
+從原始碼產生全面的 API 文件。
 
 **用法：**
 ```
@@ -424,7 +432,7 @@ sequenceDiagram
 
 ### 5. `/push-all` - 暫存、提交與推送
 
-暫存所有變更、建立 commit 並進行安全檢查後推送至遠端。
+暫存所有變更、建立 commit 並進行安全檢查後推送到遠端。
 
 **用法：**
 ```
@@ -434,12 +442,12 @@ sequenceDiagram
 **安全檢查：**
 - 敏感資訊：`.env*`, `*.key`, `*.pem`, `credentials.json`
 - API Keys：偵測真實金鑰與佔位符
-- 大型檔案：未經 Git LFS 的 `>10MB` 檔案
+- 大型檔案：未透過 Git LFS 的 `>10MB` 檔案
 - 建置產物：`node_modules/`, `dist/`, `__pycache__/`
 
 ### 6. `/doc-refactor` - 文件重構
 
-重構專案文件以提升清晰度與易讀性。
+重構專案文件以提高清晰度與易讀性。
 
 **用法：**
 ```
@@ -448,7 +456,7 @@ sequenceDiagram
 
 ### 7. `/setup-ci-cd` - CI/CD 流水線設定
 
-實作 pre-commit hooks 與 GitHub Actions 以進行品質保證。
+實作 pre-commit 鉤子與 GitHub Actions 以進行品質保證。
 
 **用法：**
 ```
@@ -486,7 +494,7 @@ done
 複製到您的 commands 目錄：
 
 ```bash
-# 專案範圍 (團隊使用)
+# 全專案範圍 (團隊使用)
 mkdir -p .claude/commands
 cp 01-slash-commands/*.md .claude/commands/
 
@@ -516,10 +524,10 @@ allowed-tools: Bash(npm *), Read, Grep
 - 目前分支：!`git branch --show-current`
 - 相關檔案：@package.json
 
-## 指令
+## 指令說明
 
 1. 第一步
-2. 第二步（帶有參數）：$ARGUMENTS
+2. 帶有參數的第二步：$ARGUMENTS
 3. 第三步
 
 ## 輸出格式
@@ -552,12 +560,12 @@ allowed-tools: Bash(npm *), Bash(git *)
 
 | 應該 (Do) | 不應該 (Don't) |
 |------|---------|
-| 使用清晰且具備行動導向的名稱 | 為一次性任務建立命令 |
+| 使用清晰且導向行動的名稱 | 為一次性任務建立命令 |
 | 包含帶有觸發條件的 `description` | 在命令中構建複雜邏輯 |
-| 讓命令專注於單一任務 | 將敏感資訊寫死 (Hardcode) |
+| 保持命令專注於單一任務 | 將敏感資訊寫死 (Hardcode) |
 | 使用 `disable-model-invocation` 來處理副作用 | 跳過 description 欄位 |
-| 使用 `!` 前綴來處理動態 context | 假設 Claude 知道目前的狀態 |
-| 將相關檔案整理在 skill 目錄中 | 將所有內容都放在單一檔案中 |
+| 使用 `!` 前綴處理動態 context | 假設 Claude 知道目前的狀態 |
+| 將相關檔案組織在 skill 目錄中 | 將所有內容都放在單一檔案中 |
 
 ## 疑難排解
 
@@ -574,7 +582,7 @@ allowed-tools: Bash(npm *), Bash(git *)
 **解決方案：**
 - 加入更具體的指令
 - 在 skill 檔案中包含範例
-- 若使用 bash 命令，請檢查 `allowed-tools`
+- 如果使用 bash 命令，請檢查 `allowed-tools`
 - 先使用簡單的輸入進行測試
 
 ### Skill 與 Command 衝突
@@ -584,7 +592,7 @@ allowed-tools: Bash(npm *), Bash(git *)
 ## 相關指南
 
 - **[Skills](../03-skills/)** - 關於 skills（自動觸發的能力）的完整參考
-- **[Memory](../02-memory/)** - 透過 CLAUDE.md 實現的持久化 context
+- **[Memory](../02-memory/)** - 使用 CLAUDE.md 實現持久化 context
 - **[Subagents](../04-subagents/)** - 委派的 AI 代理 (agents)
 - **[Plugins](../07-plugins/)** - 綑綁的命令集合
 - **[Hooks](../06-hooks/)** - 事件驅動的自動化
@@ -596,11 +604,13 @@ allowed-tools: Bash(npm *), Bash(git *)
 - [CLI Reference](https://code.claude.com/docs/en/cli-reference) - 命令列選項
 
 ---
-**最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
-**來源**：
-- https://code.claude.com/docs/en/skills
-- https://code.claude.com/docs/en/commands
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
 
-*屬於 [Claude How To](../) 指南系列的一部分*
+**最後更新日期**：2026 年 4 月 16 日
+**Claude Code 版本**：2.1.112
+**來源**：
+- https://docs.anthropic.com/en/docs/claude-code/slash-commands
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+
+*本文件為 [Claude How To](../) 指南系列的一部分*

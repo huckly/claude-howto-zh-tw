@@ -13,7 +13,7 @@ Claude Code 中的記憶提供了可跨多個會話與對話持續存在的持�
 
 - 在團隊中共享專案標準
 - 儲存個人開發偏好
-- 維持特定目錄的規則與配置
+- 維護特定目錄的規則與配置
 - 匯入外部文件
 - 將記憶作為專案的一部分進行版本控制
 
@@ -92,7 +92,7 @@ CLAUDE_CODE_NEW_INIT=1 claude
 /memory
 ```
 
-在您的系統編輯器中開啟記憶檔案以進行直接編輯。
+在您的系統編輯器中開啟您的記憶檔案以進行直接編輯。
 
 **選項 2：透過對話要求**
 
@@ -105,7 +105,7 @@ Claude 將根據您的要求更新適當的 `CLAUDE.md` 檔案。
 
 **歷史參考**（已失效）：
 
-先前使用 `#` 前綴快捷鍵可以在行內加入規則：
+先前使用 `#` 前綴快捷鍵可以在行內新增規則：
 
 ```markdown
 # Always use TypeScript strict mode in this project  ← 已無法運作
@@ -126,7 +126,7 @@ Claude 將根據您的要求更新適當的 `CLAUDE.md` 檔案。
 **功能說明：**
 
 - 在系統預設編輯器中開啟您的記憶檔案
-- 允許您進行大量的增加、修改與重組
+- 允許您進行大量的增補、修改與重組
 - 提供對層級結構中所有記憶檔案的直接存取
 - 使您能夠管理跨會話的持久上下文
 
@@ -167,7 +167,7 @@ Claude 將根據您的要求更新適當的 `CLAUDE.md` 檔案。
 # Claude automatically reloads the updated memory
 ```
 
-**使用記憶匯入 (Memory Imports)：**
+**使用記憶匯入：**
 
 CLAUDE.md 檔案支援 `@path/to/file` 語法來包含外部內容：
 
@@ -185,89 +185,1374 @@ See @docs/architecture.md for system design
 
 - 同時支援相對路徑與絕對路徑（例如：`@docs/api.md` 或 `@~/.claude/my-project-instructions.md`）
 - 支援遞迴匯入，最大深度為 5 層
-- 首次從外部位置進行匯入時，會觸發安全性審核對話框
-- 匯入指令不會在 Markdown 的行內程式碼或程式碼區塊內被執行（因此在範例中記錄這些指令是安全的）
+- 首次從外部位置進行匯入時，會觸發安全性確認對話框
+- 匯入指令不會在 Markdown 的行內程式碼或程式碼區塊內被執行（因此在範例中記錄它們是安全的）
 - 透過引用現有文件，有助於避免重複內容
-- 自動將引用的內容包含在 Claude 的上下文中
+- 自動將引用的內容包含在 Claude 的上下文之中
 
 ## 記憶架構
 
-Claude Code 中的記憶採用層級式系統，不同的範圍（scope）用於不同的目的：
+Claude Code 中的記憶
 
-```mermaid
-graph TB
-    A["Claude Session"]
-    B["User Input"]
-    C["Memory System"]
-    D["Memory Storage"]
+Claude Code 啟動時會自動載入記憶檔案
 
-    B -->|User provides info| C
-    C -->|Synthesizes every 24h| D
-    D -->|Loads automatically| A
-    A -->|Uses context| C
-```
+B -->|載入
 
-## Claude Code 中的記憶層級
+B -->|自動載入
 
-Claude Code 使用多層級的記憶系統。當 Claude Code 啟動時，記憶檔案會自動載入，且較高層級的檔案具有優先權。
+B -->|載入
 
-**完整的記憶層級（依優先順序排列）：**
+B -->|載入
 
-1. **Managed Policy** - 組織範圍的指令
-   - macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`
-   - Linux/WSL: `/etc/claude-code/CLAUDE.md`
-   - Windows: `C:\Program Files\ClaudeCode\CLAUDE.md`
+B -->|載入
 
-2. **Managed Drop-ins** - 按字母順序合併的政策檔案 (v2.1.83+)
-   - 與 managed policy CLAUDE.md 同層的 `managed-settings.d/` 目錄
-   - 檔案按字母順序進行合併，以便進行模組化政策管理
+B -->|載入
 
-3. **Project Memory** - 團隊共享的上下文（受版本控制）
-   - `./.claude/CLAUDE.md` 或 `./CLAUDE.md`（位於儲存庫根目錄）
+B -->|載入
 
-4. **Project Rules** - 模組化、特定主題的專案指令
-   - `./.claude/rules/*.md`
+B -->|載入
 
-5. **User Memory** - 個人偏好（適用於所有專案）
-   - `~/.claude/CLAUDE.md`
+B -->|載入
 
-6. **User-Level Rules** - 個人規則（適用於所有專案）
-   - `~/.claude/rules/*.md`
+B -->|載入
 
-7. **Local Project Memory** - 個人專案特定偏好
-   - `./CLAUDE.local.md`
+B -->|載入
 
-> **注意**：`CLAUDE.local.md` 在 [官方文件](https://code.claude.com/docs/en/memory) 中得到完全支援與說明。它提供不會被提交至版本控制的個人專案特定偏好。請將 `CLAUDE.local.md` 加入您的 `.gitignore`。
+B -->|載入
 
-8. **Auto Memory** - Claude 的自動筆記與學習內容
-   - `~/.claude/projects/<project>/memory/`
+B -->|載入
 
-**記憶探索行為：**
+B -->|載入
 
-Claude 會按此順序搜尋記憶檔案，較早出現的位置具有優先權：
+B -->|載入
 
-```mermaid
-graph TD
-    A["Managed Policy<br/>/Library/.../ClaudeCode/CLAUDE.md"] -->|highest priority| A2["Managed Drop-ins<br/>managed-settings.d/"]
-    A2 --> B["Project Memory<br/>./CLAUDE.md"]
-    B --> C["Project Rules<br/>./.claude/rules/*.md"]
-    C --> D["User Memory<br/>~/.claude/CLAUDE.md"]
-    D --> E["User Rules<br/>~/.claude/rules/*.md"]
-    E --> F["Local Project Memory<br/>./CLAUDE.local.md"]
-    F --> G["Auto Memory<br/>~/.claude/projects/.../memory/"]
+B -->|載入
 
-    B -->|imports| H["@docs/architecture.md"]
-    H -->|imports| I["@docs/api-standards.md"]
+B -->|載入
 
-    style A fill:#fce4ec,stroke:#333,color:#333
-    style A2 fill:#fce4ec,stroke:#333,color:#333
-    style B fill:#e1f5fe,stroke:#333,color:#333
-    style C fill:#e1f5fe,stroke:#333,color:#333
-    style D fill:#f3e5f5,stroke:#333,color:#333
-    style E fill:#f3e5f5,stroke:#333,color:#333
-    style F fill:#e8f5e9,stroke:#333,color:#333
-    style G fill:#fff3e0,stroke:#333,color:#333
-```
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載لق
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載in
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|載入
+
+B -->|
 
 ```
     style H fill:#e1f5fe,stroke:#333,color:#333
@@ -288,7 +1573,7 @@ graph TD
 }
 ```
 
-模式將會與相對於專案根目錄的路徑進行比對。這對於以下情況特別有用：
+模式（Patterns）將會與相對於專案根目錄的路徑進行比對。這對於以下情況特別有用：
 
 - 包含許多子專案的 monorepo，其中只有部分專案與目前工作相關
 - 包含廠商提供或第三方 CLAUDE.md 檔案的儲存庫
@@ -406,78 +1691,13 @@ sequenceDiagram
     Claude-->>User: "Memory saved!"
 ```
 
-## Auto Memory
+## 自動記憶
 
-Auto memory 是一個持久化的目錄，Claude 在處理您的專案時，會自動在此記錄學習心得、模式與洞察。與您手動撰寫並維護的 CLAUDE.md 檔案不同，auto memory 是由 Claude 在會話期間自動寫入的。
-
-### Auto Memory 如何運作
-
-- **位置**：`~/.claude/projects/<project>/memory/`
-- **進入點**：`MEMORY.md` 作為 auto memory 目錄中的主要檔案
-- **主題檔案**：針對特定主題的選用額外檔案（例如：`debugging.md`、`api-conventions.md`）
-- **載入行為**：在會話開始時，會將 `MEMORY.md` 的前 200 行（或前 25KB，以先到者為準）載入至上下文。主題檔案則是根據需求載入，而非在啟動時載入。
-- **讀取/寫入**：Claude 在會話期間會隨著發現模式與專案特定知識，進行記憶檔案的讀取與寫入。
-
-### Auto Memory 架構
-
-```mermaid
-graph TD
-    A["Claude Session Starts"] --> B["Load MEMORY.md<br/>(first 200 lines / 25KB)"]
-    B --> C["Session Active"]
-    C --> D["Claude discovers<br/>patterns & insights"]
-    D --> E{"Write to<br/>auto memory"}
-    E -->|General notes| F["MEMORY.md"]
-    E -->|Topic-specific| G["debugging.md"]
-    E -->|Topic-specific| H["api-conventions.md"]
-    C --> I["On-demand load<br/>topic files"]
-    I --> C
-
-    style A fill:#e1f5fe,stroke:#333,color:#333
-    style B fill:#e1f5fe,stroke:#333,color:#333
-    style C fill:#e8f5e9,stroke:#333,color:#333
-    style D fill:#f3e5f5,stroke:#333,color:#333
-    style E fill:#fff3e0,stroke:#333,color:#333
-    style F fill:#fce4ec,stroke:#333,color:#333
-    style G fill:#fce4ec,stroke:#333,color:#333
-    style H fill:#fce4ec,stroke:#333,color:#333
-    style I fill:#f3e5f5,stroke:#333,color:#333
-```
-
-### Auto Memory 目錄結構
-
-```
-~/.claude/projects/<project>/memory/
-├── MEMORY.md              # 進入點 (啟動時載入前 200 行 / 25KB)
-├── debugging.md           # 主題檔案 (根據需求載入)
-├── api-conventions.md     # 主題檔案 (根據需求載入)
-└── testing-patterns.md    # 主題檔案 (根據需求載入)
-```
-
-### 版本需求
-
-Auto memory 需要 **Claude Code v2.1.59 或更高版本**。如果您使用的是舊版本，請先進行升級：
-
-```bash
-npm install -g @anthropic-ai/claude-code@latest
-```
-
-### 自定義 Auto Memory 目錄
-
-預設情況下，auto memory 儲存在 `~/.claude/projects/<project>/memory/`。您可以使用 `autoMemoryDirectory` 設定來更改此位置（自 **v2.1.74** 起可用）：
-
-```jsonc
-// 在 ~/.claude/settings.json 或 .claude/settings.local.json 中 (僅限使用者/本地設定)
-{
-  "autoMemoryDirectory": "/path/to/custom/memory/directory"
-}
-```
-
-> **注意**：`autoMemoryDirectory` 只能在使用者層級 (`~/.claude/settings.json`) 或本地設定 (`.claude/settings.local.json`) 中設定，不能在專案或受管制的政策設定中設定。
-
-這在以下情況非常有用：
-
-- 將 auto memory 儲存在共享或同步的位置
-- 將 auto memory 與預設的 Claude 配置目錄分開
+自動記憶是一個持久性目錄，Claude 在與您的專案進行協作時，Claude 會自動記錄學習內容、模式與洞察
+- **位置**: `~/.claude/projects/<project>/memory/`
+- **進入點**: `MEMORY.md` 作為自動記憶目錄中的主要檔案
+- **主題檔案**: 可選的額外檔案，用於特定主題 (例如 `debugging.md`
+- **載入行為**: 在會話開始時，`MEMORY.md` 的前 2 unique-pattern-knowledge-insights-knowledge-patterns-insights-knowledge-knowledge-patterns-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge-knowledge
 
 - 使用位於預設層級之外的專案特定路徑
 
@@ -519,7 +1739,7 @@ CLAUDE_CODE_DISABLE_AUTO_MEMORY=0 claude
 
 ## 使用 `--add-dir` 新增目錄
 
-`--add-dir` 旗標允許 Claude Code 從目前工作目錄之外的額外目錄載入 CLAUDE.md 檔案。這對於單一程式碼庫（monorepos）或需要其他目錄上下文的多專案設定非常有用。
+`--add-dir` 旗標允許 Claude Code 從目前工作目錄之外的額外目錄載入 CLAUDE.md 檔案。這對於 monorepos 或需要其他目錄上下文的多專案設定非常有用。
 
 要啟用此功能，請設定環境變數：
 
@@ -617,8 +1837,8 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 | `npm run migrate` | 執行資料庫遷移 |
 
 ## 團隊聯絡人
-- Tech Lead: Sarah Chen (@sarah.chen)
-- Product Manager: Mike Johnson (@mike.j)
+- 技術負責人 (Tech Lead): Sarah Chen (@sarah.chen)
+- 產品經理 (Product Manager): Mike Johnson (@mike.j)
 - DevOps: Alex Kim (@alex.k)
 
 ## 已知問題與解決方案
@@ -628,13 +1848,13 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 - 解決方案：使用 Babel transpiler
 
 ## 相關專案
-- Analytics Dashboard: `/projects/analytics`
-- Mobile App: `/projects/mobile`
-- Admin Panel: `/projects/admin`
+- 分析儀表板 (Analytics Dashboard): `/projects/analytics`
+- 行動應用程式 (Mobile App): `/projects/mobile`
+- 管理後台 (Admin Panel): `/projects/admin`
 
 ```
 
-### Example 2: Directory-Specific Memory
+### 範例 2：特定目錄的記憶
 
 **檔案：** `./src/api/CLAUDE.md`
 
@@ -684,7 +1904,7 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 ```
 
 ### 分頁
-- 使用基於游標的分頁（而非 offset）
+- 使用基於游標 (cursor-based) 的分頁（而非 offset）
 - 包含 `hasMore` 布林值
 - 最大分頁大小限制為 100
 - 預設分頁大小：20
@@ -699,10 +1919,10 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 - 使用 Redis 進行 session 快取
 - 快取時長：預設 5 分鐘
 - 在寫入操作時失效快取
-- 為快取鍵加上資源類型的標籤
+- 為快取鍵 (cache keys) 加上資源類型的標籤
 ````
 
-### Example 3: Personal Memory
+### 範例 3：個人記憶
 
 **檔案：** `~/.claude/CLAUDE.md`
 
@@ -744,7 +1964,7 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 
 ## 溝通
 - 使用圖表解釋複雜概念
-- 在解釋理論之前，先展示具體範例
+- 在解釋理論之前先展示具體範例
 - 包含修改前後的程式碼片段
 - 在最後總結重點
 
@@ -767,6 +1987,7 @@ Claude 將會從指定的額外目錄載入 CLAUDE.md，並與來自您目前工
 - **Format**：Prettier (100 char line length)
 - **Linter**：ESLint 搭配 airbnb config
 - **Test Framework**：Jest 搭配 React Testing Library
+
 ```
 
 _My Test_
@@ -799,9 +2020,9 @@ Added to ./CLAUDE.md:
 ---
 
 ### 元件開發
-- 使用搭配 React Hooks 的函式式元件
+- 使用搭配 React Hooks 的函式元件
 - 偏好使用 hooks 而非 class components
-- 使用自定義 hooks 來處理可重複使用的邏輯
+- 使用 custom hooks 處理可重複使用的邏輯
 - 使用 useCallback 處理事件處理常式
 - 使用 useMemo 處理耗時的運算
 ```
@@ -858,11 +2079,11 @@ Claude: ✅ 記憶已儲存！
 
 ```mermaid
 graph LR
-    A["第 1 天：使用者<br/>對話"] -->|24 小時| B["第 2 天：記憶<br/>綜合"]
-    B -->|自動| C["記憶已更新<br/>摘要"]
-    C -->|載入於| D["第 2 天-N 天：<br/>新對話"]
-    D -->|新增至| E["記憶"]
-    E -->|24 小時後| F["記憶重新整理"]
+    A["Day 1: User<br/>Conversations"] -->|24 hours| B["Day 2: Memory<br/>Synthesis"]
+    B -->|Automatic| C["Memory Updated<br/>Summarized"]
+    C -->|Loaded in| D["Day 2-N:<br/>New Conversations"]
+    D -->|Add to| E["Memory"]
+    E -->|24 hours later| F["Memory Refreshed"]
 ```
 
 **記憶摘要範例：**
@@ -870,25 +2091,25 @@ graph LR
 ```markdown
 ## Claude 對使用者的記憶
 
-### 專業背景
-- 擁有 8 年經驗的高級全端開發人員
+### Professional Background
+- 資深全端開發人員，擁有 8 年經驗
 - 專注於 TypeScript/Node.js 後端與 React 前端
 - 活躍的開源貢獻者
 - 對 AI 與機器學習感興趣
 
-### 專案上下文
+### Project Context
 - 目前正在開發電商平台
 - 技術棧：Node.js, PostgreSQL, React 18, Docker
 - 與 5 名開發人員組成的團隊合作
 - 使用 CI/CD 與藍綠部署
 
-### 溝通偏好
+### Communication Preferences
 - 偏好直接、簡潔的解釋
 - 喜歡視覺化圖表與範例
 - 欣賞程式碼片段
 - 在註解中說明業務邏輯
 
-### 目前目標
+### Current Goals
 - 提升 API 效能
 - 將測試覆蓋率提高至 90%
 - 實作快取策略
@@ -897,13 +2118,13 @@ graph LR
 
 ## 最佳實務
 
-### 該做的事 - 應包含的內容
+### 應該做的事 - 應包含的內容
 
 - **具體且詳細**：使用清晰、詳細的指令，而非模糊的指導
   - ✅ 正確： 「所有 JavaScript 檔案請使用 2 個空格的縮排」
   - ❌ 應避免： 「遵循最佳實務」
 
-- **保持條理分明**：使用清晰的 Markdown 章節與標題來建構記憶檔案
+- **保持組織性**：使用清晰的 Markdown 章節與標題來建構記憶檔案
 
 - **使用適當的層級**：
   - **Managed policy**：全公司政策、安全標準、合規性要求
@@ -916,11 +2137,11 @@ graph LR
   - 避免在不同記憶檔案之間產生重複內容
   - 範例： `請參閱 @README.md 以了解專案概觀`
 
-- **記錄常用指令**：將重複使用的指令記錄下來以節省時間
+- **記錄常用指令**：包含您重複使用的指令以節省時間
 
 - **對專案記憶進行版本控制**：將專案層級的 CLAUd.md 檔案提交至 git，以造福團隊
 
-- **定期審查**：隨著專案演進與需求變更，定期更新記憶
+- **定期審查**：隨著專案演進與需求變化，定期更新記憶
 
 - **提供具體範例**：包含程式碼片段與特定情境
 
@@ -967,7 +2188,7 @@ graph LR
 @docs/architecture.md
 @package.json
 
-# 錯誤：複製其他地方已存在的內容
+# 應避免：複製其他地方已存在的內容
 # 與其將 README 內容複製到 CLAUDE.md，不如直接引用它
 ```
 
@@ -1115,7 +2336,7 @@ Claude 將會提示您選擇要更新哪一個記憶檔案。
 
 ## 官方文件
 
-欲獲取最新資訊，請參閱官方 Claude Code 文件：
+欲取得最新資訊，請參閱官方 Claude Code 文件：
 
 - **[Memory Documentation](https://code.claude.com/docs/en/memory)** - 完整的記憶系統參考指南
 - **[Slash Commands Reference](https://code.claude.com/docs/en/interactive-mode)** - 所有內建的斜線命令，包含 `/init` 與 `/memory`
@@ -1125,13 +2346,13 @@ Claude 將會提示您選擇要更新哪一個記憶檔案。
 
 **Memory Loading：**
 
-- 當 Claude Code 啟動時，所有 memory 檔案都會自動載入
-- Claude 會從目前的作業目錄向上遍歷，以尋找 CLAUDE.md 檔案
-- 當存取子樹目錄時，會自動發現並根據上下文載入該目錄下的檔案
+- 當 Claude Code 啟動時，所有記憶檔案都會自動載入
+- Claude 會從當前工作目錄向上遍歷，以尋找 `CLAUDE.md` 檔案
+- 當存取特定目錄時，子樹檔案會被發現並根據上下文進行載入
 
 **Import Syntax：**
 
-- 使用 `@path/to/file` 來包含外部內容（例如 `@~/.claude/my-project-instructions.md`）
+- 使用 `@path/to/file` 來包含外部內容（例如：`@~/.claude/my-project-instructions.md`）
 - 同時支援相對路徑與絕對路徑
 - 支援遞迴匯入，最大深度為 5
 - 首次進行外部匯入時會觸發核准對話框
@@ -1153,7 +2374,7 @@ Claude 將會提示您選擇要更新哪一個記憶檔案。
 
 ### 整合點
 - [MCP Protocol](../05-mcp/) - 與記憶並行的即時數據存取
-- [Slash Commands](../01-slash-commands/) - 特定於會話（session）的快捷方式
+- [Slash Commands](../01-slash-commands/) - 特定於會話（session）的捷徑
 - [Skills](../03-skills/) - 結合記憶上下文的自動化工作流程
 
 ### 相關 Claude 功能
@@ -1162,7 +2383,10 @@ Claude 將會提示您選擇要更新哪一個記憶檔案。
 
 ---
 **最後更新日期**：2026 年 4 月 16 日
-**Claude Code 版本**：2.1.110
+**Claude Code 版本**：2.1.112
 **來源**：
-- https://code.claude.com/docs/en/memory
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- https://docs.anthropic.com/en/docs/claude-code
+- https://www.anthropic.com/news/claude-opus-4-7
+- https://support.claude.com/en/articles/12138966-release-notes
+- https://docs.anthropic.com/en/docs/claude-code/memory
+**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5

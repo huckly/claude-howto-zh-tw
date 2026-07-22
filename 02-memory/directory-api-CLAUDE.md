@@ -1,29 +1,29 @@
-# API 模組標準
+# API Module Standards
 
-此檔案會覆寫根 CLAUDE.md 檔案，用於 /src/api/ 中的所有內容。
+此檔案會覆蓋根目錄的 CLAUDE.md，適用於 /src/api/ 中的所有內容
 
-## API 專屬標準
+## API 特定標準
 
-### 請求驗證
-- 使用 Zod 進行模式驗證
-- 務必驗證輸入
-- 當驗證發生錯誤時，回傳 400 狀態碼
-- 包含欄位層級的錯誤詳細資料
+### Request Validation
+- 使用 Zod 進行 schema 驗證
+- 務必驗證輸入內容
+- 若驗證失敗，回傳 400 錯誤
+- 需包含欄位層級的錯誤細節
 
-### 驗證
-- 所有端點都需要 JWT token
-- Token 位於 Authorization 標頭中
-- Token 逾期後 24 小時
-- 實作重新整理 token 機制
+### Authentication
+- 所有端點皆需 JWT token
+- Token 放置於 Authorization header 中
+- Token 有效期為 24 小時
+- 實作 refresh token 機制
 
-### 回應格式
+### Response Format
 
-所有回應都必須遵循此結構：
+所有回應必須遵循此結構：
 
 ```json
 {
   "success": true,
-  "data": { /* 實際資料 */ },
+  "data": { /* actual data */ },
   "timestamp": "2025-11-06T10:30:00Z",
   "version": "1.0"
 }
@@ -35,30 +35,30 @@
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "使用者訊息",
-    "details": { /* 欄位錯誤 */ }
+    "message": "User message",
+    "details": { /* field errors */ }
   },
   "timestamp": "2025-11-06T10:30:00Z"
 }
 ```
 
-### 分頁
-- 使用游標式分頁 (不要使用 offset)
+### Pagination
+- 使用基於游標（cursor-based）的分頁方式（而非 offset）
 - 包含 `hasMore` 布林值
-- 將最大頁面大小限制為 100
-- 預設頁面大小：20
+- 最大分頁大小限制為 100
+- 預設分頁大小：20
 
-### 速率限制
-- 經過驗證的使用者每小時 1000 請求
-- 公共端點每小時 100 請求
-- 超出限制時回傳 429 狀態碼
-- 包含 retry-after 標頭
+### Rate Limiting
+- 已驗證使用者每小時限額 1000 次請求
+- 公開端點每小時限額 100 次請求
+- 超過限額時回傳 429 錯誤
+- 需包含 retry-after header
 
-### 快取
-- 使用 Redis 進行會話快取
+### Caching
+- 使用 Redis 進行 session 快取
 - 快取時長：預設 5 分鐘
-- 在寫入操作時失效
-- 使用資源類型標記快取金鑰
+- 進行寫入操作時失效快取
+- 為快取鍵（cache keys）加上資源類型的標籤
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**最後更新日期**：2026 年 4 月 9 日
