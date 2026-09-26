@@ -18,19 +18,19 @@
 - [ ] 我可以啟動 Claude Code 並進行對話 (`claude`)
 - [ ] 我曾經建立或編輯過 CLAUDE.md 檔案
 - [ ] 我已使用過至少 3 個內建的斜線命令（例如：`/help`、`/compact`、`/model`）
-- [ ] 我曾經建立自定義的斜線命令或技能 (SKILL.md)
-- [ ] 我曾經配置過 MCP 伺服器（例如：GitHub、資料庫）
+- [ ] 我曾經建立自訂的斜線命令或技能 (SKILL.md)
+- [ ] 我曾經設定過 MCP 伺服器（例如：GitHub、資料庫）
 - [ ] 我曾在 `~/.claude/settings.json` 中設定過鉤子 (hooks)
-- [ ] 我曾經建立或使用過自定義的子代理 (.claude/agents/)
+- [ ] 我曾經建立或使用過自訂的子代理 (.claude/agents/)
 - [ ] 我曾為了腳本編寫或 CI/CD 使用過列印模式 (`claude -p`)
 
 **您的程度：**
 
 | 檢查項數量 | 程度 | 起點 | 完成所需時間 |
 |--------|-------|----------|------------------|
-| 0-2 | **Level 1: 初學者** — 入門階段 | [Milestone 1A](#milestone-1a-first-commands--memory) | 約 3 小時 |
-| 3-5 | **Level 2: 中級** — 建立工作流程 | [Milestone 2A](#milestone-2a-automation-skills--hooks) | 約 5 小時 |
-| 6-8 | **Level 3: 進階** — 進階使用者與團隊領導 | [Milestone 3A](#milestone-3a-advanced-features) | 約 5 小時 |
+| 0-2 | **Level 1: 初學者** — 入門階段 | [Milestone 1A](#milestone-1a-首批命令與記憶) | 約 3 小時 |
+| 3-5 | **Level 2: 中級** — 建立工作流程 | [Milestone 2A](#milestone-2a-自動化-skills--hooks) | 約 5 小時 |
+| 6-8 | **Level 3: 進階** — 進階使用者與團隊領導 | [Milestone 3A](#milestone-3a-進階功能) | 約 5 小時 |
 
 > **提示**：如果您不確定，請從低一個等級開始。快速複習熟悉的內容，比錯過基礎概念更好。
 
@@ -97,13 +97,13 @@ graph TD
 
 | 步驟 | 功能 | 複雜度 | 時間 | 等級 | 相依性 | 學習原因 | 核心優勢 |
 |------|---------|-----------|------|-------|--------------|----------------|--------------|
-| **1** | [Slash Commands](01-slash-commands/) | ⭐ 初學者 | 30 min | Level 1 | 無 | 快速提升生產力 (60+ 內建 + 5 個組合技能) | 即時自動化、團隊標準 |
+| **1** | [Slash Commands](01-slash-commands/) | ⭐ 初學者 | 30 min | Level 1 | 無 | 快速提升生產力 (60+ 內建 + 10 個組合技能) | 即時自動化、團隊標準 |
 | **2** | [Memory](02-memory/) | ⭐⭐ 初學者+ | 45 min | Level 1 | 無 | 所有功能的基礎 | 持續性的上下文、偏好設定 |
-| **3** | [Checkpoints](08-checkpoints/) | ⭐⭐ 中級 | 45 min | Level 1 | 會話管理 | 安全探索 | 實驗、復原 |
+| **3** | [Checkpoints](08-checkpoints/) | ⭐⭐ 中級 | 45 min | Level 1 | 工作階段管理 | 安全探索 | 實驗、復原 |
 | **4** | [CLI Basics](10-cli/) | ⭐⭐ 初學者+ | 30 min | Level 1 | 無 | 核心 CLI 用法 | 互動式與列印模式 |
 | **5** | [Skills](03-skills/) | ⭐⭐ 中級 | 1 hour | Level 2 | Slash Commands | 自動化專業知識 | 可重複使用的能力、一致性 |
-| **6** | [Hooks](06-hooks/) | ⭐⭐ 中級 | 1 hour | Level 2 | Tools, Commands | 工作流程自動化 (29 個事件, 5 種類型) | 驗證、品質閘門 |
-| **7** | [MCP](05-mcp/) | ⭐⭐⭐ 中級+ | 1 hour | Level 2 | Configuration | 即時數據存取 | 即時整合、APIs |
+| **6** | [Hooks](06-hooks/) | ⭐⭐ 中級 | 1 hour | Level 2 | Tools, Commands | 工作流程自動化 (33 個事件, 5 種類型) | 驗證、品質閘門 |
+| **7** | [MCP](05-mcp/) | ⭐⭐⭐ 中級+ | 1 hour | Level 2 | Configuration | 即時資料存取 | 即時整合、APIs |
 | **8** | [Subagents](04-subagents/) | ⭐⭐⭐ 中級+ | 1.5 hours | Level 2 | Memory, Commands | 處理複雜任務 (包含 Bash 在內的 6 個內建功能) | 委派、專業化技能 |
 | **9** | [Advanced Features](09-advanced-features/) | ⭐⭐⭐⭐⭐ 進階 | 2-3 hours | Level 3 | 前述所有內容 | 進階使用者工具 | 規劃、Auto Mode、Channels、語音聽寫、權限管理 |
 | **10** | [Plugins](07-plugins/) | ⭐⭐⭐⭐ 進階 | 2 hours | Level 3 | 前述所有內容 | 完整解決方案 | 團隊導入、分發 |
@@ -125,12 +125,12 @@ graph TD
 **主題**：斜線命令 + 記憶
 **時間**：1-2 小時
 **複雜度**：⭐ 初學者
-**目標**：透過自定義命令與持久化上下文，立即提升生產力
+**目標**：透過自訂命令與持久化上下文，立即提升生產力
 
 #### 你將達成的目標
-✅ 為重複性任務建立自定義斜線命令
+✅ 為重複性任務建立自訂斜線命令
 ✅ 為團隊標準設定專案記憶
-✅ 配置個人偏好設定
+✅ 設定個人偏好設定
 ✅ 理解 Claude 如何自動載入上下文
 
 #### 動手練習
@@ -200,7 +200,7 @@ cat error.log | claude -p "explain this error"
 #### 後續步驟
 - 閱讀：[08-checkpoints/README.md](08-checkpoints/README.md)
 - 閱讀：[10-cli/README.md](10-cli/README.md)
-- **準備好進入 Level 2！** 請前往 [Milestone 2A](#milestone-2a-automation-skills--hooks)
+- **準備好進入 Level 2！** 請前往 [Milestone 2A](#milestone-2a-自動化-skills--hooks)
 
 > **檢查你的理解程度**：執行 `/lesson-quiz checkpoints` 或 `/lesson-quiz cli` 以確認你已準備好進入 Level 2。
 
@@ -235,10 +235,10 @@ cat error.log | claude -p "explain this error"
 
 #### 您將達成的成果
 ✅ 透過 YAML frontmatter（包含 `effort` 與 `shell` 欄位）自動觸發特定技能
-✅ 在 29 個 hook 事件中設定事件驅動的自動化
+✅ 在 33 個 hook 事件中設定事件驅動的自動化
 ✅ 使用所有 5 種 hook 類型（command, http, mcp_tool, prompt, agent）
 ✅ 強制執行程式碼品質標準
-✅ 為您的工作流程建立自定義 hooks
+✅ 為您的工作流程建立自訂 hooks
 
 #### 動手練習
 
@@ -251,7 +251,7 @@ mkdir -p ~/.claude/hooks
 cp 06-hooks/pre-tool-check.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/pre-tool-check.sh
 
-# 練習 3: 在設定中配置 hooks
+# 練習 3: 在設定檔中設定 hooks
 # 新增至 ~/.claude/settings.json:
 {
   "hooks": {
@@ -272,11 +272,11 @@ chmod +x ~/.claude/hooks/pre-tool-check.sh
 
 #### 成功準則
 - [ ] 在相關時自動觸發程式碼審查（code review）技能
-- [ ] PreToolUse hook 在工具執行前運行
+- [ ] PreToolUse hook 在工具執行前執行
 - [ ] 您理解技能自動觸發與 hook 事件觸發之間的差異
 
 #### 後續步驟
-- 建立您自己的自定義技能
+- 建立您自己的自訂技能
 - 為您的工作流程設定額外的 hooks
 - 閱讀：[03-skills/README.md](03-skills/README.md)
 - 閱讀：[06-hooks/README.md](06-hooks/README.md)
@@ -293,7 +293,7 @@ chmod +x ~/.claude/hooks/pre-tool-check.sh
 **目標**：整合外部服務並委派複雜任務
 
 #### 您將達成的成果
-✅ 從 GitHub、資料庫等獲取即時數據
+✅ 從 GitHub、資料庫等取得即時資料
 ✅ 將工作委派給專業的 AI 代理
 ✅ 理解何時使用 MCP 與何時使用 subagents
 ✅ 建構整合式工作流程
@@ -315,7 +315,7 @@ cp 04-subagents/*.md .claude/agents/
 
 #### 整合練習
 嘗試這個完整的工作流程：
-1. 使用 MCP 獲取一個 GitHub PR
+1. 使用 MCP 取得一個 GitHub PR
 2. 讓 Claude 將審查工作委派給 code-reviewer 子代理
 3. 使用鉤子自動執行測試
 
@@ -327,10 +327,10 @@ cp 04-subagents/*.md .claude/agents/
 
 #### 下一步
 - 設定額外的 MCP servers（資料庫、Slack 等）
-- 為你的領域建立自定義子代理
+- 為你的領域建立自訂子代理
 - 閱讀：[05-mcp/README.md](05-mcp/README.md)
 - 閱讀：[04-subagents/README.md](04-subagents/README.md)
-- **準備好進入 Level 3！** 繼續前往 [Milestone 3A](#milestone-3a-advanced-features)
+- **準備好進入 Level 3！** 繼續前往 [Milestone 3A](#milestone-3a-進階功能)
 
 > **檢查你的理解程度**：執行 `/lesson-quiz mcp` 或 `/lesson-quiz subagents` 以驗證你是否已準備好進入 Level 3。
 
@@ -347,9 +347,9 @@ cp 04-subagents/*.md .claude/agents/
 
 在開始 Level 3 之前，請確保你已熟悉以下 Level 2 的概念：
 
-- [ ] 能建立並使用具有自動調用功能的技能 ([03-skills/](03-skills/))
+- [ ] 能建立並使用具有自動呼叫功能的技能 ([03-skills/](03-skills/))
 - [ ] 已為事件驅動自動化設定好鉤子 ([06-hooks/](06-hooks/))
-- [ ] 能為外部資料配置 MCP servers ([05-mcp/](05-mcp/))
+- [ ] 能為外部資料設定 MCP servers ([05-mcp/](05-mcp/))
 - [ ] 知道如何使用子代理進行任務委派 ([04-subagents/](04-subagents/))
 
 > **有落差嗎？** 在繼續之前，請複習上方連結的教學。
@@ -365,14 +365,14 @@ cp 04-subagents/*.md .claude/agents/
 
 #### 你將達成的目標
 ✅ 針對複雜功能的規劃模式
-✅ 具備 6 種模式的細粒度權限控制（default, acceptEdits, plan, auto, dontAsk, bypassPermissions）
+✅ 具備 6 種模式的細粒度權限控制（manual — 原為 default, acceptEdits, plan, auto, dontAsk, bypassPermissions）
 ✅ 透過 Alt+T / Option+T 切換的擴展思考
 ✅ 背景任務管理
 ✅ 用於學習偏好的自動記憶
 ✅ 帶有背景安全分類器的自動模式
-✅ 用於結構化多會話工作流程的頻道
+✅ 用於結構化多工作階段工作流程的頻道
 ✅ 用於免手操作互動的語音聽寫
-✅ 遠端控制、桌面應用程式與網頁會話
+✅ 遠端控制（已正式推出 — 你的電腦會以裝置卡片形式出現在 Claude app 中）、桌面應用程式與網頁工作階段
 ✅ 用於多代理協作的代理團隊
 
 #### 動手練習
@@ -381,13 +381,13 @@ cp 04-subagents/*.md .claude/agents/
 # 練習 1：使用規劃模式
 /plan Implement user authentication system
 
-# 練習 2：嘗試權限模式（共有 6 種可用：default, acceptEdits, plan, auto, dontAsk, bypassPermissions）
+# 練習 2：嘗試權限模式（共有 6 種可用：manual [原為 default], acceptEdits, plan, auto, dontAsk, bypassPermissions）
 claude --permission-mode plan "analyze this codebase"
 claude --permission-mode acceptEdits "refactor the auth module"
 claude --permission-mode auto "implement the feature"
 
 # 練習 3：啟用擴展思考
-# 在會話期間按下 Alt+T (macOS 為 Option+T) 來切換
+# 在工作階段期間按下 Alt+T (macOS 為 Option+T) 來切換
 
 # 練習 4：進階檢查點工作流程
 # 1. 建立檢查點 "Clean state"
@@ -408,8 +408,8 @@ export CLAUDE_AGENT_TEAMS=1
 /loop 5m /check-status
 # 或使用 CronCreate 進行持久性的排程任務
 
-# 練習 8：用於多會話工作流程的 Channels
-# 使用 Channels 來組織跨會話的工作
+# 練習 8：用於多工作階段工作流程的 Channels
+# 使用 Channels 來組織跨工作階段的工作
 
 # 練習 9：語音聽寫
 # 使用語音輸入進行免持式的 Claude Code 互動
@@ -417,13 +417,14 @@ export CLAUDE_AGENT_TEAMS=1
 
 #### 成功標準
 - [ ] 使用規劃模式來開發複雜功能
-- [ ] 配置權限模式 (plan, acceptEdits, auto, dontAsk)
+- [ ] 設定權限模式 (plan, acceptEdits, auto, dontAsk)
 - [ ] 使用 Alt+T / Option+T 切換延伸思考 (extended thinking)
 - [ ] 使用帶有背景安全分類器的自動模式
-- [ ] 使用背景任務處理長時間運行的操作
-- [ ] 探索用於多會話工作流程的 Channels
+- [ ] 使用背景任務處理長時間執行的操作
+- [ ] 探索用於多工作階段工作流程的 Channels
 - [ ] 嘗試使用語音聽寫進行免持輸入
-- [ ] 理解遠端控制、桌面應用程式與 Web 會話
+- [ ] 理解遠端控制、桌面應用程式與 Web 工作階段
+- [ ] 在跨工作階段的 `SendMessage` 中使用 `notify_when_idle`，在另一個工作階段閒置時收到通知
 - [ ] 啟用並使用代理團隊 (Agent Teams) 進行協作任務
 - [ ] 使用 `/loop` 進行循環任務或排程監控
 
@@ -446,7 +447,7 @@ export CLAUDE_AGENT_TEAMS=1
 ✅ 精通用於腳本編寫與自動化的 CLI
 ✅ 設定與 `claude -p` 的 CI/CD 整合
 ✅ 用於自動化流水線的 JSON 輸出
-✅ 會話管理與批次處理
+✅ 工作階段管理與批次處理
 
 #### 動手練習
 
@@ -460,7 +461,7 @@ claude -p "Run all tests and generate report"
 # 練習 3：用於腳本的 JSON 輸出
 claude -p --output-format json "list all functions"
 
-# 練習 4：會話管理與恢復
+# 練習 4：工作階段管理與恢復
 claude -r "feature-auth" "continue implementation"
 
 # 練習 5：帶有限制條件的 CI/CD 整合
@@ -484,7 +485,7 @@ done
 - [ ] 為你的團隊建立或修改了外掛
 - [ ] 在 CI/CD 中使用了列印模式 (`claude -p`)
 - [ ] 產生了用於腳本編寫的 JSON 輸出
-- [ ] 成功恢復了先前的會話
+- [ ] 成功恢復了先前的工作階段
 - [ ] 建立了一個批次處理腳本
 - [ ] 將 Claude 整合至 CI/CD 工作流程
 
@@ -516,7 +517,7 @@ done
 | **課程測驗** | `/lesson-quiz [lesson]` | 透過 10 個問題測試你對特定課程的理解。可在課程前（前測）、課程中（進度檢查）或課程後（掌握程度驗證）使用。 |
 
 **範例：**
-```
+```text
 /self-assessment                  # 找出你的整體程度
 /lesson-quiz hooks                # 關於 Lesson 06: Hooks 的測驗
 /lesson-quiz 03                   # 關於 Lesson 03: Skills 的測驗
@@ -564,7 +565,7 @@ done
 **週日** (4 小時)：
 - 完成里程碑 3A：進階功能
 - 完成里程碑 3B：外掛 + CLI 精通 + CI/CD
-- 為你的團隊建立一個自定義外掛
+- 為你的團隊建立一個自訂外掛
 
 **成果**：你將成為一名 Claude Code 進階使用者，準備好指導他人並自動化複雜的工作流程
 
@@ -587,7 +588,7 @@ done
 
 - 在跳轉到更高層級時**跳過前置檢查**
 - **試圖一次學完所有東西**——這會讓你感到壓力過大
-- **在不理解的情況下複製配置**——你將無法進行除錯
+- **在不理解的情況下複製設定**——你將無法進行除錯
 - **忘記測試**——務必驗證功能是否正常運作
 - **趕著完成里程碑**——請花時間去理解
 - **忽略文件**——每個 README 都包含有價值的細節
@@ -616,21 +617,21 @@ done
 - 閱讀資源中連結的部落格文章
 
 ### 社交型學習者
-- 進行配對程式設計會話
+- 進行配對程式設計工作階段
 - 向隊友講解概念
 - 加入 Claude Code 社群討論
-- 分享你的自定義配置
+- 分享你的自訂設定
 
 ---
 
 ## 📈 進度追蹤
 
-使用這些檢查清單來追蹤你的等級進度。你可以隨時執行 `/self-assessment` 來獲取更新後的技能概況，或在每個教學結束後執行 `/lesson-quiz [lesson]` 以驗證你的理解程度。
+使用這些檢查清單來追蹤你的等級進度。你可以隨時執行 `/self-assessment` 來取得更新後的技能概況，或在每個教學結束後執行 `/lesson-quiz [lesson]` 以驗證你的理解程度。
 
 ### 🟢 Level 1: 初學者
 - [ ] 完成 [01-slash-commands](01-slash-commands/)
 - [ ] 完成 [02-memory](02-memory/)
-- [ ] 建立了第一個自定義斜線命令
+- [ ] 建立了第一個自訂斜線命令
 - [ ] 設定了專案記憶
 - [ ] **達成里程碑 1A**
 - [ ] 完成 [08-checkpoints](08-checkpoints/)
@@ -648,14 +649,14 @@ done
 - [ ] 完成 [05-mcp](05-mcp/)
 - [ ] 完成 [04-subagents](04-subagents/)
 - [ ] 連接 GitHub MCP
-- [ ] 建立了自定義子代理
+- [ ] 建立了自訂子代理
 - [ ] 在工作流程中結合多種整合功能
 - [ ] **達成里程碑 2B**
 
 ### 🔴 Level 3: 進階
 - [ ] 完成 [09-advanced-features](09-advanced-features/)
 - [ ] 成功使用規劃模式
-- [ ] 配置權限模式（包含自動模式在內的 6 種模式）
+- [ ] 設定權限模式（包含自動模式在內的 6 種模式）
 - [ ] 使用帶有安全分類器的自動模式
 - [ ] 使用擴展思考切換功能
 - [ ] 探索 Channels 與語音聽寫
@@ -697,20 +698,21 @@ done
 一旦你完成了所有里程碑：
 
 1. **建立團隊文件** - 記錄你團隊的 Claude Code 設定
-2. **建立自定義外掛** - 將你團隊的工作流程打包
-3. **探索 Remote Control** - 從外部工具以程式化方式控制 Claude Code 會話
-4. **嘗試 Web Sessions** - 透過瀏覽器介面使用 Claude Code 進行遠端開發
-5. **使用 Desktop App** - 透過原生桌面應用程式存取 Claude Code 功能
-6. **使用 Auto Mode** - 讓 Claude 在背景安全分類器的輔助下自主工作
-7. **利用 Auto Memory** - 讓 Claude 隨著時間自動學習你的偏好
-8. **建立 Agent Teams** - 在複雜且多面向的任務上協調多個代理
-9. **使用 Channels** - 在結構化的多會話工作流程中組織工作
-10. **嘗試語音聽寫** - 使用免持語音輸入與 Claude Code 互動
-11. **使用排程任務** - 使用 `/loop` 和 cron 工具自動化定期檢查
-12. **貢獻範例** - 與社群分享
-13. **指導他人** - 幫助隊友學習
-14. **優化工作流程** - 根據使用情況持續改進
-15. **保持更新** - 關注 Claude Code 的發佈與新功能
+2. **建立自訂外掛** - 將你團隊的工作流程打包，包括較新的 manifest 欄位（`workflows`、`channels`、`dependencies`）
+3. **試用 `/design`** - 在設計畫布上繪製 UI 模型、畫面流程或登陸頁，而不必手寫 HTML（研究預覽，v2.1.233+）
+4. **探索 Remote Control** - 從外部工具以程式化方式控制 Claude Code 工作階段，或透過 Claude app 中的裝置卡片從手機啟動工作階段
+5. **嘗試 Web Sessions** - 透過瀏覽器介面使用 Claude Code 進行遠端開發
+6. **使用 Desktop App** - 透過原生桌面應用程式存取 Claude Code 功能
+7. **使用 Auto Mode** - 讓 Claude 在背景安全分類器的輔助下自主工作
+8. **利用 Auto Memory** - 讓 Claude 隨著時間自動學習你的偏好
+9. **建立 Agent Teams** - 在複雜且多面向的任務上協調多個代理
+10. **使用 Channels** - 在結構化的多工作階段工作流程中組織工作
+11. **嘗試語音聽寫** - 使用免持語音輸入與 Claude Code 互動
+12. **使用排程任務** - 使用 `/loop` 和 cron 工具自動化定期檢查
+13. **貢獻範例** - 與社群分享
+14. **指導他人** - 幫助隊友學習
+15. **最佳化工作流程** - 根據使用情況持續改進
+16. **保持更新** - 關注 Claude Code 的發佈與新功能
 
 ---
 
@@ -738,14 +740,16 @@ done
 
 ---
 
-**最後更新日期**：2026 年 5 月 25 日
-**Claude Code 版本**：2.1.150
+**最後更新日期**：2026 年 9 月 2 日
+**Claude Code 版本**：2.1.257
 **來源**：
 - https://code.claude.com/docs/en/overview
 - https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/permission-modes
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.144
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.145
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://code.claude.com/docs/en/model-config
+**相容模型**：Claude Fable 5.1, Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5
 **維護者**：Claude How-To Contributors
 **授權**：僅供教育用途，可自由使用與改編
 

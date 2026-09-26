@@ -341,7 +341,7 @@ This command initiates a complete pull request review including:
 ---
 name: security-reviewer
 description: Security-focused code review
-tools: read, grep, diff
+tools: Read, Grep, Bash
 ---
 
 # Security Reviewer
@@ -461,6 +461,10 @@ graph TB
 | `extraKnownMarketplaces` | Додати додаткові джерела маркетплейсу крім стандартних |
 | `strictKnownMarketplaces` | Контролювати, які маркетплейси дозволено додавати користувачам |
 | `deniedPlugins` | Блок-список для запобігання встановленню конкретних плагінів (керований адміністратором) |
+
+> **Дружніші аліаси (v2.1.232)**: `additionalMarketplaces` приймається як аліас для `extraKnownMarketplaces`, а `allowedMarketplaces` — для `strictKnownMarketplaces`. **Джерело — changelog**: changelog v2.1.232 оголошує їх, але офіційна довідка з налаштувань поки не містить жодної з цих назв. Канонічні ключі безпечно використовувати й далі.
+
+> **Шаблони власника (v2.1.223+)**: запис `"owner/*"` дозволяє або блокує всі репозиторії маркетплейсів під одним власником GitHub. **Приймається лише у `strictKnownMarketplaces` та `blockedMarketplaces`.** Скрізь інде, де зʼявляється джерело `github` — включно з `extraKnownMarketplaces` і `/plugin marketplace add` — значення `repo` має вказувати на один репозиторій.
 
 ### Додаткові функції маркетплейсу
 
@@ -609,7 +613,7 @@ claude plugin uninstall <n>               # Видалити плагін
 claude plugin list                           # Список встановлених плагінів
 claude plugin enable <n>                  # Увімкнути вимкнений плагін
 claude plugin disable <n>                 # Вимкнути плагін
-claude plugin validate                       # Валідація структури плагіна
+claude plugin validate <path>                # Валідація структури плагіна за шляхом <path>
 ```
 
 ## Методи встановлення
@@ -706,6 +710,10 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 | `strictKnownMarketplaces` | Обмеження маркетплейсів, які дозволено додавати користувачам |
 | `allowedChannelPlugins` | Контроль дозволених плагінів для кожного каналу випуску |
 
+> **Дружніші аліаси (v2.1.232)**: `additionalMarketplaces` приймається як аліас для `extraKnownMarketplaces`, а `allowedMarketplaces` — для `strictKnownMarketplaces`. **Джерело — changelog**: changelog v2.1.232 оголошує їх, але офіційна довідка з налаштувань поки не містить жодної з цих назв. Канонічні ключі безпечно використовувати й далі.
+
+> **Шаблони власника (v2.1.223+)**: запис `"owner/*"` дозволяє або блокує всі репозиторії маркетплейсів під одним власником GitHub. **Приймається лише у `strictKnownMarketplaces` та `blockedMarketplaces`.** Скрізь інде, де зʼявляється джерело `github` — включно з `extraKnownMarketplaces` і `/plugin marketplace add` — значення `repo` має вказувати на один репозиторій.
+
 Ці налаштування можна застосувати на рівні організації через файли керованої конфігурації, і вони мають пріоритет над налаштуваннями рівня користувача.
 
 ## Безпека плагінів
@@ -765,7 +773,7 @@ Complete PR review workflow with security, testing, and documentation checks.
 ```
 
 ## Requirements
-- Claude Code 1.0+
+- Claude Code 2.1+
 - GitHub access
 - CodeQL (optional)
 ```
@@ -825,13 +833,22 @@ Complete PR review workflow with security, testing, and documentation checks.
 
 2. **Деталі плагіна:**
    ```bash
-   /plugin info plugin-name
+   claude plugin details plugin-name
    ```
 
 3. **Встановлення плагіна:**
    ```bash
    /plugin install plugin-name
    ```
+
+**Чи набуде чинності одразу?** Починаючи з **v2.1.221** — зазвичай так. Прочитайте останній рядок підсумку встановлення:
+
+| Підсумок встановлення каже | Що це означає |
+|---|---|
+| `Plugin is now active.` | Claude Code активував плагін під час встановлення. Більше нічого робити не треба. |
+| `Run /reload-plugins to activate.` | Плагін встановлено, але він ще не активний — або активація знецінила б prompt cache, або спроба активації не вдалася. |
+
+До v2.1.221 жодне встановлення не набувало чинності в поточній сесії, доки ви не запускали `/reload-plugins` або не перезапускали Claude Code.
 
 ### Встановлення з локального шляху
 
@@ -848,13 +865,17 @@ Complete PR review workflow with security, testing, and documentation checks.
 ### Список встановлених плагінів
 
 ```bash
-/plugin list --installed
+/plugin list             # усі встановлені плагіни
+/plugin list --enabled   # лише увімкнені плагіни
+/plugin list --disabled  # лише вимкнені плагіни
 ```
 
 ### Оновлення плагіна
 
+Використовуйте форму CLI — саме її задокументовано в розділі [`plugin update`](https://code.claude.com/docs/en/plugins-reference) і саме її пропонує сам Claude Code, коли з'являється оновлення:
+
 ```bash
-/plugin update plugin-name
+claude plugin update plugin-name
 ```
 
 ### Вимкнення/Увімкнення плагіна
@@ -917,7 +938,7 @@ Complete PR review workflow with security, testing, and documentation checks.
 - Переконайтеся, що шляхи в `plugin.json` відповідають фактичній структурі каталогів
 - Перевірте дозволи файлів: `chmod +x scripts/`
 - Перегляньте синтаксис файлів компонентів
-- Перевірте журнали: `/plugin debug plugin-name`
+- Перевірте інвентар компонентів: `claude plugin details plugin-name`
 
 ### Збій підключення MCP
 - Переконайтеся, що змінні оточення встановлені правильно
@@ -926,9 +947,9 @@ Complete PR review workflow with security, testing, and documentation checks.
 - Перегляньте конфігурацію MCP у каталозі `mcp/`
 
 ### Команди недоступні після встановлення
-- Переконайтеся, що плагін встановлено успішно: `/plugin list --installed`
-- Перевірте, чи плагін увімкнено: `/plugin status plugin-name`
-- Перезапустіть Claude Code: `exit` та відкрийте знову
+- Переконайтеся, що плагін встановлено успішно: `/plugin list`
+- Перевірте, чи плагін увімкнено: `/plugin list --enabled`
+- Перевірте, чи плагін уже активний — див. підсумок встановлення в розділі [Інструкції зі встановлення](#інструкції-зі-встановлення): `Plugin is now active.` — нічого робити не треба, `Run /reload-plugins to activate.` — запустіть цю команду (перезапуск не потрібен)
 - Перевірте конфлікти назв з існуючими командами
 
 ### Проблеми з виконанням хуків
@@ -948,6 +969,10 @@ Complete PR review workflow with security, testing, and documentation checks.
 - [Довідник системи хуків](../06-hooks/README.md)
 
 ---
-**Останнє оновлення**: 9 квітня 2026
-**Версія Claude Code**: 2.1.97
-**Сумісні моделі**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+**Останнє оновлення**: 2 вересня 2026
+**Версія Claude Code**: 2.1.257
+**Джерела**:
+- https://code.claude.com/docs/en/discover-plugins
+- https://code.claude.com/docs/en/plugins-reference
+- https://code.claude.com/docs/en/settings
+**Сумісні моделі**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

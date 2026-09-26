@@ -61,8 +61,14 @@
 | `hooks` | フック定義の配列 | `[{ "type": "command", ... }]` |
 | `type` | フックタイプ：`"command"`（bash）、`"prompt"`（LLM）、`"http"`（webhook）、`"mcp_tool"`（MCP ツール呼び出し、v2.1.118 以降）、`"agent"`（サブエージェント） | `"command"` |
 | `command` | 実行するシェルコマンド | `"$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh"` |
-| `timeout` | オプションのタイムアウト（秒、デフォルト 60） | `30` |
+| `timeout` | オプションのタイムアウト（秒）。デフォルトは command/http/mcp_tool が 600、prompt が 30、agent が 60。 | `30` |
 | `once` | `true` の場合、フックはセッションごとに 1 回のみ実行 | `true` |
+| `async` | `true` の場合、ブロックせずにバックグラウンドで実行 | `true` |
+| `asyncRewake` | `true` の場合、バックグラウンドで実行し、終了コード 2 で Claude を起こす。`async` を含意する。 | `true` |
+| `shell` | `"bash"` または `"powershell"` を受け付ける。デフォルトは `"bash"`、Git Bash が未インストールの Windows では `"powershell"`。 | `"bash"` |
+| `statusMessage` | フック実行中に表示されるカスタムスピナーメッセージ | `"フォーマット中…"` |
+
+> **注意**: 一部のイベントはデフォルトのタイムアウトを引き下げる。`UserPromptSubmit` は command / http / mcp_tool のデフォルトを 30 秒に、`MessageDisplay` は 10 秒に下げる。`SessionEnd` フックは 1.5 秒の予算を共有し、設定でより長い `timeout` を指定した場合は Claude Code が最大 60 秒まで予算を引き上げる。
 
 ### マッチャーパターン
 
@@ -171,6 +177,8 @@ LLM はプロンプトを評価し、構造化された判定を返す（詳細�
 }
 ```
 
+> **注意**: Agent フックは実験的機能であり、変更される可能性がある。
+
 **主要プロパティ：**
 - `"type": "agent"` -- agent フックであることを示す
 - `"prompt"` -- サブエージェントへのタスク説明
@@ -179,14 +187,16 @@ LLM はプロンプトを評価し、構造化された判定を返す（詳細�
 
 ## フックイベント
 
-Claude Code は **28 種類のフックイベント** をサポートする。
+Claude Code は **33 種類のフックイベント** をサポートする。
 
 | イベント | 発火タイミング | マッチャー入力 | ブロック可否 | 用途例 |
 |----------|---------------|---------------|-------------|--------|
-| **SessionStart** | セッション開始/再開/clear/compact | startup/resume/clear/compact | 不可 | 環境セットアップ |
+| **SessionStart** | セッション開始/再開/clear/compact/fork | startup/resume/clear/compact/fork | 不可 | 環境セットアップ |
+| **Setup** | 初回の環境セットアップ（セッションごとに1回） | （なし） | 不可 | ツールのプロビジョニング、依存関係のインストール |
 | **InstructionsLoaded** | CLAUDE.md やルールファイルが読み込まれた後 | （なし） | 不可 | 指示の修正/フィルタ |
 | **UserPromptSubmit** | ユーザーがプロンプトを送信 | （なし） | 可 | プロンプト検証 |
 | **UserPromptExpansion** | ユーザープロンプトが展開（`@` メンション、スラッシュコマンド解決など） | （なし） | 可 | 展開後のプロンプトを変換/検査 |
+| **MessageDisplay** | アシスタントのメッセージ本文が表示される際 | （なし） | 不可 | 表示テキストの変換・非表示化（v2.1.152） |
 | **PreToolUse** | ツール実行前 | ツール名 | 可（allow/deny/ask） | 入力の検証・修正 |
 | **PermissionRequest** | 権限ダイアログ表示 | ツール名 | 可 | 自動承認/拒否 |
 | **PermissionDenied** | ユーザーが権限プロンプトを拒否 | ツール名 | 不可 | ロギング、解析、ポリシー強制 |
@@ -203,14 +213,19 @@ Claude Code は **28 種類のフックイベント** をサポートする。
 | **TaskCreated** | TaskCreate でタスク作成 | （なし） | 不可 | タスク追跡、ロギング |
 | **ConfigChange** | 設定ファイル変更 | （なし） | 可（ポリシーを除く） | 設定更新への反応 |
 | **CwdChanged** | 作業ディレクトリ変更 | （なし） | 不可 | ディレクトリ固有のセットアップ |
+| **DirectoryAdded** | `/add-dir` または SDK の `register_repo_root` コントロールリクエストにより、セッション中に新しい作業ディレクトリが登録された時（v2.1.219） | （なし） | 不可 | 追加されたディレクトリ向けのツール設定 |
 | **FileChanged** | 監視ファイル変更 | （なし） | 不可 | ファイル監視、再ビルド |
 | **PreCompact** | コンテキスト圧縮前 | manual/auto | 不可 | 圧縮前の処理 |
 | **PostCompact** | 圧縮完了後 | （なし） | 不可 | 圧縮後の処理 |
+| **PreModelSwitch** | 要求されたモデル切り替えを Claude Code が適用する前 | 切り替え先モデルの正式名（`to_model` から導出） | 可 | モデル変更の制御・拒否 |
+| **PostModelSwitch** | セッションのモデルが変更された後（再開時のモデル復元など、Claude Code 自身による変更を含む） | 切り替え先モデルの正式名（`to_model` から導出） | 不可 | モデル変更のロギング・追随処理 |
 | **WorktreeCreate** | ワークツリー作成中 | （なし） | 可（パス返却） | ワークツリー初期化 |
 | **WorktreeRemove** | ワークツリー削除中 | （なし） | 不可 | ワークツリークリーンアップ |
 | **Elicitation** | MCP サーバーがユーザー入力を要求 | （なし） | 可 | 入力検証 |
 | **ElicitationResult** | ユーザーが elicitation に応答 | （なし） | 可 | 応答処理 |
 | **SessionEnd** | セッション終了 | （なし） | 不可 | クリーンアップ、最終ロギング |
+
+> **`TaskCreated` と `TaskCompleted` は todo ツールが有効なときのみ発火する（v2.1.233）。** これらのイベントは todo／タスク追跡ツール（`TaskCreate`/`Get`/`Update`/`List`、`TodoWrite`）から発火するが、それらは **Claude 3.x モデル、Opus 4〜4.7、Sonnet 4〜4.6、Haiku 4.5 でのみデフォルトで利用できる**。それ以外のモデルではフックの設定自体は有効なまま、単に発火しない — 出力もエラーも出ない。`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` を設定すると復活する。
 
 > **PostToolUse の duration（v2.1.119）：** `PostToolUse` と `PostToolUseFailure` のフック入力に `duration_ms` が含まれるようになった。詳細は [PostToolUse](#posttooluse) セクションを参照。
 
@@ -240,8 +255,13 @@ Claude がツールパラメータを生成した後、処理開始前に動作�
 **一般的なマッチャー：** `Task`、`Bash`、`Glob`、`Grep`、`Read`、`Edit`、`Write`、`WebFetch`、`WebSearch`
 
 **出力制御：**
-- `permissionDecision`: `"allow"`、`"deny"`、`"ask"`
-- `permissionDecisionReason`: 判定の理由
+- `permissionDecision`: `"allow"`、`"deny"`、`"ask"`、`"defer"`
+  - `"allow"` は権限プロンプトをスキップする（ユーザー操作が必須のツール、および組織が `ask` に設定したコネクタツールを除く）
+  - `"deny"` はツール呼び出しを阻止する
+  - `"ask"` はユーザーに確認を求める
+  - `"defer"` は正常終了して後でツールを再開できるようにする。この値では `permissionDecisionReason`、`updatedInput`、`additionalContext` はいずれも無視される
+  - フックが何を返しても deny／ask のルールは引き続き評価される。複数の `PreToolUse` フックの判定が食い違う場合、優先順位は `deny` > `defer` > `ask` > `allow` となる
+- `permissionDecisionReason`: 判定の理由。`"allow"` と `"ask"` では（Claude ではなく）ユーザーに表示され、`"deny"` では Claude に表示される。`"defer"` では無視される
 - `updatedInput`: 修正されたツール入力パラメータ
 
 ### PostToolUse
@@ -356,7 +376,9 @@ Claude が応答を終えたとき（Stop）、サブエージェントが完了
 
 セッション開始または再開時に動作する。環境変数を永続化できる。
 
-**マッチャー：** `startup`、`resume`、`clear`、`compact`
+**マッチャー：** `startup`、`resume`、`clear`、`compact`、`fork`
+
+> **v2.1.214 の更新**: フォークされたセッションは、以前の `"resume"` ではなく `"fork"` をソースとして報告するようになった。
 
 **特別な機能：** `CLAUDE_ENV_FILE` を使って環境変数を永続化できる（`CwdChanged` と `FileChanged` フックでも利用可能）。
 
@@ -940,7 +962,7 @@ if __name__ == "__main__":
 
 ### 例 7：自動モード権限のシード（一度限りのセットアップスクリプト）
 
-`~/.claude/settings.json` に Claude Code の自動モードベースラインに相当する約 67 個の安全な権限ルールをシードする一度限りのセットアップスクリプト。フックなし、将来の選択を覚えることもなし。1 回実行すれば良く、再実行しても安全（既存ルールはスキップ）。
+`~/.claude/settings.json` に Claude Code の自動モードベースラインに相当する安全な権限ルール（デフォルトで 37 個、すべてのカテゴリフラグを有効にすると最大 63 個）をシードする一度限りのセットアップスクリプト。フックなし、将来の選択を覚えることもなし。1 回実行すれば良く、再実行しても安全（既存ルールはスキップ）。
 
 **ファイル：** `09-advanced-features/setup-auto-mode-permissions.py`
 
@@ -956,12 +978,13 @@ python3 09-advanced-features/setup-auto-mode-permissions.py
 
 | カテゴリ | 例 |
 |----------|-----|
-| 組み込みツール | `Read(*)`、`Edit(*)`、`Write(*)`、`Glob(*)`、`Grep(*)`、`Agent(*)`、`WebSearch(*)` |
+| 組み込みツール | `Read(*)`、`Grep(*)`、`Agent(*)`、`WebSearch(*)` |
+| オプションの編集（--include-edits） | `Edit(*)` |
 | Git 読み取り | `Bash(git status:*)`、`Bash(git log:*)`、`Bash(git diff:*)` |
 | Git 書き込み（ローカル） | `Bash(git add:*)`、`Bash(git commit:*)`、`Bash(git checkout:*)` |
-| パッケージマネージャ | `Bash(npm install:*)`、`Bash(pip install:*)`、`Bash(cargo build:*)` |
+| パッケージマネージャ | `Bash(npm ci:*)`、`Bash(npm install:*)`、`Bash(pip install:*)`、`Bash(pip3 install:*)` |
 | ビルド・テスト | `Bash(make:*)`、`Bash(pytest:*)`、`Bash(go test:*)` |
-| 一般的なシェル | `Bash(ls:*)`、`Bash(cat:*)`、`Bash(find:*)`、`Bash(cp:*)`、`Bash(mv:*)` |
+| 一般的なシェル | `Bash(ls:*)`、`Bash(cat:*)`、`Bash(find:*)` |
 | GitHub CLI | `Bash(gh pr view:*)`、`Bash(gh pr create:*)`、`Bash(gh issue list:*)` |
 
 **意図的に除外される項目**（このスクリプトでは追加されない）：
@@ -1302,7 +1325,7 @@ echo $?
 
 | 項目 | 動作 |
 |------|------|
-| **タイムアウト** | デフォルト 60 秒、コマンドごとに設定可能 |
+| **タイムアウト** | command/http/mcp_tool はデフォルト 600 秒（prompt は 30 秒、agent は 60 秒）、フックごとに設定可能 |
 | **並列化** | マッチしたフックはすべて並列実行 |
 | **重複排除** | 同一のフックコマンドは重複排除される |
 | **環境** | カレントディレクトリで Claude Code の環境のもと実行 |
@@ -1359,11 +1382,13 @@ chmod +x ~/.claude/hooks/*.sh
 
 ---
 
-**最終更新：** 2026 年 4 月 24 日
-**Claude Code バージョン：** 2.1.119
+**最終更新：** 2026 年 9 月 19 日
+**Claude Code バージョン：** 2.1.278
 **情報源：**
 - https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/permissions
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability
 - https://code.claude.com/docs/en/changelog
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.118
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.119
-**対応モデル：** Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5
+**対応モデル：** Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

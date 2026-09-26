@@ -1,6 +1,6 @@
 ---
 name: claude-md
-description: 遵循最佳實踐建立或更新 CLAUDE.md 檔案，以優化 AI agent 的上手體驗
+description: 遵循最佳實踐建立或更新 CLAUDE.md 檔案，以最佳化 AI agent 的上手體驗
 ---
 
 ## 使用者輸入
@@ -93,7 +93,7 @@ agent_docs/
 
 在建立或更新 CLAUDE.md 時：
 
-1. **目標長度**：300 行以下（最好在 100 行以內）
+1. **目標長度**：控制在數百行以內；越短越好
 2. **無樣式規則**：移除任何 linting／格式化指示
 3. **無任務專屬指示**：移至獨立檔案
 4. **無程式碼片段**：改用檔案參照
@@ -150,7 +150,7 @@ agent_docs/
 
 在完成前，請確認：
 
-- [ ] 300 行以下（最好 100 行以內）
+- [ ] 控制在數百行以內；越短越好
 - [ ] 每一行都適用於所有對話
 - [ ] 無樣式／格式化規則
 - [ ] 無程式碼片段（使用檔案參照）
@@ -193,10 +193,14 @@ agent_docs/
 
 若使用者要求建立或更新 AGENTS.md：
 
-AGENTS.md 用於定義專業化的 agent 行為。與 CLAUDE.md（用於專案情境）不同，AGENTS.md 定義：
-- 自訂 agent 角色與能力
-- Agent 專屬指示與限制
-- 多 agent 情境的工作流程定義
+**自 v2.1.277 起，Claude Code 會直接將 `AGENTS.md` 讀取為專案指示**——但僅限於工作目錄及其上層的所有目錄中都沒有 `CLAUDE.md`、`.claude/CLAUDE.md` 或 `CLAUDE.local.md` 時。`~/.claude/CLAUDE.md`、受管理的 CLAUDE.md 與 `.claude/rules/` 不列入此檢查，且會照常一併載入。要讀取哪些檔案由 `/config` 中的 **Project instructions** 控制：`claude-md-or-agents-md`（預設）、`claude-md-and-agents-md`、`claude-md` 或 `managed-only`。若無法直接讀取——Bedrock/Vertex/Foundry、停用遙測、升級後的第一個工作階段，或 `disableAllHooks`/`allowManagedHooksOnly`——請改為在 CLAUDE.md 中以 `@AGENTS.md` 匯入，或將 `CLAUDE.md` 建立為指向它的符號連結。
+
+AGENTS.md 是跨工具的專案情境檔案——與 CLAUDE.md 屬於同一*類別*的文件，而非 agent 定義格式。它的存在是為了讓多個程式開發代理共用同一套專案慣例：
+- 建置、測試與 lint 指令
+- 程式碼風格與架構慣例
+- 儲存庫結構與各項內容的位置
+
+Subagents 是另外在 `.claude/agents/*.md` 中定義的——而不是在 AGENTS.md 中。
 
 套用相似原則：
 - 保持聚焦與簡潔
@@ -210,3 +214,12 @@ AGENTS.md 用於定義專業化的 agent 行為。與 CLAUDE.md（用於專案�
 - 系統提示告訴 Claude，CLAUDE.md「可能相關也可能不相關」— 雜訊越多，越容易被忽略
 - Monorepo 最能受益於清晰的 WHAT/WHY/HOW 結構
 - 目錄專屬的 CLAUDE.md 應更加聚焦
+
+---
+
+**最後更新日期**：2026 年 9 月 19 日
+**Claude Code 版本**：2.1.278
+**來源**：
+- https://code.claude.com/docs/en/skills
+- https://code.claude.com/docs/en/memory#agents-md
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

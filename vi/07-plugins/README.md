@@ -336,7 +336,7 @@ Lệnh này khởi tạo một pull request review hoàn chỉnh bao gồm:
 ---
 name: security-reviewer
 description: Security-focused code review
-tools: read, grep, diff
+tools: Read, Grep, Bash
 ---
 
 # Security Reviewer
@@ -456,6 +456,10 @@ Người dùng enterprise và nâng cao có thể kiểm soát hành vi marketpl
 | `extraKnownMarketplaces` | Thêm các nguồn marketplace bổ sung ngoài mặc định |
 | `strictKnownMarketplaces` | Kiểm soát marketplace nào người dùng được phép thêm |
 | `deniedPlugins` | Blocklist do quản trị viên quản lý để ngăn cài đặt các plugin cụ thể |
+
+> **Bí danh thân thiện hơn (v2.1.232)**: `additionalMarketplaces` được chấp nhận như bí danh của `extraKnownMarketplaces`, và `allowedMarketplaces` của `strictKnownMarketplaces`. **Nguồn changelog** — changelog v2.1.232 công bố chúng, nhưng trang settings chính thức chưa liệt kê. Các khóa chuẩn vẫn an toàn để tiếp tục dùng.
+
+> **Ký tự đại diện theo owner (v2.1.223+)**: một mục `"owner/*"` cho phép hoặc chặn mọi repo marketplace thuộc một owner GitHub. **Chỉ được chấp nhận trong `strictKnownMarketplaces` và `blockedMarketplaces`.** Ở mọi nơi khác dùng nguồn `github` — kể cả `extraKnownMarketplaces` và `/plugin marketplace add` — giá trị `repo` phải chỉ đúng một repository.
 
 ### Các Tính Năng Marketplace Thêm / Additional Marketplace Features
 
@@ -604,7 +608,7 @@ claude plugin uninstall <name>               # Gỡ bỏ plugin
 claude plugin list                           # Liệt kê các plugin đã cài đặt
 claude plugin enable <name>                  # Kích hoạt plugin đã bị vô hiệu hóa
 claude plugin disable <name>                 # Vô hiệu hóa plugin
-claude plugin validate                       # Xác thực cấu trúc plugin
+claude plugin validate <path>                # Xác thực cấu trúc plugin tại <path>
 ```
 
 ## Các Phương Thức Cài Đặt / Installation Methods
@@ -615,6 +619,15 @@ claude plugin validate                       # Xác thực cấu trúc plugin
 # hoặc từ CLI:
 claude plugin install plugin-name@marketplace-name
 ```
+
+**Có hiệu lực ngay không?** Từ **v2.1.221**, thường là có — hãy đọc dòng cuối của bản tóm tắt cài đặt:
+
+| Bản tóm tắt cài đặt hiển thị | Ý nghĩa |
+|---|---|
+| `Plugin is now active.` | Claude Code đã kích hoạt plugin ngay trong quá trình cài đặt. Không cần làm gì thêm. |
+| `Run /reload-plugins to activate.` | Plugin đã được cài nhưng chưa hoạt động — hoặc vì việc kích hoạt sẽ làm mất hiệu lực prompt cache, hoặc vì lần kích hoạt đã thất bại. |
+
+Trước v2.1.221, không lần cài đặt nào có hiệu lực trong phiên hiện tại cho đến khi bạn chạy `/reload-plugins` hoặc khởi động lại.
 
 ### Kích Hoạt / Vô Hiệu Hóa (với phạm vi tự phát hiện)
 ```bash
@@ -701,6 +714,10 @@ Các quản trị viên có thể kiểm soát hành vi plugin trên một tổ 
 | `strictKnownMarketplaces` | Hạn chế marketplace nào người dùng được phép thêm |
 | `allowedChannelPlugins` | Kiểm soát plugins nào được phép theo kênh phát hành |
 
+> **Bí danh thân thiện hơn (v2.1.232)**: `additionalMarketplaces` được chấp nhận như bí danh của `extraKnownMarketplaces`, và `allowedMarketplaces` của `strictKnownMarketplaces`. **Nguồn changelog** — changelog v2.1.232 công bố chúng, nhưng trang settings chính thức chưa liệt kê. Các khóa chuẩn vẫn an toàn để tiếp tục dùng.
+
+> **Ký tự đại diện theo owner (v2.1.223+)**: một mục `"owner/*"` cho phép hoặc chặn mọi repo marketplace thuộc một owner GitHub. **Chỉ được chấp nhận trong `strictKnownMarketplaces` và `blockedMarketplaces`.** Ở mọi nơi khác dùng nguồn `github` — kể cả `extraKnownMarketplaces` và `/plugin marketplace add` — giá trị `repo` phải chỉ đúng một repository.
+
 Các cài đặt này có thể được áp dụng ở cấp tổ chức qua các file cấu hình được quản lý và có ưu tiên hơn các cài đặt cấp người dùng.
 
 ## Bảo Mật Plugin / Plugin Security
@@ -760,7 +777,7 @@ Workflow PR review hoàn chỉnh với các kiểm tra bảo mật, testing, và
 ```
 
 ## Yêu Cầu
-- Claude Code 1.0+
+- Claude Code 2.1+
 - Truy cập GitHub
 - CodeQL (tùy chọn)
 ```
@@ -820,7 +837,7 @@ Workflow PR review hoàn chỉnh với các kiểm tra bảo mật, testing, và
 
 2. **Xem chi tiết plugin:**
    ```bash
-   /plugin info plugin-name
+   claude plugin details plugin-name
    ```
 
 3. **Cài đặt một plugin:**
@@ -843,13 +860,17 @@ Workflow PR review hoàn chỉnh với các kiểm tra bảo mật, testing, và
 ### Liệt Kê Các Plugins Đã Cài Đặt
 
 ```bash
-/plugin list --installed
+/plugin list             # tất cả plugin đã cài đặt
+/plugin list --enabled   # chỉ các plugin đang bật
+/plugin list --disabled  # chỉ các plugin đang tắt
 ```
 
 ### Cập Nhật Một Plugin
 
+Dùng dạng CLI — đây là dạng được ghi trong tài liệu tại [`plugin update`](https://code.claude.com/docs/en/plugins-reference) và cũng là dạng mà chính Claude Code hướng dẫn bạn khi có bản cập nhật:
+
 ```bash
-/plugin update plugin-name
+claude plugin update plugin-name
 ```
 
 ### Vô Hiệu Hóa/Kích Hoạt Một Plugin
@@ -912,7 +933,7 @@ Các tính năng Claude Code sau hoạt động cùng với plugins:
 - Xác minh các đường dẫn trong `plugin.json` khớp với cấu trúc thư mục thực tế
 - Kiểm tra quyền file: `chmod +x scripts/`
 - Review cú pháp file thành phần
-- Kiểm tra logs: `/plugin debug plugin-name`
+- Kiểm tra kho thành phần: `claude plugin details plugin-name`
 
 ### MCP Connection Failed
 - Xác minh các biến môi trường được đặt đúng
@@ -921,9 +942,9 @@ Các tính năng Claude Code sau hoạt động cùng với plugins:
 - Review cấu hình MCP trong thư mục `mcp/`
 
 ### Commands Not Available After Install
-- Đảm bảo plugin được cài đặt thành công: `/plugin list --installed`
-- Kiểm tra nếu plugin được kích hoạt: `/plugin status plugin-name`
-- Khởi động lại Claude Code: `exit` và mở lại
+- Đảm bảo plugin được cài đặt thành công: `/plugin list`
+- Kiểm tra nếu plugin được kích hoạt: `/plugin list --enabled`
+- Kiểm tra xem đã hoạt động chưa — xem hướng dẫn tóm tắt cài đặt trong [Các Phương Thức Cài Đặt](#các-phương-thức-cài-đặt--installation-methods): `Plugin is now active.` không cần làm gì thêm, `Run /reload-plugins to activate.` nghĩa là chạy lệnh đó (không cần khởi động lại)
 - Kiểm tra xung đột đặt tên với các lệnh hiện có
 
 ### Hook Execution Issues
@@ -944,6 +965,10 @@ Các tính năng Claude Code sau hoạt động cùng với plugins:
 
 ---
 
-**Cập Nhật Lần Cuối**: Tháng 4 năm 2026
-**Phiên Bản Claude Code**: 2.1+
-**Các Mô Hình Tương Thích**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+**Cập Nhật Lần Cuối**: Ngày 2 tháng 9 năm 2026
+**Phiên Bản Claude Code**: 2.1.257
+**Nguồn**:
+- https://code.claude.com/docs/en/discover-plugins
+- https://code.claude.com/docs/en/plugins-reference
+- https://code.claude.com/docs/en/settings
+**Các Mô Hình Tương Thích**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

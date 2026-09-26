@@ -155,7 +155,7 @@ $ARGUMENTS
    - 來自研究的支持證據和範例
    - 章節之間的流暢過渡
    - 帶有收穫的有力結論
-   - **引用**：所有比較、統計、數據和事實聲明必須引用原始來源
+   - **引用**：所有比較、統計、資料和事實聲明必須引用原始來源
 
 4. 將草稿儲存為部落格文章資料夾中的 `draft-v0.1.md`。
 
@@ -176,7 +176,7 @@ $ARGUMENTS
    ```
 
 6. **引用要求**：
-   - 每個數據點、統計或比較必須有行內引用
+   - 每個資料點、統計或比較必須有行內引用
    - 使用編號引用 [1]、[2] 等，或具名引用 [Source Name]
    - 將引用連結到結尾的參考文獻章節
    - 範例："Studies show that 65% of developers prefer TypeScript [1]"
@@ -254,9 +254,9 @@ blog-posts/
 
 - **開場**：以問題、驚人事實或可共感的場景開始
 - **流暢度**：每段應與下一段連接
-- **證據**：以研究數據支持論點
+- **證據**：以研究資料支持論點
 - **引用**：務必引用來源：
-  - 所有統計和數據點（例如 "According to [Source], 75% of..."）
+  - 所有統計和資料點（例如 "According to [Source], 75% of..."）
   - 產品、服務或方法之間的比較（例如 "X performs 2x faster than Y [Source]"）
   - 關於市場趨勢、研究發現或基準的事實聲明
   - 使用行內引用格式：[Source Name] 或 [Author, Year]
@@ -273,3 +273,10 @@ blog-posts/
 - 如果資源不足，請向使用者索取更多或建議額外研究
 - 根據目標受眾調整語氣（技術性、一般性、商業性等）
 
+---
+
+**最後更新日期**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/skills
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

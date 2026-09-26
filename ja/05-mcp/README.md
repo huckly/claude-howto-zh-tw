@@ -109,6 +109,28 @@ Server-Sent Events トランスポートは `http` の登場により非推奨�
 claude mcp add --transport sse legacy-server https://example.com/sse
 ```
 
+### WebSocket トランスポート（`ws`）
+
+WebSocket サーバーは持続的な双方向接続を保つため、Claude に対して自発的にイベントを push するリモート MCP サーバーに向いている。サーバーがリクエストに応答するだけなら HTTP を使うこと。HTTP は OAuth と `claude mcp add --transport` フラグの両方をサポートするが、WebSocket はどちらもサポートしない。
+
+`--transport` は `ws` を受け付けないため、`.mcp.json` または `claude mcp add-json` で設定する。
+
+```json
+{
+  "type": "ws",
+  "url": "wss://mcp.example.com/socket",
+  "headers": {
+    "Authorization": "Bearer YOUR_TOKEN"
+  }
+}
+```
+
+`type: "ws"` のエントリは `http` と同じ `url`、`headers`、`headersHelper`、`timeout`、`alwaysLoad` フィールドを受け付ける。認証は**ヘッダーのみ**で、WebSocket サーバー向けの OAuth フローは存在しない。
+
+> **注意**: WebSocket サーバーは `claude mcp list` の出力に表示されない。確認するには `claude mcp get <名前>` または `/mcp` パネルを使うこと。
+
+HTTP や SSE と同様に、WebSocket 接続のアイドル時間は 5 分。stdio と WebSocket にはリクエスト単位のタイマーはない。`type` のない `url` エントリはエラーとなり、有効な値として `"http"`、`"sse"`、`"ws"` が示される。
+
 ### Windows 固有の注意点
 
 ネイティブ Windows（WSL ではない）では、npx コマンドに `cmd /c` を使う。
@@ -261,11 +283,22 @@ MCP サーバーはスラッシュコマンドとして表示されるプロン�
 
 MCP の設定は共有レベルの異なる複数のスコープに保存できる。
 
-| スコープ | 場所 | 説明 | 共有相手 | 承認の要否 |
-|----------|------|------|----------|-----------|
-| **Local**（デフォルト） | `~/.claude.json`（プロジェクトパス配下） | 現在のユーザー、現在のプロジェクトに非公開（旧バージョンでは `project` と呼ばれていた） | 自分のみ | 不要 |
-| **Project** | `.mcp.json` | git リポジトリにチェックインされる | チームメンバー | 必要（初回使用時） |
-| **User** | `~/.claude.json` | 全プロジェクトで利用可能（旧バージョンでは `global` と呼ばれていた） | 自分のみ | 不要 |
+| スコープ | フラグ | 場所 | 説明 | 共有相手 | 承認の要否 |
+|----------|--------|------|------|----------|-----------|
+| **Local**（デフォルト） | `--scope local` | `~/.claude.json`（プロジェクトパス配下） | 現在のユーザー、現在のプロジェクトに非公開（旧バージョンでは `project` と呼ばれていた） | 自分のみ | 不要 |
+| **Project** | `--scope project` | `.mcp.json` | git リポジトリにチェックインされる | チームメンバー | 必要（初回使用時） |
+| **User** | `--scope user` | `~/.claude.json` | 全プロジェクトで利用可能（旧バージョンでは `global` と呼ばれていた） | 自分のみ | 不要 |
+
+サーバー追加時のスコープは `--scope`（短縮形 `-s`）で選択する。省略した場合、
+Claude Code は `local` を使う。
+
+```bash
+# Project スコープ — .mcp.json に書き込まれ、チームで共有される
+claude mcp add --scope project --transport http github https://api.github.com/mcp
+
+# User スコープ — すべてのプロジェクトで利用できる
+claude mcp add --scope user --transport stdio memory -- npx @modelcontextprotocol/server-memory
+```
 
 ### Project スコープの使用
 
@@ -432,7 +465,7 @@ MCP 設定は環境変数の展開とフォールバックデフォルトをサ�
       "command": "npx",
       "args": ["@modelcontextprotocol/server-database"],
       "env": {
-        "DATABASE_URL": "postgresql://user:pass@localhost/mydb"
+        "DATABASE_URL": "${DATABASE_URL}"
       }
     }
   }
@@ -633,42 +666,61 @@ claude mcp add --transport stdio claude-agent -- claude mcp serve
 
 ## 管理対象 MCP 設定（エンタープライズ）
 
-エンタープライズ展開では、IT 管理者が `managed-mcp.json` 設定ファイルを通じて MCP サーバーポリシーを強制できる。このファイルは、組織全体で許可または禁止する MCP サーバーを排他的に制御する。
+エンタープライズ展開では、IT 管理者は 2 つの独立した仕組みで MCP サーバーポリシーを強制する。固定のサーバー群を排他的な制御下で配布する `managed-mcp.json` ファイルと、設定済みのどのサーバーを読み込めるかをフィルタする `allowedMcpServers` / `deniedMcpServers` の設定キーである。
 
 **配置場所：**
 - macOS: `/Library/Application Support/ClaudeCode/managed-mcp.json`
-- Linux: `~/.config/ClaudeCode/managed-mcp.json`
-- Windows: `%APPDATA%\ClaudeCode\managed-mcp.json`
+- Linux および WSL: `/etc/claude-code/managed-mcp.json`
+- Windows: `C:\Program Files\ClaudeCode\managed-mcp.json`
 
-**機能：**
-- `allowedMcpServers` -- 許可するサーバーのホワイトリスト
-- `deniedMcpServers` -- 禁止するサーバーのブロックリスト
-- サーバー名、コマンド、URL パターンによるマッチをサポート
-- ユーザー設定より前に組織全体の MCP ポリシーを強制
-- 認可されていないサーバー接続を防止
+`managed-mcp.json` はプロジェクトの `.mcp.json` と同じ形式、すなわちトップレベルの `mcpServers` マップを使う。サーバーを配布するものであり、フィルタするものではない。
+
+```json
+{
+  "mcpServers": {
+    "example-remote": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp"
+    },
+    "company-internal": {
+      "type": "stdio",
+      "command": "/usr/local/bin/company-mcp-server",
+      "args": ["--config", "/etc/company/mcp-config.json"]
+    }
+  }
+}
+```
+
+このファイルはマシン上のどのユーザーからも読めるため、`env` ブロックに認証情報を置いてはならない。代わりに `${VAR}` 展開、OAuth、または `headersHelper` を使う。
+
+**フィルタリング：許可リストと拒否リスト**
+
+`allowedMcpServers` と `deniedMcpServers` は **設定キーであり、`managed-mcp.json` のフィールドではない**。強制力を持たせるには、管理された設定ソース（server-managed settings、`managed-settings.json`、MDM プロファイル、またはレジストリ）に置く。
+
+- `allowedMcpServers` -- 許可するサーバーの許可リスト。同じ管理ソース内に `allowManagedMcpServersOnly: true` を併記する。併記しないと許可リストがすべてのスコープからマージされ、ユーザーが許可範囲を広げられてしまう。
+- `deniedMcpServers` -- ブロックするサーバーの拒否リスト。常にすべてのスコープからマージされる。
+
+各エントリは **単一の** キーを持つオブジェクトである。
+
+| キー | マッチ対象 |
+|-----|-----------|
+| `serverUrl` | リモートサーバーの URL。完全一致、または `*` ワイルドカード付き |
+| `serverCommand` | stdio サーバーを起動する正確なコマンドと引数を配列で指定。すべての引数を順序どおりに |
+| `serverName` | ユーザーが付けたラベル。**完全一致のみ。ワイルドカードは展開されない** |
 
 **設定例：**
 
 ```json
 {
   "allowedMcpServers": [
-    {
-      "serverName": "github",
-      "serverUrl": "https://api.github.com/mcp"
-    },
-    {
-      "serverName": "company-internal",
-      "serverCommand": "company-mcp-server"
-    }
+    { "serverUrl": "https://mcp.example.com/*" },
+    { "serverCommand": ["/usr/local/bin/company-mcp-server", "--config", "/etc/company/mcp-config.json"] }
   ],
   "deniedMcpServers": [
-    {
-      "serverName": "untrusted-*"
-    },
-    {
-      "serverUrl": "http://*"
-    }
-  ]
+    { "serverName": "untrusted-server" },
+    { "serverUrl": "http://*" }
+  ],
+  "allowManagedMcpServersOnly": true
 }
 ```
 
@@ -1115,10 +1167,11 @@ export GITHUB_TOKEN="your_token"
 
 ---
 
-**最終更新：** 2026 年 4 月 24 日
-**Claude Code バージョン：** 2.1.119
+**最終更新：** 2026 年 9 月 6 日
+**Claude Code バージョン：** 2.1.263
 **情報源：**
 - https://code.claude.com/docs/en/mcp
+- https://code.claude.com/docs/en/managed-mcp
 - https://code.claude.com/docs/en/changelog
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 **対応モデル：** Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5

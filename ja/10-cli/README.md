@@ -57,9 +57,9 @@ graph TD
 | `claude mcp serve` | Claude Code を MCP サーバーとして起動 | `claude mcp serve` |
 | `claude agents` | 設定済みのサブエージェントを一覧表示 | `claude agents` |
 | `claude auto-mode defaults` | 自動モードのデフォルトルールを JSON で出力 | `claude auto-mode defaults` |
-| `claude remote-control` | リモートコントロールサーバーを起動 | `claude remote-control` |
+| `claude --remote-control [name]` | リモートコントロールを起動（サブコマンドではなくフラグ。エイリアス `--rc`） | `claude --rc` |
 | `claude plugin` | プラグインを管理（インストール・有効化・無効化） | `claude plugin install my-plugin` |
-| `claude plugin tag <version>` | バージョン検証付きでプラグインのリリース git タグを作成（v2.1.118+） | `claude plugin tag v0.3.0` |
+| `claude plugin tag [path]` | `[path]` のプラグインに対し `{name}--v{version}` のリリース git タグを作成。`plugin.json` と（存在すれば）マーケットプレイスのエントリが一致しているか検証する（v2.1.118+） | `claude plugin tag ./my-plugin` |
 | `claude install [version]` | 指定したネイティブバイナリのバージョンをインストール。`stable`、`latest`、明示的なバージョン文字列を受け付ける | `claude install 2.1.119` |
 | `claude auth login` | ログイン（`--email`、`--sso` をサポート） | `claude auth login --email user@example.com` |
 | `claude auth logout` | 現在のアカウントからログアウト | `claude auth logout` |
@@ -76,13 +76,14 @@ graph TD
 | `-w, --worktree` | 隔離された git ワークツリーで起動 | `claude -w` |
 | `-n, --name` | セッションの表示名 | `claude -n "auth-refactor"` |
 | `--from-pr <url-or-number>` | プル／マージリクエストに紐づくセッションを再開する。v2.1.119 以降は GitHub（クラウド + Enterprise）、GitLab MR、Bitbucket PR の URL を受け付ける（以前は GitHub.com のみ） | `claude --from-pr 42` または `claude --from-pr https://gitlab.example.com/org/repo/-/merge_requests/17` |
-| `--remote "task"` | claude.ai 上に web セッションを作成 | `claude --remote "implement API"` |
+| `--cloud [description\|session_id\|url]` | 指定した説明で claude.ai 上にクラウドセッションを作成、またはセッション ID か claude.ai/code の URL で既存セッションに接続 | `claude --cloud "implement API"` |
+| `--remote "task"` | **`--cloud` の非推奨エイリアス**（既存セッションに接続する形式も含む）。`--cloud` を使うこと | `claude --remote "implement API"` |
 | `--remote-control, --rc` | リモートコントロール付きの対話セッション | `claude --rc` |
 | `--teleport` | web セッションをローカルで再開 | `claude --teleport` |
 | `--teammate-mode` | エージェントチームの表示モード | `claude --teammate-mode tmux` |
 | `--bare` | 最小モード（フック、スキル、プラグイン、MCP、自動メモリ、CLAUDE.md をスキップ） | `claude --bare` |
 | `--enable-auto-mode` | 自動権限モードを解禁（Opus 4.7 の Max 加入者には不要） | `claude --enable-auto-mode` |
-| `--channels` | MCP チャンネルプラグインを購読 | `claude --channels discord,telegram` |
+| `--channels` | MCP チャンネルプラグインを購読。各エントリは `plugin:<name>@<marketplace>` の形式でタグ付けする必要があり、名前のみの指定は拒否される | `claude --channels plugin:discord@my-marketplace` |
 | `--chrome` / `--no-chrome` | Chrome ブラウザ統合を有効化／無効化 | `claude --chrome` |
 | `--effort` | 思考労力レベルを設定 | `claude --effort high` |
 | `--init` / `--init-only` | 初期化フックを実行 | `claude --init` |
@@ -223,7 +224,7 @@ claude --disallowedTools "Bash(rm -rf:*)" "Bash(git push --force:*)"
 | `--verbose` | 詳細ログを有効化 | | `claude --verbose` |
 | `--include-partial-messages` | ストリーミングイベントを含める | `stream-json` が必要 | `claude -p --output-format stream-json --include-partial-messages "query"` |
 | `--json-schema` | スキーマに沿って検証された JSON を取得 | | `claude -p --json-schema '{"type":"object"}' "query"` |
-| `--max-budget-usd` | プリントモードでの最大支出額 | | `claude -p --max-budget-usd 5.00 "query"` |
+| `--max-budget-usd` | プリントモードでの最大支出額。v2.1.217以降、上限に達するとバックグラウンドで実行中のサブエージェントも停止し、新規のサブエージェント起動も拒否される(以前はバックグラウンドエージェントは上限を超えても実行され続けていた) | | `claude -p --max-budget-usd 5.00 "query"` |
 
 ### 出力フォーマットの例
 
@@ -249,7 +250,7 @@ claude -p --json-schema '{"type":"object","properties":{"bugs":{"type":"array"}}
 | `--add-dir` | 追加の作業ディレクトリを指定 | `claude --add-dir ../apps ../lib` |
 | `--setting-sources` | カンマ区切りの設定ソース | `claude --setting-sources user,project` |
 
-> **`/config` の永続化（v2.1.119）**: `/config` コマンドで対話的に行った変更は `~/.claude/settings.json` に書き込まれ、通常の優先順位チェーン（project → local → policy → user）に組み込まれるようになった。v2.1.119 以前は一部の `/config` 変更がセッション限定だった。完全な優先順位については [メモリと設定](../02-memory/README.md) を参照。
+> **`/config` の永続化（v2.1.119）**: `/config` コマンドで対話的に行った変更は `~/.claude/settings.json` に書き込まれ、通常の優先順位チェーン（policy → local → project → user）に組み込まれるようになった。v2.1.119 以前は一部の `/config` 変更がセッション限定だった。完全な優先順位については [メモリと設定](../02-memory/README.md) を参照。
 | `--settings` | ファイルまたは JSON から設定を読み込む | `claude --settings ./settings.json` |
 | `--plugin-dir` | ディレクトリからプラグインを読み込む（複数指定可） | `claude --plugin-dir ./my-plugin` |
 
@@ -269,7 +270,7 @@ claude --settings '{"model":"opus","verbose":true}' "complex task"
 |------|------|-----|
 | `--mcp-config` | JSON から MCP サーバーを読み込む | `claude --mcp-config ./mcp.json` |
 | `--strict-mcp-config` | 指定した MCP 設定のみを使う | `claude --strict-mcp-config --mcp-config ./mcp.json` |
-| `--channels` | MCP チャンネルプラグインを購読 | `claude --channels discord,telegram` |
+| `--channels` | MCP チャンネルプラグインを購読。各エントリは `plugin:<name>@<marketplace>` の形式でタグ付けする必要があり、名前のみの指定は拒否される | `claude --channels plugin:discord@my-marketplace` |
 
 ### MCP の例
 
@@ -339,10 +340,10 @@ claude -r "feature-auth" --fork-session "test with different architecture"
 | `--enable-auto-mode` | 自動権限モードを解禁 | `claude --enable-auto-mode` |
 | `--effort` | 思考労力レベルを設定 | `claude --effort high` |
 | `--bare` | 最小モード（フック、スキル、プラグイン、MCP、自動メモリ、CLAUDE.md をスキップ） | `claude --bare` |
-| `--channels` | MCP チャンネルプラグインを購読 | `claude --channels discord` |
+| `--channels` | MCP チャンネルプラグインを購読（`plugin:<name>@<marketplace>` 形式でタグ付け） | `claude --channels plugin:discord@my-marketplace` |
 | `--tmux` | ワークツリー用に tmux セッションを作成 | `claude --tmux` |
 | `--fork-session` | 再開時に新しいセッション ID を作成 | `claude --resume abc --fork-session` |
-| `--max-budget-usd` | 最大支出額（プリントモード） | `claude -p --max-budget-usd 5.00 "query"` |
+| `--max-budget-usd` | 最大支出額（プリントモード）。上限に達するとバックグラウンドのサブエージェントも停止する (v2.1.217) | `claude -p --max-budget-usd 5.00 "query"` |
 | `--json-schema` | 検証付き JSON 出力 | `claude -p --json-schema '{"type":"object"}' "q"` |
 
 ### プラットフォームとテーマの注記（v2.1.112）
@@ -763,7 +764,7 @@ export CLAUDE_CODE_EFFORT_LEVEL=xhigh   # low, medium, high, xhigh (default on O
 | `CLAUDE_CODE_PERFORCE_MODE` | `1` を設定すると Perforce モードを有効化 — ファイルをデフォルトで読み取り専用として扱う（Perforce/P4 バージョン管理ワークフロー向け）（v2.1.98 追加） |
 | `DISABLE_UPDATES` | 手動の `claude update` を含むすべての更新経路をブロックする。バックグラウンドの自動更新のみブロックする `DISABLE_AUTOUPDATER` より厳密（v2.1.118+） |
 | `CLAUDE_CODE_HIDE_CWD` | `1` に設定すると、起動時ロゴでカレント作業ディレクトリを隠す（プライバシー／画面共有用途）（v2.1.119+） |
-| `CLAUDE_CODE_FORK_SUBAGENT` | `1` を設定すると外部ビルド（Bedrock、Vertex、Foundry）でフォーク済みサブエージェントを有効化。Anthropic API ではフォーク済みサブエージェントが GA のため効果なし（v2.1.117+） |
+| `CLAUDE_CODE_FORK_SUBAGENT` | デフォルトでフォークモードが無効な場面 — 非対話モード（`claude -p`）、Agent SDK、v2.1.232 より古い Claude Code — で `1` を設定するとフォークモードを有効化する。v2.1.232 以降、フォークモードはファーストパーティかどうかを問わずすべてのビルドの対話セッションでデフォルト有効（GA は v2.1.117） |
 | `OTEL_LOG_TOOL_DETAILS` | `1` を設定すると OpenTelemetry イベント中のカスタムおよび MCP コマンド名のリダクションを解除する（v2.1.117+）。デフォルトはリダクション有効。 |
 
 > **Vertex AI 上の `ENABLE_TOOL_SEARCH`（v2.1.119+）**: ツール検索は **Google Cloud Vertex AI 上のデプロイではデフォルト無効** である。Vertex 上でツール検索機能を使いたい場合は `export ENABLE_TOOL_SEARCH=true` で明示的にオプトインする必要がある。Anthropic API 直結ではデフォルト有効のままである。
@@ -872,8 +873,8 @@ claude -p --output-format json "query"
 
 ---
 
-**最終更新**: 2026 年 4 月 24 日
-**Claude Code バージョン**: 2.1.119
+**最終更新**: 2026 年 9 月 2 日
+**Claude Code バージョン**: 2.1.257
 **出典**:
 - https://code.claude.com/docs/en/cli-reference
 - https://code.claude.com/docs/en/settings
@@ -884,4 +885,4 @@ claude -p --output-format json "query"
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.118
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.119
-**対応モデル**: Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5
+**対応モデル**: Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

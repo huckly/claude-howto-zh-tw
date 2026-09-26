@@ -44,7 +44,7 @@ Claude Code 的高级功能把基础能力扩展到了规划、推理、自动�
 **核心高级功能包括：**
 - **Planning Mode**：先写详细实现计划，再开始编码
 - **Extended Thinking**：对复杂问题进行更深入的推理
-- **Auto Mode**：由后台安全分类器在每一步执行前进行审查（Research Preview）
+- **Auto Mode**：由后台安全分类器在每一步执行前进行审查
 - **Background Tasks**：长时间任务不阻塞对话
 - **Permission Modes**：控制 Claude 可以做什么（`default`、`acceptEdits`、`plan`、`auto`、`dontAsk`、`bypassPermissions`）
 - **Print Mode**：非交互式运行，适合自动化和 CI/CD（`claude -p`）
@@ -247,7 +247,7 @@ Recommendation
 <a id="auto-mode"></a>
 ## 自动模式
 
-Auto mode 是一个研究预览功能。它会在每个动作执行前，用后台安全分类器评估风险，帮助你在自动化和安全之间取得平衡。
+Auto mode 是一种权限模式，会在每个动作执行前用后台安全分类器评估风险，帮助你在自动化和安全之间取得平衡。所有套餐均可使用，但需要满足合格的模型和提供商条件。
 
 ### 需求
 
@@ -470,7 +470,8 @@ echo "hello" | claude -p "translate to Chinese"
 
 - `/resume`
 - `/rename`
-- `/fork`
+- `/fork` — 把对话复制到一个新的独立后台会话（v2.1.212+）
+- `/subtask` — 派生一个继承完整对话的 forked subagent，完成后把结果返回本对话（v2.1.212+）
 - `claude -c`
 - `claude -r`
 

@@ -187,7 +187,7 @@ cp -r 03-skills/code-review-specialist ~/.claude/skills/
 11-13 годин для повного шляху. Але ви отримаєте цінність за 15 хвилин — просто скопіюйте шаблон слеш-команди та спробуйте.
 
 **Чи працює це з Claude Sonnet / Haiku / Opus?**
-Так. Усі шаблони працюють з Claude Sonnet 4.6, Claude Opus 4.6 та Claude Haiku 4.5.
+Так. Усі шаблони працюють з Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5.
 
 **Чи можна долучитися?**
 Звичайно. Див. [CONTRIBUTING.md](CONTRIBUTING.md) для настанов. Ми вітаємо нові приклади, виправлення, покращення документації та шаблони спільноти.
@@ -438,11 +438,13 @@ chmod +x ~/.claude/hooks/*.sh
 
 **Використання**: Хуки виконуються автоматично за подіями
 
-**Типи хуків** (4 типи, 25 подій):
-- **Хуки інструментів**: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`
-- **Хуки сесій**: `SessionStart`, `SessionEnd`, `Stop`, `StopFailure`, `SubagentStart`, `SubagentStop`
-- **Хуки завдань**: `UserPromptSubmit`, `TaskCompleted`, `TaskCreated`, `TeammateIdle`
-- **Хуки життєвого циклу**: `ConfigChange`, `CwdChanged`, `FileChanged`, `PreCompact`, `PostCompact`, `WorktreeCreate`, `WorktreeRemove`, `Notification`, `InstructionsLoaded`, `Elicitation`, `ElicitationResult`
+**Типи хуків** (5): `command`, `http`, `prompt`, `mcp_tool`, `agent` — як саме виконується хук.
+
+**Події хуків** (33, у 4 категоріях) — коли він виконується:
+- **Хуки інструментів**: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PostToolBatch`, `PermissionRequest`, `PermissionDenied`
+- **Хуки сесій**: `SessionStart`, `Setup`, `SessionEnd`, `Stop`, `StopFailure`, `SubagentStart`, `SubagentStop`
+- **Хуки завдань**: `UserPromptSubmit`, `UserPromptExpansion`, `MessageDisplay`, `TaskCompleted`, `TaskCreated`, `TeammateIdle` (`TaskCompleted` і `TaskCreated` спрацьовують лише коли увімкнені todo-інструменти — доступні типово тільки на Claude 3.x, Opus 4–4.7, Sonnet 4–4.6 та Haiku 4.5; `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` повертає їх)
+- **Хуки життєвого циклу**: `ConfigChange`, `CwdChanged`, `DirectoryAdded`, `FileChanged`, `PreCompact`, `PostCompact`, `PreModelSwitch`, `PostModelSwitch`, `WorktreeCreate`, `WorktreeRemove`, `Notification`, `InstructionsLoaded`, `Elicitation`, `ElicitationResult`
 
 </details>
 
@@ -657,6 +659,10 @@ Claude:
 
 ---
 
-**Останнє оновлення**: Квітень 2026
-**Версія Claude Code**: 2.1.97
-**Сумісні моделі**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+**Останнє оновлення**: 19 вересня 2026
+**Версія Claude Code**: 2.1.278
+**Джерела**:
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability
+- https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/model-config
+**Сумісні моделі**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

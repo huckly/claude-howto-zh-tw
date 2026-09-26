@@ -22,12 +22,12 @@ Hooks 是事件驱动的自动化机制。它们会在 Claude Code 发生某些�
 
 ## Hook 类型
 
-Claude Code 提供 4 类、25 个事件：
+Claude Code 支持 33 个 hook 事件，按用途分为以下 4 组。事件的 handler 类型共 5 种：`command`、`http`、`mcp_tool`、`prompt`、`agent`。
 
-- **Tool Hooks**：`PreToolUse`、`PostToolUse`、`PostToolUseFailure`、`PermissionRequest`
-- **Session Hooks**：`SessionStart`、`SessionEnd`、`Stop`、`StopFailure`、`SubagentStart`、`SubagentStop`
-- **Task Hooks**：`UserPromptSubmit`、`TaskCompleted`、`TaskCreated`、`TeammateIdle`
-- **Lifecycle Hooks**：`ConfigChange`、`CwdChanged`、`FileChanged`、`PreCompact`、`PostCompact`、`WorktreeCreate`、`WorktreeRemove`、`Notification`、`InstructionsLoaded`、`Elicitation`、`ElicitationResult`
+- **Tool Hooks**：`PreToolUse`、`PostToolUse`、`PostToolUseFailure`、`PostToolBatch`、`PermissionRequest`、`PermissionDenied`
+- **Session Hooks**：`SessionStart`、`Setup`、`SessionEnd`、`Stop`、`StopFailure`、`SubagentStart`、`SubagentStop`
+- **Task Hooks**：`UserPromptSubmit`、`UserPromptExpansion`、`MessageDisplay`、`TaskCompleted`、`TaskCreated`、`TeammateIdle`（`TaskCompleted` 和 `TaskCreated` 仅在启用 todo 工具时触发 —— 默认仅在 Claude 3.x 模型、Opus 4 至 4.7、Sonnet 4 至 4.6 及 Haiku 4.5 上可用；`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` 可恢复）
+- **Lifecycle Hooks**：`ConfigChange`、`CwdChanged`、`DirectoryAdded`、`FileChanged`、`PreCompact`、`PostCompact`、`PreModelSwitch`、`PostModelSwitch`、`WorktreeCreate`、`WorktreeRemove`、`Notification`、`InstructionsLoaded`、`Elicitation`、`ElicitationResult`
 
 ## 安装
 
@@ -42,14 +42,28 @@ chmod +x ~/.claude/hooks/*.sh
 ```json
 {
   "hooks": {
-    "PreToolUse": [{
-      "matcher": "Write",
-      "hooks": ["~/.claude/hooks/format-code.sh"]
-    }],
-    "PostToolUse": [{
-      "matcher": "Write",
-      "hooks": ["~/.claude/hooks/security-scan.sh"]
-    }]
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format-code.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/security-scan.sh"
+          }
+        ]
+      }
+    ]
   }
 }
 ```
@@ -96,3 +110,11 @@ Hooks 会在匹配到事件时自动执行。你可以把它理解成 Claude Cod
 - [Memory Guide](../02-memory/README.md)
 - [Official Hooks Documentation](https://code.claude.com/docs/en/hooks)
 - [CLI Reference](https://code.claude.com/docs/en/cli-reference)
+
+---
+
+**最后更新**: 2026 年 9 月 19 日
+**Claude Code 版本**: 2.1.278
+**来源**:
+- https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability

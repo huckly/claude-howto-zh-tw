@@ -1,7 +1,6 @@
 ---
-name: Expand Unit Tests
-description: Increase test coverage by targeting untested branches and edge cases
-tags: testing, coverage, unit-tests
+name: unit-test-expand
+description: 針對未測試的分支與邊緣案例，提升測試涵蓋率
 ---
 
 # 擴展單元測試
@@ -25,4 +24,8 @@ tags: testing, coverage, unit-tests
 僅呈現新的測試程式碼區塊。遵循現有的測試模式和命名慣例。
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/commands
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

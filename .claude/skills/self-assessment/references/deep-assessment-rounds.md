@@ -11,7 +11,7 @@
 1. 「建立過自訂 slash 指令或 skill」— 寫過帶 frontmatter 的 SKILL.md 檔，或建立過 .claude/commands/ 檔案
 2. 「在指令中使用過動態情境」— 在 skill/指令檔中用過 `$ARGUMENTS`、`$0`/`$1`、反引號 `!command` 語法，或 `@file` 引用
 3. 「設定過專案 + 個人記憶」— 同時建立了專案 CLAUDE.md 與個人 ~/.claude/CLAUDE.md（或 CLAUDE.local.md）
-4. 「使用過記憶階層功能」— 理解 7 層優先順序、用過 .claude/rules/ 目錄、路徑專屬規則，或 @import 語法
+4. 「使用過記憶階層功能」— 理解 7 個記憶位置如何串接進情境（由根目錄往下載入、每一層的 CLAUDE.local.md 附加在 CLAUDE.md 之後、子目錄檔案按需載入）、用過 .claude/rules/ 目錄、路徑專屬規則，或 @import 語法
 
 **計分：** 選項 1-2 → **Slash Commands**（0-2）；選項 3-4 → **Memory**（0-2）
 
@@ -37,7 +37,7 @@
 1. 「連接過 MCP 伺服器並使用其工具」— 例如用 GitHub MCP 處理 PR/issue、用資料庫 MCP 查詢，或任何外部資料來源
 2. 「使用過進階 MCP 功能」— 專案範圍 .mcp.json、OAuth 驗證、以 @提及 的 MCP 資源、Tool Search，或 `claude mcp serve`
 3. 「建立或設定過自訂子代理」— 在 .claude/agents/ 中定義帶自訂 tools、model 或權限的代理
-4. 「使用過進階子代理功能」— Worktree 隔離、持久化代理記憶、以 Ctrl+B 執行背景任務、以 `Task(agent_name)` 設定代理允許清單，或代理團隊
+4. 「使用過進階子代理功能」— Worktree 隔離、持久化代理記憶、以 Ctrl+B 執行背景任務、以 `Agent(agent_type)` 設定代理允許清單（`Task(...)` 形式是為了向後相容而保留的別名），或代理團隊
 
 **計分：** 選項 1-2 → **MCP**（0-2）；選項 3-4 → **Subagents**（0-2）
 
@@ -47,12 +47,12 @@
 
 「以下哪些你做過？請勾選所有符合的項目。」
 選項：
-1. 「用 checkpoints 做安全實驗」— 建立過 checkpoint、用過 Esc+Esc 或 /rewind、還原過程式碼與/或對話，或用過 Summarize 選項
+1. 「用 checkpoints 做安全實驗」— 建立過 checkpoint、用過 Esc+Esc 或 /rewind、還原過程式碼與/或對話，或用過任一種 Summarize 選項（summarize from here / summarize up to here）
 2. 「使用過規劃模式或延伸思考」— 透過 /plan、Shift+Tab 或 --permission-mode plan 啟用規劃；用 Alt+T/Option+T 切換延伸思考
-3. 「設定過權限模式」— 透過 CLI 旗標、鍵盤快捷鍵或設定使用過 acceptEdits、plan、dontAsk 或 bypassPermissions 模式
-4. 「使用過遠端/桌面/網頁功能」— 用過 `claude remote-control`、`claude --remote`、`/teleport`、`/desktop`，或以 `claude -w` 使用 worktrees
+3. 「設定過權限模式」— 透過 CLI 旗標、鍵盤快捷鍵或設定使用過六種模式中的任一種 — manual（於 v2.1.200 由 default 更名）、acceptEdits、plan、auto、dontAsk 或 bypassPermissions
+4. 「使用過遠端/桌面/網頁功能」— 用過 `claude --remote-control`、`claude --cloud`、`/teleport`、`/desktop`，或以 `claude -w` 使用 worktrees
 
-**計分：** 選項 1 → **Checkpoints**（0-1）；選項 2-4 → **Advanced Features**（0-3，上限 2）
+**計分：** 選項 1 → **Checkpoints**（0-1）；選項 2-4 → **Advanced Features**（0-3）
 
 ---
 
@@ -61,8 +61,19 @@
 「以下哪些你做過？請勾選所有符合的項目。」
 選項：
 1. 「安裝或建立過 plugin」— 用過市集捆綁的 plugin，或建立過含 plugin.json 資訊清單的 .claude-plugin/ 目錄
-2. 「使用過 plugin 進階功能」— Plugin hooks、plugin MCP 伺服器、LSP 設定、plugin 命名空間指令，或用於測試的 --plugin-dir 旗標
+2. 「使用過 plugin 進階功能」— Plugin skills（`skills/` — 建議的形式；命名空間的 `commands/` 屬舊式做法但仍可運作）、plugin hooks、plugin MCP 伺服器、LSP 設定，或用於測試的 --plugin-dir 旗標
 3. 「在腳本或 CI/CD 中使用過 print 模式」— 用過 `claude -p` 搭配 --output-format json、--max-turns、管線輸入，或整合進 GitHub Actions / CI 流程
 4. 「使用過進階 CLI 功能」— 工作階段續接（-c/-r）、--agents 旗標、供結構化輸出的 --json-schema、--fallback-model、--from-pr，或批次處理迴圈
 
 **計分：** 選項 1-2 → **Plugins**（0-2）；選項 3-4 → **CLI**（0-2）
+
+---
+
+**最後更新日期**：2026 年 9 月 2 日
+**Claude Code 版本**：2.1.257
+**來源**：
+- https://code.claude.com/docs/en/memory
+- https://code.claude.com/docs/en/sub-agents
+- https://code.claude.com/docs/en/permission-modes
+- https://code.claude.com/docs/en/checkpointing
+- https://code.claude.com/docs/en/plugins-reference

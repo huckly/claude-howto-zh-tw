@@ -20,7 +20,7 @@
 | Chrome Integration | 瀏覽器自動化 | [code.claude.com/docs/en/chrome](https://code.claude.com/docs/en/chrome) |
 | Keybindings | 鍵盤快捷鍵自訂 | [code.claude.com/docs/en/keybindings](https://code.claude.com/docs/en/keybindings) |
 | Desktop App | 原生桌面應用程式 | [code.claude.com/docs/en/desktop](https://code.claude.com/docs/en/desktop) |
-| Remote Control | 遠端會話控制 | [code.claude.com/docs/en/remote-control](https://code.claude.com/docs/en/remote-control) |
+| Remote Control | 遠端工作階段控制 | [code.claude.com/docs/en/remote-control](https://code.claude.com/docs/en/remote-control) |
 | Auto Mode | 自動權限管理 | [code.claude.com/docs/en/permissions](https://code.claude.com/docs/en/permissions) |
 | Channels | 多頻道通訊 | [code.claude.com/docs/en/channels](https://code.claude.com/docs/en/channels) |
 | Voice Dictation | Claude Code 語音輸入 | [code.claude.com/docs/en/voice-dictation](https://code.claude.com/docs/en/voice-dictation) |
@@ -43,7 +43,7 @@ _**所有技巧**_
   - 學習鍵盤捷徑，以便在對話、檔案與編輯器檢視之間快速切換。
 
 - **高效設定**
-  - 建立具有清晰名稱/描述的專案特定會話，以便輕鬆檢索。
+  - 建立具有清晰名稱/描述的專案特定工作階段，以便輕鬆檢索。
   - 將最常使用的檔案或資料夾釘選，讓 Claude 隨時可以存取。
   - 設定 Claude 的整合功能（例如 GitHub、熱門 IDE），以簡化您的開發流程。
 
@@ -66,9 +66,9 @@ _**所有技巧**_
   - **範例提示詞**：_"Here's the User model from models/User.js and the validateUser function from utils/validation.js. My question is: how can I add email validation while maintaining backward compatibility?"_
 
 - **整合團隊工具**
-  - 將 Claude 會話連接到您團隊的儲存庫與文件。
-  - 使用內建範本或為重複性的工程任務建立自定義範本。
-  - 透過與團隊成員分享會話紀錄與提示詞來進行協作。
+  - 將 Claude 工作階段連接到您團隊的儲存庫與文件。
+  - 使用內建範本或為重複性的工程任務建立自訂範本。
+  - 透過與團隊成員分享工作階段紀錄與提示詞來進行協作。
 
 - **提升效能**
   - 給予 Claude 清晰且目標導向的指令（例如：「用五個重點摘要這個類別」）。
@@ -129,7 +129,7 @@ graph TD
 
     F --> G[進入計畫模式]
     G --> H[撰寫功能規格草案]
-    H --> I[獲取架構建議]
+    H --> I[取得架構建議]
     I --> J[定義組件與模組]
 
     J --> K[實作功能區塊]
@@ -146,31 +146,31 @@ graph TD
     S --> T[測試自動化]
     T --> U[儲存庫就緒]
 
-    style A fill:#e1f5ff
-    style G fill:#fff4e1
-    style K fill:#f0ffe1
-    style Q fill:#ffe1f5
-    style U fill:#90EE90
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style G fill:#fff9c4,stroke:#333,color:#333
+    style K fill:#e8f5e9,stroke:#333,color:#333
+    style Q fill:#f3e5f5,stroke:#333,color:#333
+    style U fill:#e8f5e9,stroke:#333,color:#333
 ```
 
 #### 針對現有儲存庫
 
 1. **儲存庫與上下文設定**
    - 新增或更新 `CLAUDE.md` 以記錄儲存庫結構、編碼模式與關鍵檔案。對於舊有的儲存庫，請使用 `CLAUDE_LEGACY.md` 來涵蓋框架、版本對照表、指令、錯誤與升級說明。
-   - 將 Claude 應該用來獲取上下文的主檔案進行釘選或重點標記。
+   - 將 Claude 應該用來取得上下文的主檔案進行釘選或重點標記。
 
 2. **上下文程式碼問答**
    - 要求 Claude 針對特定檔案/函式進行程式碼審查、錯誤解釋、重構或遷移計畫。
-   - 給予 Claude 明確的邊界（例如：「僅修改這些檔案」或「不得新增依賴項目」）。
+   - 給予 Claude 明確的邊界（例如：「僅修改這些檔案」或「不得新增依賴項」）。
 
-3. **分支、Worktree 與多會話管理**
-   - 使用多個 git worktree 來隔離功能開發或錯誤修復，並為每個 worktree 啟動獨立的 Claude 會話。
+3. **分支、Worktree 與多工作階段管理**
+   - 使用多個 git worktree 來隔離功能開發或錯誤修復，並為每個 worktree 啟動獨立的 Claude 工作階段。
    - 根據分支或功能整理終端機分頁/視窗，以進行並行工作流程。
 
 4. **團隊工具與自動化**
-   - 透過 `.claude/commands/` 同步自定義命令，以確保跨團隊的一致性。
+   - 透過 `.claude/commands/` 同步自訂命令，以確保跨團隊的一致性。
    - 透過 Claude 的斜線命令或鉤子自動化重複性任務、PR 建立與程式碼格式化。
-   - 與團隊成員共享會話與上下文，以便進行協作除錯與審查。
+   - 與團隊成員共享工作階段與上下文，以便進行協作除錯與審查。
 
 ```mermaid
 graph TD
@@ -179,7 +179,7 @@ graph TD
     B -->|No| D[建立/更新 CLAUDE.md]
     C --> E[記錄框架與版本對照表]
     D --> F[記錄結構與模式]
-    E --> G[釘選關鍵檔案以獲取上下文]
+    E --> G[釘選關鍵檔案以取得上下文]
     F --> G
 
     G --> H[識別任務類型]
@@ -197,68 +197,70 @@ graph TD
     N --> O{多個功能?}
     O -->|Yes| P[建立 Git Worktrees]
     O -->|No| Q[在主分支工作]
-    P --> R[啟動獨立的 Claude 會話]
+    P --> R[啟動獨立的 Claude 工作階段]
     R --> S[整理終端機分頁]
     Q --> S
 
     S --> T[設定團隊自動化]
     T --> U[同步 .claude/commands/]
-    U --> V[配置斜線命令]
+    U --> V[設定斜線命令]
     V --> W[設定自動化鉤子]
-    W --> X[與團隊共享會話上下文]
+    W --> X[與團隊共享工作階段上下文]
 
     X --> Y{更多任務?}
     Y -->|Yes| H
     Y -->|No| Z[工作流程完成]
 
-    style A fill:#e1f5ff
-    style C fill:#ffecec
-    style D fill:#fff4e1
-    style P fill:#f0ffe1
-    style T fill:#ffe1f5
-    style Z fill:#90EE90
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#fce4ec,stroke:#333,color:#333
+    style D fill:#fff9c4,stroke:#333,color:#333
+    style P fill:#e8f5e9,stroke:#333,color:#333
+    style T fill:#f3e5f5,stroke:#333,color:#333
+    style Z fill:#e8f5e9,stroke:#333,color:#333
 ```
 
 **提示**:
 - 每個新功能或修復應從 spec 與 plan 模式的提示詞開始。
-- 對於舊有的及複雜的專案庫，請將詳細指南存儲在 CLAUDE.md/CLAUDE_LEGACY.md 中。
+- 對於舊有的及複雜的專案庫，請將詳細指南儲存在 CLAUDE.md/CLAUDE_LEGACY.md 中。
 - 提供清晰且專注的指令，並將複雜的工作拆解為多階段計畫。
-- 定期清理會話、修剪上下文，並移除已完成的 worktrees 以避免混亂。
+- 定期清理工作階段、修剪上下文，並移除已完成的 worktrees 以避免混亂。
 
 這些步驟涵蓋了在全新與現有程式碼庫中使用 Claude Code 實現流暢工作流程的核心建議。
 
 ---
 
-## 新功能與能力 (2026 年 5 月)
+## 新功能與能力
 
 ### 關鍵功能資源
 
 | 功能 | 描述 | 了解更多 |
 |---------|-------------|------------|
-| **Auto Memory** | Claude 會自動學習並在不同會話間記住您的偏好 | [Memory Guide](02-memory/) |
-| **Remote Control** | 從外部工具與腳本以程式化方式控制 Claude Code 會話 | [Advanced Features](09-advanced-features/) |
+| **Auto Memory** | Claude 會自動學習並在不同工作階段間記住您的偏好 | [Memory Guide](02-memory/) |
+| **Remote Control** | 從外部工具與腳本以程式化方式控制 Claude Code 工作階段 | [Advanced Features](09-advanced-features/) |
 | **Web Sessions** | 透過瀏覽器介面存取 Claude Code 以進行遠端開發 | [CLI Reference](10-cli/) |
 | **Desktop App** | 具有增強 UI 的 Claude Code 原生桌面應用程式 | [Claude Code Docs](https://code.claude.com/docs/en/desktop) |
 | **Extended Thinking** | 透過 `Alt+T`/`Option+T` 或 `MAX_THINKING_TOKENS` 環境變數切換深度推理 | [Advanced Features](09-advanced-features/) |
-| **Permission Modes** | 細粒度控制：default, acceptEdits, plan, auto, dontAsk, bypassPermissions | [Advanced Features](09-advanced-features/) |
+| **Permission Modes** | 細粒度控制：manual（原為 default）, acceptEdits, plan, auto, dontAsk, bypassPermissions | [Advanced Features](09-advanced-features/) |
 | **7-Tier Memory** | 管理層級包含：Managed Policy, Project, Project Rules, User, User Rules, Local, Auto Memory | [Memory Guide](02-memory/) |
-| **Hook Events** | 29 個事件：PreToolUse, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStart, SubagentStop, Notification, Elicitation 等 | [Hooks Guide](06-hooks/) |
+| **Hook Events** | 33 個事件：PreToolUse, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStart, SubagentStop, Notification, Elicitation 等 | [Hooks Guide](06-hooks/) |
 | **Agent Teams** | 協調多個代理共同處理複雜任務 | [Subagents Guide](04-subagents/) |
 | **Scheduled Tasks** | 使用 `/loop` 與 cron 工具設定週期性任務 | [Advanced Features](09-advanced-features/) |
 | **Chrome Integration** | 使用 headless Chromium 進行瀏覽器自動化 | [Advanced Features](09-advanced-features/) |
-| **Keyboard Customization** | 自定義按鍵綁定，包含組合鍵序列 | [Advanced Features](09-advanced-features/) |
+| **Keyboard Customization** | 自訂按鍵綁定，包含組合鍵序列 | [Advanced Features](09-advanced-features/) |
 | **Monitor Tool** | 監控背景指令的 stdout 串流並對事件做出反應，而非輪詢 (v2.1.98+) | [Advanced Features](09-advanced-features/) |
-| **/goal mode** | 為會話登錄完成條件；Claude 持續作業直到條件達成 (v2.1.139+) | [Slash Commands](01-slash-commands/) |
+| **/goal mode** | 為工作階段設定完成條件；Claude 持續作業直到條件達成 (v2.1.139+) | [Slash Commands](01-slash-commands/) |
 | **claude agents（Agent View）** | 從終端機列出、檢視及恢復背景代理；`--json` 可輸出機器可讀格式 (v2.1.139+，`--json` 於 v2.1.145 新增) | [code.claude.com/docs/en/agent-view](https://code.claude.com/docs/en/agent-view) |
 | **/run, /verify, /run-skill-generator** | 內建技能，用於啟動專案、確認修復有效，以及為專案生成 run/verify 技能 (v2.1.145+) | [Skills Guide](03-skills/) |
 
 ---
-**最後更新日期**: 2026 年 5 月 25 日
-**Claude Code 版本**: 2.1.150
+**最後更新日期**: 2026 年 8 月 19 日
+**Claude Code 版本**: 2.1.235
 **來源**:
 - https://code.claude.com/docs/en/overview
 - https://code.claude.com/docs/en/changelog
 - https://code.claude.com/docs/en/agent-view
+- https://code.claude.com/docs/en/permission-modes
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.144
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.145
-**相容模型**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://code.claude.com/docs/en/model-config
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

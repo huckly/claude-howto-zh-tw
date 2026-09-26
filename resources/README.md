@@ -15,7 +15,7 @@ Claude How To 專案的完整 Logo、圖示和 favicon 集合。所有素材使�
 
 ## 目錄結構
 
-```
+```text
 resources/
 ├── logos/
 │   ├── claude-howto-logo.svg       # 主 Logo - 淺色模式 (520×120px)
@@ -32,7 +32,7 @@ resources/
 ```
 
 `assets/logo/` 中的額外素材：
-```
+```text
 assets/logo/
 ├── logo-full.svg       # 標誌 + 文字標誌（水平）
 ├── logo-mark.svg       # 僅指南針符號 (120×120px)

@@ -15,32 +15,31 @@ Claude Code の高度な機能を網羅的に解説するガイド。プラン�
 
 1. [概要](#概要)
 2. [プランニングモード](#プランニングモード)
-3. [Ultraplan（クラウドでのプラン作成）](#ultraplanクラウドでのプラン作成)
-4. [拡張思考](#拡張思考)
-5. [オートモード](#オートモード)
-6. [バックグラウンドタスク](#バックグラウンドタスク)
-7. [Monitor ツール（イベント駆動ストリーム）](#monitor-ツールイベント駆動ストリーム)
-8. [スケジュールタスク](#スケジュールタスク)
-9. [権限モード](#権限モード)
-10. [ヘッドレスモード](#ヘッドレスモード)
-11. [セッション管理](#セッション管理)
-12. [対話機能](#対話機能)
-13. [TUI モード（フルスクリーン）](#tui-モードフルスクリーン)
-14. [音声入力](#音声入力)
-15. [チャンネル](#チャンネル)
-16. [Chrome 連携](#chrome-連携)
-17. [リモートコントロール](#リモートコントロール)
-18. [Web セッション](#web-セッション)
-19. [デスクトップアプリ](#デスクトップアプリ)
-20. [タスクリスト](#タスクリスト)
-21. [プロンプト候補](#プロンプト候補)
-22. [Git ワークツリー](#git-ワークツリー)
-23. [サンドボックス](#サンドボックス)
-24. [マネージド設定（エンタープライズ）](#マネージド設定エンタープライズ)
-25. [設定とコンフィグ](#設定とコンフィグ)
-26. [エージェントチーム](#エージェントチーム)
-27. [ベストプラクティス](#ベストプラクティス)
-28. [追加リソース](#追加リソース)
+3. [拡張思考](#拡張思考)
+4. [オートモード](#オートモード)
+5. [バックグラウンドタスク](#バックグラウンドタスク)
+6. [Monitor ツール（イベント駆動ストリーム）](#monitor-ツールイベント駆動ストリーム)
+7. [スケジュールタスク](#スケジュールタスク)
+8. [権限モード](#権限モード)
+9. [ヘッドレスモード](#ヘッドレスモード)
+10. [セッション管理](#セッション管理)
+11. [対話機能](#対話機能)
+12. [TUI モード（フルスクリーン）](#tui-モードフルスクリーン)
+13. [音声入力](#音声入力)
+14. [チャンネル](#チャンネル)
+15. [Chrome 連携](#chrome-連携)
+16. [リモートコントロール](#リモートコントロール)
+17. [Web セッション](#web-セッション)
+18. [デスクトップアプリ](#デスクトップアプリ)
+19. [タスクリスト](#タスクリスト)
+20. [プロンプト候補](#プロンプト候補)
+21. [Git ワークツリー](#git-ワークツリー)
+22. [サンドボックス](#サンドボックス)
+23. [マネージド設定（エンタープライズ）](#マネージド設定エンタープライズ)
+24. [設定とコンフィグ](#設定とコンフィグ)
+25. [エージェントチーム](#エージェントチーム)
+26. [ベストプラクティス](#ベストプラクティス)
+27. [追加リソース](#追加リソース)
 
 ---
 
@@ -51,7 +50,7 @@ Claude Code の高度な機能は、プランニング、推論、自動化、�
 **主な高度な機能：**
 - **プランニングモード**：コーディング前に詳細な実装計画を作成する
 - **拡張思考**：複雑な問題に対する深い推論を行う
-- **オートモード**：バックグラウンドの安全分類器が各アクションを実行前にレビューする（Research Preview）
+- **オートモード**：バックグラウンドの安全分類器が各アクションを実行前にレビューする
 - **バックグラウンドタスク**：会話をブロックせずに長時間処理を実行する
 - **権限モード**：Claude が実行可能な操作を制御する（`default`、`acceptEdits`、`plan`、`auto`、`dontAsk`、`bypassPermissions`）
 - **プリントモード**：自動化や CI/CD のために Claude Code を非対話で実行する（`claude -p`）
@@ -208,60 +207,6 @@ claude --model opusplan "design and implement the new API"
 
 ---
 
-## Ultraplan（クラウドでのプラン作成）
-
-> **v2.1.101 で新登場：** Ultraplan は初回起動時に Claude Code on the web のクラウド環境を自動作成するようになり、手動セットアップやコンテナ起動の待ち時間なしでドラフト作成を始められる。
-
-> **注：** Ultraplan は Research Preview であり、Claude Code v2.1.91 以降が必要である。
-
-`/ultraplan` は、ローカル CLI からプランニングタスクを Claude Code on the web のセッション（プランモード）に引き渡す。Claude がクラウドで計画を作成している間、ターミナルは別の作業に使え、ブラウザでドラフトをレビューしてから、同じクラウドセッションで実行するか、ターミナルにテレポートして実行するかを選べる。
-
-### Ultraplan を使うべきとき
-
-- ターミナルより豊かなレビュー環境が欲しいとき：インラインコメント、絵文字リアクション、アウトラインのサイドバー、永続的な履歴を活用できる。
-- ローカルでコーディングを続けながら、ハンズオフでドラフトを進めたいとき：クラウドセッションがリポジトリを調査し計画を書き、CLI をブロックしない。
-- 実行前にステークホルダーのレビューが必要なとき：共有可能な Web URL がターミナルのスクロール内容を貼り付けるより便利。
-
-### 必要要件
-
-- Claude Code on the web アカウント
-- GitHub リポジトリ（クラウドセッションが実コードに対してドラフト作成するためにクローンする）
-- Amazon Bedrock、Google Cloud Vertex AI、Microsoft Foundry では **利用不可**
-
-### 起動方法 3 種
-
-- **コマンド：** `/ultraplan <prompt>` — 明示的に呼び出す。
-- **キーワード：** 通常のプロンプトに `ultraplan` を含めると、Claude がリクエストをクラウドにルーティングする。
-- **ローカル計画から：** Claude がローカルで計画を作成した後、承認ダイアログで「No, refine with Ultraplan on Claude Code on the web」を選ぶと、より深い調査のためにドラフトを引き渡せる。
-
-### 利用例
-
-```bash
-/ultraplan migrate the auth service from sessions to JWTs
-```
-
-Claude が応答してクラウド環境を起動し（v2.1.101 以降は初回実行時に自動作成）、ブラウザで開けるセッションリンクを返す。
-
-### ステータス表示
-
-| ステータス | 意味 |
-|---|---|
-| `◇ ultraplan` | Claude がコードベースを調査し、計画をドラフト中 |
-| `◇ ultraplan needs your input` | Claude が確認質問を持っている。セッションリンクを開いて応答する |
-| `◆ ultraplan ready` | 計画がブラウザでレビュー可能になった |
-
-### 実行オプション
-
-計画が完成すると、実行経路は 2 つある。ブラウザで計画を承認して同じクラウドセッションで実行する場合、Claude がリモートで変更を実装し、Web UI からプルリクエストを開く。あるいは「Approve plan and teleport back to terminal」を選んでローカルで実装する。ターミナルテレポートのダイアログでは 3 つの選択肢が表示される：
-
-- **Implement here** — 現在のターミナルセッションで承認済み計画を実行する。
-- **Start new session** — 同じ作業ディレクトリで新規セッションを開いて実行する。
-- **Cancel** — 計画をファイルに保存し、後で再開できるようにする。
-
-> **警告：** Ultraplan を開始するとリモートコントロールは切断される。両機能とも claude.ai/code インターフェースを共有しているため、同時に有効化できるのは一方のみである。
-
----
-
 ## 拡張思考
 
 拡張思考により、Claude は複雑な問題について、解を提示する前により多くの時間をかけて推論できる。
@@ -408,14 +353,14 @@ export CLAUDE_CODE_EFFORT_LEVEL=xhigh
 
 ## オートモード
 
-オートモードは Research Preview の権限モード（2026 年 3 月）で、バックグラウンドの安全分類器が各アクションを実行前にレビューする。Claude が自律的に作業しつつ、危険な操作はブロックできる。
+オートモードは、バックグラウンドの安全分類器が各アクションを実行前にレビューする権限モードである。Claude が自律的に作業しつつ、危険な操作はブロックできる。すべてのプランで利用可能だが、対象モデルおよびプロバイダの条件を満たす必要がある。
 
 ### 必要要件
 
 - **プラン：** Team、Enterprise、または API（Pro や Max プランでは利用不可）
 - **モデル：** Claude Sonnet 4.6 または Opus 4.7
 - **プロバイダ：** Anthropic API のみ（Bedrock、Vertex、Foundry では非対応）
-- **分類器：** Claude Sonnet 4.6 上で動作する（追加のトークンコストが発生）
+- **分類器：** 追加のトークンコストが発生する。ただし Enterprise プランと Claude API アカウントでは、v2.1.278 以降サーバー側でチェックが実行され、課金されない
 
 ### オートモードの有効化
 
@@ -541,15 +486,14 @@ python3 09-advanced-features/setup-auto-mode-permissions.py --include-git-write 
 
 | カテゴリ | 例 |
 |----------|---------|
-| コア読み取り専用ツール | `Read(*)`、`Glob(*)`、`Grep(*)`、`Agent(*)`、`WebSearch(*)`、`WebFetch(*)` |
+| コア読み取り専用ツール | `Read(*)`、`Grep(*)`、`Agent(*)`、`WebSearch(*)`、`WebFetch(*)` |
 | ローカル検査 | `Bash(git status:*)`、`Bash(git log:*)`、`Bash(git diff:*)`、`Bash(cat:*)` |
-| オプションの編集 | `Edit(*)`、`Write(*)`、`NotebookEdit(*)` |
+| オプションの編集 | `Edit(*)` |
 | オプションのテスト／ビルド | `Bash(pytest:*)`、`Bash(python3 -m pytest:*)`、`Bash(cargo test:*)` |
-| オプションの Git 書き込み | `Bash(git add:*)`、`Bash(git commit:*)`、`Bash(git stash:*)` |
-| Git（ローカル書き込み） | `Bash(git add:*)`、`Bash(git commit:*)`、`Bash(git checkout:*)` |
-| パッケージマネージャ | `Bash(npm install:*)`、`Bash(pip install:*)`、`Bash(cargo build:*)` |
+| オプションの Git 書き込み | `Bash(git add:*)`、`Bash(git commit:*)`、`Bash(git checkout:*)`、`Bash(git switch:*)`、`Bash(git stash:*)`、`Bash(git tag:*)` |
+| パッケージマネージャ | `Bash(npm ci:*)`、`Bash(npm install:*)`、`Bash(pip install:*)`、`Bash(pip3 install:*)` |
 | ビルドとテスト | `Bash(make:*)`、`Bash(pytest:*)`、`Bash(go test:*)` |
-| よく使うシェル | `Bash(ls:*)`、`Bash(cat:*)`、`Bash(find:*)`、`Bash(cp:*)`、`Bash(mv:*)` |
+| よく使うシェル | `Bash(ls:*)`、`Bash(cat:*)`、`Bash(find:*)` |
 | GitHub CLI | `Bash(gh pr view:*)`、`Bash(gh pr create:*)`、`Bash(gh issue list:*)` |
 
 危険な操作（`rm -rf`、`sudo`、強制プッシュ、`DROP TABLE`、`terraform destroy` など）は意図的に除外されている。スクリプトは冪等であり、2 回実行してもルールは重複しない。
@@ -667,17 +611,14 @@ Claude: [Shows linter output from bg-5002]
 
 ### 設定
 
-```json
-{
-  "backgroundTasks": {
-    "enabled": true,
-    "maxConcurrentTasks": 5,
-    "notifyOnCompletion": true,
-    "autoCleanup": true,
-    "logOutput": true
-  }
-}
+`settings.json` にバックグラウンドタスク用のブロックは存在しない。この機能は環境変数で制御する：
+
+```bash
+# バックグラウンドタスクを完全に無効化する
+export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=true
 ```
+
+同時実行数もバックグラウンドタスクの設定ではない。同時に実行されるエージェント数は `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`（デフォルトは `20`）で決まる。
 
 ---
 
@@ -805,7 +746,7 @@ export CLAUDE_CODE_DISABLE_CRON=1
 | `default` | ファイル読み取りのみ。それ以外の操作は確認を求める |
 | `acceptEdits` | ファイル読み取りと編集を許可。コマンドは確認を求める |
 | `plan` | ファイル読み取りのみ（リサーチモード、編集なし） |
-| `auto` | バックグラウンドの安全分類器のチェック付きで全操作を許可（Research Preview） |
+| `auto` | バックグラウンドの安全分類器のチェック付きで全操作を許可 |
 | `bypassPermissions` | 全操作、権限チェックなし（危険） |
 | `dontAsk` | 事前承認済みツールのみ実行、その他はすべて拒否 |
 
@@ -1098,7 +1039,7 @@ Claude Code は効率向上のためキーボードショートカットをサ�
 | `Ctrl+C` | 入力／生成のキャンセル |
 | `Ctrl+D` | Claude Code を終了 |
 | `Ctrl+G` | 計画を外部エディタで編集 |
-| `Ctrl+L` | ターミナル画面のクリア |
+| `Ctrl+L` | 画面の再描画（repaint のみ — 2 回押しでの `/clear` は v2.1.238 で廃止） |
 | `Ctrl+O` | 詳細出力の切り替え（推論を表示） |
 | `Ctrl+R` | 履歴の逆方向検索 |
 | `Ctrl+T` | タスクリストビューの切り替え |
@@ -1642,7 +1583,7 @@ Claude Code デスクトップアプリは、視覚的な diff レビュー、�
 
 ### デスクトップでの権限モード
 
-デスクトップアプリは CLI と同じ 4 つの権限モードをサポートする：
+デスクトップアプリは CLI と同じ権限モードをサポートする：
 
 | モード | 挙動 |
 |------|----------|
@@ -1904,7 +1845,7 @@ v2.1.83 以降、管理者は複数のマネージド設定ファイルを `mana
 ```json
 {
   "permissions": {
-    "mode": "default"
+    "defaultMode": "default"
   },
   "hooks": {
     "PreToolUse:Edit": "eslint --fix ${file_path}",
@@ -1927,7 +1868,7 @@ v2.1.83 以降、管理者は複数のマネージド設定ファイルを `mana
 ```json
 {
   "permissions": {
-    "mode": "default",
+    "defaultMode": "default",
     "allowedTools": ["Bash(git log:*)", "Read"],
     "disallowedTools": ["Bash(rm -rf:*)"]
   },
@@ -2034,7 +1975,7 @@ User: /config
     "PreToolUse": [{ "matcher": "Bash", "hooks": ["npm test && npm run lint"] }]
   },
   "permissions": {
-    "mode": "default"
+    "defaultMode": "default"
   },
   "mcp": {
     "servers": {
@@ -2166,10 +2107,13 @@ Claude Code および関連機能の詳細：
 
 ---
 
-**最終更新：** 2026 年 4 月 24 日
-**Claude Code バージョン：** 2.1.119
+**最終更新：** 2026 年 9 月 19 日
+**Claude Code バージョン：** 2.1.278
 **情報源：**
+- https://code.claude.com/docs/en/permissions
+- https://code.claude.com/docs/en/auto-mode-classifier-billing
 - https://code.claude.com/docs/en/permission-modes
+- https://code.claude.com/docs/en/commands
 - https://code.claude.com/docs/en/interactive-mode
 - https://code.claude.com/docs/en/settings
 - https://www.anthropic.com/news/claude-opus-4-7

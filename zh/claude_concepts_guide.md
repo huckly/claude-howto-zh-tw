@@ -495,7 +495,7 @@ graph TD
     B --> C["3. Project Rules<br/>.claude/rules/*.md"]
     C --> D["4. User Memory<br/>~/.claude/CLAUDE.md"]
     D --> E["5. User Rules<br/>~/.claude/rules/*.md"]
-    E --> F["6. Local Memory<br/>.claude/local/CLAUDE.md"]
+    E --> F["6. Local Memory<br/>./CLAUDE.local.md"]
     F --> G["7. Auto Memory<br/>自动捕获的偏好"]
 ```
 
@@ -508,7 +508,7 @@ graph TD
 | 3. Project Rules | `.claude/rules/*.md` | 项目级 | 高 | 团队（Git） | 模块化项目约定 |
 | 4. User | `~/.claude/CLAUDE.md` | 个人级 | 中 | 个人 | 个人偏好 |
 | 5. User Rules | `~/.claude/rules/*.md` | 个人级 | 中 | 个人 | 个人规则模块 |
-| 6. Local | `.claude/local/CLAUDE.md` | 本地 | 低 | 不共享 | 机器相关设置 |
+| 6. Local | `./CLAUDE.local.md` | 本地 | 低 | 不共享 | 机器相关设置 |
 | 7. Auto Memory | 自动生成 | 会话级 | 最低 | 个人 | 学到的偏好与模式 |
 
 ### Auto Memory
@@ -751,7 +751,7 @@ sequenceDiagram
       "command": "npx",
       "args": ["@modelcontextprotocol/server-database"],
       "env": {
-        "DATABASE_URL": "postgresql://user:pass@localhost/mydb"
+        "DATABASE_URL": "${DATABASE_URL}"
       }
     }
   }
@@ -1303,7 +1303,7 @@ Hooks 是事件驱动的 shell 命令，会在 Claude Code 的特定事件发生
 
 ### Hook 事件
 
-Claude Code 支持 **25 个 hook 事件**，分布在四类钩子中：
+Claude Code 支持 **33 个 hook 事件**，分布在四类钩子中：
 
 | Hook 事件 | 触发时机 | 常见用途 |
 |-----------|----------|----------|
@@ -1460,7 +1460,7 @@ claude -p "Should we use microservices or monolith?"
 | `acceptEdits` | 自动接受文件编辑 | 信任编辑工作流 |
 | `plan` | 只分析不改文件 | 审查、规划 |
 | `auto` | 自动批准安全操作 | 平衡自治与安全 |
-| `dontAsk` | 不再提示确认 | 资深用户 / 自动化 |
+| `dontAsk` | 只运行预先批准的工具，其余一律自动拒绝 | 资深用户 / 自动化 |
 | `bypassPermissions` | 完全不受限 | CI/CD、可信脚本 |
 
 ### Headless Mode（Print Mode）
@@ -1512,15 +1512,13 @@ claude -r "Feature"
     "autoEnter": true,
     "requireApproval": true
   },
-  "backgroundTasks": {
-    "enabled": true,
-    "maxConcurrentTasks": 5
-  },
   "permissions": {
-    "mode": "default"
+    "defaultMode": "manual"
   }
 }
 ```
+
+`settings.json` 中没有后台任务配置块 —— 该功能由环境变量 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` 控制，并发数由 `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`（默认 `20`）决定。
 
 **详见：** [09-advanced-features/README.md](09-advanced-features/README.md)
 
@@ -1535,6 +1533,10 @@ claude -r "Feature"
 
 ---
 
-*最后更新：2026 年 3 月*
-*适用于 Claude Haiku 4.5、Sonnet 4.6、Opus 4.6*
+*适用于 Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5*
 *现已覆盖：Hooks、Checkpoints、Planning Mode、Extended Thinking、Background Tasks、Permission Modes、Headless Mode、Session Management、Auto Memory、Agent Teams、Scheduled Tasks、Chrome Integration、Bundled Skills 等概念。*
+
+**最后更新**：2026 年 9 月 2 日
+**Claude Code 版本**：2.1.257
+**来源**：
+- https://code.claude.com/docs/en/hooks

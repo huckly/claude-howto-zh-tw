@@ -56,13 +56,14 @@
 | `/install-github-app` | GitHub Actions アプリをセットアップ |
 | `/install-slack-app` | Slack アプリをインストール |
 | `/keybindings` | キーバインド設定を開く |
-| `/less-permission-prompts` | 直近の Bash／MCP ツール呼び出しを分析し、優先度の高い許可リストを `.claude/settings.json` に追加して権限プロンプトを減らす（v2.1.111 で追加） |
+| `/fewer-permission-prompts` | 直近の Bash／MCP ツール呼び出しを分析し、優先度の高い許可リストを `.claude/settings.json` に追加して権限プロンプトを減らす（v2.1.111 で追加） |
 | `/login` | Anthropic アカウントを切り替え |
 | `/logout` | Anthropic アカウントからサインアウト |
 | `/mcp` | MCP サーバーと OAuth を管理 |
 | `/memory` | `CLAUDE.md` を編集、自動メモリを切り替え |
 | `/mobile` | モバイルアプリの QR コード（エイリアス: `/ios`、`/android`） |
 | `/model [model]` | モデル選択。左右キーで思考量を変更 |
+| `/output-style [name]` | 出力スタイルの一覧表示と切り替え（v2.1.91 で削除された後、v2.1.269 で再追加）。引数なしで実行するとスタイルを一覧表示し、現在のものを示す。headless と Remote Control のセッションでも動作し、選択内容は `.claude/settings.local.json` に保存される |
 | `/passes` | Claude Code 無料 1 週間を共有 |
 | `/permissions` | 権限を表示／更新（エイリアス: `/allowed-tools`） |
 | `/plan [description]` | プランモードに入る |
@@ -72,12 +73,12 @@
 | `/privacy-settings` | プライバシー設定（Pro／Max のみ） |
 | `/release-notes` | 変更履歴を表示 |
 | `/recap` | セッションへ戻ってきた際にセッションのおさらい／要約を表示（v2.1.108 で追加） |
-| `/reload-plugins` | アクティブなプラグインをリロード |
+| `/reload-plugins` | アクティブなプラグインをリロード。v2.1.221 以降、ほとんどのインストールは即座に有効化されるため、インストール要約に `Run /reload-plugins to activate.` と表示された場合にのみ必要 |
 | `/remote-control` | claude.ai からのリモート制御（エイリアス: `/rc`） |
 | `/remote-env` | デフォルトのリモート環境を設定 |
 | `/rename [name]` | セッションをリネーム |
 | `/resume [session]` | 会話を再開（エイリアス: `/continue`） |
-| `/review` | **非推奨** — 代わりに `code-review` プラグインを導入する |
+| `/review [low\|medium\|high\|xhigh\|max\|ultra] [--fix] [--comment] [pr#\|branch\|path]` | `/code-review` のエイリアス（v2.1.223）。現在の diff、または渡した PR 番号・ブランチ・パスをレビューする（例: `/review 1234`）。同じ effort レベルとフラグを受け付ける。レベルを省略すると、直前に入力した `low`〜`max` のレベルを再利用する |
 | `/rewind` | 会話やコードを巻き戻す（エイリアス: `/checkpoint`） |
 | `/sandbox` | サンドボックスモードを切り替え |
 | `/schedule [description]` | クラウドのスケジュールタスクを作成／管理 |
@@ -92,9 +93,7 @@
 | `/terminal-setup` | ターミナルのキーバインドを設定 |
 | `/theme` | テーマピッカーを開く／カスタムテーマを管理（v2.1.118）。カスタムテーマは `~/.claude/themes/<name>.json` に JSON で定義 |
 | `/tui` | ちらつきのないフルスクリーン TUI（テキストユーザーインターフェース）モードを切り替え（v2.1.110 で追加） |
-| `/ultraplan <prompt>` | ultraplan セッションでプランを下書きし、ブラウザでレビュー |
-| `/ultrareview` | マルチエージェント分析による包括的なクラウドベースのコードレビュー（v2.1.111 で追加） |
-| `/undo` | `/rewind` のエイリアス（v2.1.108 で追加） |
+| `/ultrareview` | マルチエージェント分析による包括的なクラウドベースのコードレビュー（v2.1.111 で追加）。現在の推奨呼び出しは `/code-review ultra` で、`/ultrareview` はそのエイリアスとして残っている。Pro と Max では 3 回まで無料、以降は使用クレジットが必要 |
 | `/upgrade` | 上位プランへのアップグレードページを開く |
 | `/usage` | 正式な使用状況ダッシュボード（v2.1.118）— プラン使用量制限、レート制限、コスト、日次セッション統計を統合。`/cost` と `/stats` は特定のタブを開くタイピング用エイリアス |
 | `/voice` | プッシュトゥトーク音声入力を切り替え |
@@ -115,24 +114,23 @@
 
 | コマンド | ステータス |
 |---------|----------|
-| `/review` | 非推奨 — `code-review` プラグインに置き換え |
-| `/output-style` | v2.1.73 から非推奨 |
 | `/fork` | `/branch` に改名（エイリアスは引き続き有効、v2.1.77） |
 | `/pr-comments` | v2.1.91 で削除 — Claude に直接 PR コメントを見るよう依頼する |
 | `/vim` | v2.1.92 で削除 — /config → エディタモードを使う |
+| `/undo` | v2.1.245 時点で公式コマンドリファレンスに掲載されていない（v2.1.108 で `/rewind` のエイリアスとして追加された） — `/rewind` または `Esc` 二度押しを使う |
 
 ### 直近の変更点
 
 - `/fork` を `/branch` に改名し、`/fork` はエイリアスとして残置（v2.1.77）
-- `/output-style` を非推奨化（v2.1.73）
-- `/review` を非推奨化、`code-review` プラグインを推奨
+- `/output-style` は削除（v2.1.91）された後、**v2.1.269 で再追加**され、v2.1.278 では再び利用可能なコマンドである。headless と Remote Control のセッションでも動作する。出力スタイル自体は `/config` または `outputStyle` 設定でも引き続き利用できる
+- `/review` が `/code-review` の完全なエイリアスになった — ターゲット、effort レベル、フラグはすべて同じ（v2.1.223）。履歴: v2.1.186 でまず `/code-review medium` エンジンに移行したが、当時は PR 専用だった
 - `/effort` コマンドを追加。`max` レベルは Opus 4.7 が必要（当初は Opus 4.6 限定）
 - プッシュトゥトーク音声入力の `/voice` コマンドを追加
 - スケジュールタスクの作成／管理用の `/schedule` コマンドを追加
 - プロンプトバーをカスタマイズする `/color` コマンドを追加
 - /pr-comments を v2.1.91 で削除 — Claude に直接 PR コメントを見るよう依頼する
 - /vim を v2.1.92 で削除 — /config → エディタモードを使う
-- ブラウザベースのプランレビューと実行を行う /ultraplan を追加
+- `/ultraplan` は v2.1.222 で削除された — 代わりにプランモードを使う
 - インタラクティブな機能レッスン用に /powerup を追加
 - サンドボックスモード切替用に /sandbox を追加
 - `/model` ピッカーが、生のモデル ID ではなく可読ラベル（例: "Sonnet 4.6"）を表示するようになった
@@ -142,11 +140,11 @@
 - ちらつきのないフルスクリーン TUI 描画用に `/tui` コマンドを追加（v2.1.110）
 - フォーカスビュー切替用に `/focus` コマンドを追加。`Ctrl+O` は詳細トランスクリプトの切替のみに（v2.1.110）
 - セッションコンテキストのおさらいを手動で発火する `/recap` コマンドを追加（v2.1.108）
-- `/undo` を `/rewind` のエイリアスとして追加（v2.1.108）
+- `/undo` を `/rewind` のエイリアスとして追加（v2.1.108）。v2.1.245 時点で公式コマンドリファレンスには掲載されていない — `/rewind` または `Esc` 二度押しを使う
 - `/proactive` を `/loop` のエイリアスとして追加（v2.1.105）
 - `/effort` がインタラクティブな矢印キースライダーを獲得し、`high` と `max` の間に新しい `xhigh` レベルを追加。Opus 4.7 プランではデフォルト思考量が `xhigh` に引き上げられた（v2.1.111）
-- 包括的なクラウドベースのマルチエージェントコードレビュー用に `/ultrareview` を追加（v2.1.111）
-- Bash／MCP ツール呼び出しを分析し、`.claude/settings.json` の許可リストで権限プロンプトを減らす `/less-permission-prompts` を追加（v2.1.111）
+- 包括的なクラウドベースのマルチエージェントコードレビュー用に `/ultrareview` を追加（v2.1.111）。v2.1.223 で `/code-review ultra` が推奨の呼び出しとなり、`/ultrareview` はエイリアスとして残った
+- Bash／MCP ツール呼び出しを分析し、`.claude/settings.json` の許可リストで権限プロンプトを減らす `/fewer-permission-prompts` を追加（v2.1.111）
 - Opus 4.7 を利用する Max サブスクライバについて、Auto モードに `--enable-auto-mode` フラグが不要になった（v2.1.112）
 
 ### `/team-onboarding` — チームメイト向けランプアップガイド
@@ -605,10 +603,11 @@ Deploy the application to production:
 
 ---
 
-**Last Updated**: April 24, 2026
-**Claude Code Version**: 2.1.119
+**最終更新**: 2026 年 9 月 19 日
+**Claude Code バージョン**: 2.1.278
 **Sources**:
-- https://code.claude.com/docs/en/slash-commands
+- https://code.claude.com/docs/en/commands
+- https://code.claude.com/docs/en/output-styles
 - https://code.claude.com/docs/en/interactive-mode
 - https://code.claude.com/docs/en/changelog
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.118

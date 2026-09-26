@@ -149,11 +149,11 @@ graph TD
     S --> T[Test Automation]
     T --> U[Repository Ready]
 
-    style A fill:#e1f5ff
-    style G fill:#fff4e1
-    style K fill:#f0ffe1
-    style Q fill:#ffe1f5
-    style U fill:#90EE90
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style G fill:#fff9c4,stroke:#333,color:#333
+    style K fill:#e8f5e9,stroke:#333,color:#333
+    style Q fill:#f3e5f5,stroke:#333,color:#333
+    style U fill:#e8f5e9,stroke:#333,color:#333
 ```
 
 #### 既存リポジトリの場合
@@ -214,12 +214,12 @@ graph TD
     Y -->|Yes| H
     Y -->|No| Z[Workflow Complete]
 
-    style A fill:#e1f5ff
-    style C fill:#ffecec
-    style D fill:#fff4e1
-    style P fill:#f0ffe1
-    style T fill:#ffe1f5
-    style Z fill:#90EE90
+    style A fill:#e1f5fe,stroke:#333,color:#333
+    style C fill:#fce4ec,stroke:#333,color:#333
+    style D fill:#fff9c4,stroke:#333,color:#333
+    style P fill:#e8f5e9,stroke:#333,color:#333
+    style T fill:#f3e5f5,stroke:#333,color:#333
+    style Z fill:#e8f5e9,stroke:#333,color:#333
 ```
 
 **Tips**：
@@ -245,7 +245,7 @@ graph TD
 | **Extended Thinking** | `Alt+T`／`Option+T` または `MAX_THINKING_TOKENS` 環境変数による深い推論の切り替え | [高度な機能](09-advanced-features/) |
 | **Permission Modes** | きめ細かい制御：default、acceptEdits、plan、auto、dontAsk、bypassPermissions | [高度な機能](09-advanced-features/) |
 | **7-Tier Memory** | Managed Policy、Project、Project Rules、User、User Rules、Local、Auto Memory | [メモリガイド](02-memory/) |
-| **Hook Events** | 28 イベント：PreToolUse、PostToolUse、PostToolUseFailure、Stop、StopFailure、SubagentStart、SubagentStop、Notification、Elicitation など | [フックガイド](06-hooks/) |
+| **Hook Events** | 33 イベント：PreToolUse、PostToolUse、PostToolUseFailure、Stop、StopFailure、SubagentStart、SubagentStop、Notification、Elicitation など | [フックガイド](06-hooks/) |
 | **Agent Teams** | 複雑なタスクで複数のエージェントを協調させる | [サブエージェントガイド](04-subagents/) |
 | **Scheduled Tasks** | `/loop` と cron ツールで定期タスクをセットアップ | [高度な機能](09-advanced-features/) |
 | **Chrome Integration** | ヘッドレス Chromium によるブラウザ自動化 | [高度な機能](09-advanced-features/) |
@@ -253,10 +253,11 @@ graph TD
 | **Monitor Tool** | バックグラウンドコマンドの stdout ストリームを監視し、ポーリングではなくイベントに反応する（v2.1.98+） | [高度な機能](09-advanced-features/) |
 
 ---
-**Last Updated**: April 24, 2026
-**Claude Code Version**: 2.1.119
+**Last Updated**: September 2, 2026
+**Claude Code Version**: 2.1.257
 **Sources**:
 - https://code.claude.com/docs/en/overview
 - https://code.claude.com/docs/en/changelog
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.119
-**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://code.claude.com/docs/en/model-config
+**Compatible Models**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

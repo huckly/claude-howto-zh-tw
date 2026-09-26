@@ -1,6 +1,7 @@
 ---
-name: brand-voice-consistency
+name: brand-voice
 description: 确保所有沟通内容都符合品牌语气和风格指南。适用于撰写营销文案、客户沟通、对外内容，或用户提到品牌语气、tone、写作风格的场景。
+user-invocable: false
 ---
 
 # 品牌语气技能

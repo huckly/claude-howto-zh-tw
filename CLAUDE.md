@@ -13,7 +13,7 @@ pre-commit run --all-files
 # Tests
 pytest scripts/tests/ -v
 
-# EPUB build (calls Kroki.io API to render Mermaid — needs network)
+# EPUB build (renders Mermaid with the local mmdc CLI — no network, needs mmdc on PATH)
 uv run scripts/build_epub.py
 
 # Python tooling
@@ -22,7 +22,7 @@ mypy scripts/ --ignore-missing-imports
 bandit -c scripts/pyproject.toml -r scripts/ --exclude scripts/tests/
 ```
 
-Pre-commit runs 5 checks: markdown-lint, cross-references, mermaid-syntax, link-check, build-epub (on `.md` changes). All must pass.
+Pre-commit runs 5 doc checks on `.md` changes: markdown-lint, cross-references, mermaid-syntax, link-check, markdown-rendering. All must pass. The EPUB build is **not** a pre-commit hook — it runs in CI only (`build-epub` job in `.github/workflows/test.yml`), because it needs a local `mmdc` binary that has no working arm64 build.
 
 ## Architecture map
 
@@ -40,7 +40,7 @@ Pre-commit runs 5 checks: markdown-lint, cross-references, mermaid-syntax, link-
 - Internal links use **relative paths** (e.g. `01-slash-commands/README.md`); anchors use `#heading-name`.
 - Code fences **must** declare a language (`bash`, `python`, `json`, …) — the cross-reference check fails otherwise.
 - External URLs must be reachable and stable. No ephemeral links.
-- Mermaid diagrams must parse (validated pre-commit). Broken EPUB build is usually invalid Mermaid or no network to Kroki.
+- Mermaid diagrams must parse (validated pre-commit, and only when `mmdc` is installed — the check skips with a warning otherwise). A broken EPUB build is usually invalid Mermaid or a missing/failing `mmdc`.
 - Commit format: `type(scope): subject` where `scope` matches the module folder (e.g. `feat(slash-commands):`, `docs(memory):`, `fix(README):`).
 - Do not reorganize the `01-`–`10-` numbering. The order is the curriculum.
 

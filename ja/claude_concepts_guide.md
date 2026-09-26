@@ -575,7 +575,7 @@ graph TD
     B --> C["3. Project Rules<br/>.claude/rules/*.md"]
     C --> D["4. User Memory<br/>~/.claude/CLAUDE.md"]
     D --> E["5. User Rules<br/>~/.claude/rules/*.md"]
-    E --> F["6. Local Memory<br/>.claude/local/CLAUDE.md"]
+    E --> F["6. Local Memory<br/>./CLAUDE.local.md"]
     F --> G["7. Auto Memory<br/>Automatically captured preferences"]
 
     style A fill:#fce4ec,stroke:#333,color:#333
@@ -596,7 +596,7 @@ graph TD
 | 3. Project Rules | `.claude/rules/*.md` | プロジェクト | 高 | チーム（Git） | プロジェクト規約のモジュール化 |
 | 4. User | `~/.claude/CLAUDE.md` | 個人 | 中 | 個人 | 個人の好み |
 | 5. User Rules | `~/.claude/rules/*.md` | 個人 | 中 | 個人 | 個人ルールのモジュール化 |
-| 6. Local | `.claude/local/CLAUDE.md` | ローカル | 低 | 共有しない | マシン固有設定 |
+| 6. Local | `./CLAUDE.local.md` | ローカル | 低 | 共有しない | マシン固有設定 |
 | 7. Auto Memory | 自動 | セッション | 最低 | 個人 | 学習された好み・パターン |
 
 ### Auto Memory
@@ -1166,7 +1166,7 @@ Send summary to #daily-reports channel
 
 Final Output:
 ✅ Report generated and posted
-📊 47 PRs merged this week
+📊 42 PRs merged this week
 💰 $12,450 in daily sales
 ```
 
@@ -2548,7 +2548,7 @@ Complete PR review workflow with security, testing, and documentation checks.
 ```
 
 ## Requirements
-- Claude Code 1.0+
+- Claude Code 2.1+
 - GitHub access
 - CodeQL (optional)
 ~~~~
@@ -2813,30 +2813,38 @@ graph TD
 
 ### フックイベント
 
-Claude Code は 5 種類（command、http、mcp_tool、prompt、agent）にわたる **28 種類のフックイベント** をサポートする：
+Claude Code は 5 種類（command、http、mcp_tool、prompt、agent）にわたる **33 種類のフックイベント** をサポートする：
 
 | フックイベント | トリガー | ユースケース |
 |------------|---------|-----------|
 | **SessionStart** | セッション開始 / 再開 / クリア / 圧縮時 | 環境構築、初期化 |
+| **Setup** | 初期環境セットアップ（セッションごとに 1 回） | ツール準備、依存関係インストール |
 | **InstructionsLoaded** | CLAUDE.md やルールファイル読み込み時 | 検証、変換、補強 |
 | **UserPromptSubmit** | ユーザーがプロンプト送信時 | 入力検証、プロンプトフィルタ |
+| **UserPromptExpansion** | プロンプト展開（@メンション、スラッシュコマンド解決） | 展開後プロンプトの変換・検査 |
 | **PreToolUse** | 任意のツール実行前 | 検証、承認ゲート、ログ |
 | **PermissionRequest** | 権限ダイアログ表示時 | 自動承認・拒否フロー |
+| **PermissionDenied** | ユーザーが権限要求を拒否 | ログ、分析、ポリシー適用 |
 | **PostToolUse** | ツール成功後 | 自動整形、通知、後処理 |
 | **PostToolUseFailure** | ツール実行失敗時 | エラー処理、ログ |
+| **PostToolBatch** | ツール実行バッチの完了後 | 集約レポート、バッチ検証 |
 | **Notification** | 通知送信時 | アラート、外部連携 |
+| **MessageDisplay** | アシスタントのメッセージ表示時 | 表示テキストの変換・非表示 |
 | **SubagentStart** | サブエージェント生成時 | コンテキスト注入、初期化 |
 | **SubagentStop** | サブエージェント終了時 | 結果検証、ログ |
 | **Stop** | Claude の応答完了時 | サマリー生成、後処理 |
 | **StopFailure** | API エラーでターン終了時 | エラー回復、ログ |
 | **TeammateIdle** | エージェントチームのメンバーがアイドル時 | 作業分配、調整 |
-| **TaskCompleted** | タスク完了時 | 後続処理 |
-| **TaskCreated** | TaskCreate でタスク作成時 | タスク追跡、ログ |
+| **TaskCompleted** | タスク完了時（todo ツールが有効なときのみ発火 — Claude 3.x、Opus 4〜4.7、Sonnet 4〜4.6、Haiku 4.5 でのみデフォルト有効。`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で復活） | 後続処理 |
+| **TaskCreated** | TaskCreate でタスク作成時（todo ツールが有効なときのみ発火 — Claude 3.x、Opus 4〜4.7、Sonnet 4〜4.6、Haiku 4.5 でのみデフォルト有効。`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で復活） | タスク追跡、ログ |
 | **ConfigChange** | 設定ファイル変更時 | 検証、伝播 |
 | **CwdChanged** | 作業ディレクトリ変更時 | ディレクトリ別セットアップ |
+| **DirectoryAdded** | セッション中に作業ディレクトリが追加登録 | 新規ディレクトリ向けツール設定 |
 | **FileChanged** | 監視対象ファイルの変更時 | ファイル監視、再ビルド |
 | **PreCompact** | コンテキスト圧縮直前 | 状態の保存 |
 | **PostCompact** | 圧縮完了後 | 圧縮後の処理 |
+| **PreModelSwitch** | モデル切り替えが適用される直前 | モデル変更のゲート・拒否 |
+| **PostModelSwitch** | セッションのモデルが変更された後 | モデル変更のログ・連動 |
 | **WorktreeCreate** | ワークツリー作成時 | 環境構築、依存関係インストール |
 | **WorktreeRemove** | ワークツリー削除時 | クリーンアップ、リソース解放 |
 | **Elicitation** | MCP サーバーがユーザー入力を要求時 | 入力検証 |
@@ -2896,7 +2904,7 @@ Claude Code は 5 種類（command、http、mcp_tool、prompt、agent）にわ�
 - 長時間タスクをフックで実行する
 - 認証情報をハードコードする
 
-**詳細：** [06-hooks/](../06-hooks/)
+**詳細：** [06-hooks/](06-hooks/)
 
 ---
 
@@ -2950,7 +2958,7 @@ Esc + Esc
 }
 ```
 
-**詳細：** [08-checkpoints/](../08-checkpoints/)
+**詳細：** [08-checkpoints/](08-checkpoints/)
 
 ---
 
@@ -3108,17 +3116,15 @@ User: \
     "enabled": true,
     "showThinkingProcess": true
   },
-  "backgroundTasks": {
-    "enabled": true,
-    "maxConcurrentTasks": 5
-  },
   "permissions": {
-    "mode": "default"
+    "defaultMode": "default"
   }
 }
 ```
 
-**詳細ガイド：** [09-advanced-features/](../09-advanced-features/)
+`settings.json` にバックグラウンドタスク用のブロックは存在しない。この機能は環境変数 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` で制御し、同時実行数は `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`（デフォルトは `20`）で決まる。
+
+**詳細ガイド：** [09-advanced-features/](09-advanced-features/)
 
 ---
 
@@ -3145,17 +3151,19 @@ Claude Code は推論努力を調整可能な 3 モデルをサポートする�
 
 ---
 
-*最終更新：2026 年 4 月 24 日*
-*対応：Claude Haiku 4.5、Sonnet 4.6、Opus 4.7*
+*最終更新：2026 年 9 月 2 日*
+*対応：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5*
 *収録機能：フック、チェックポイント、プラニングモード、拡張思考、バックグラウンドタスク、権限モード（6 種）、ヘッドレスモード、セッション管理、Auto Memory、Agent Teams、定期タスク、Chrome 連携、Channels、音声入力、同梱スキル*
 
 ---
-**最終更新：** 2026 年 4 月 24 日
-**Claude Code バージョン：** 2.1.119
+**最終更新：** 2026 年 9 月 19 日
+**Claude Code バージョン：** 2.1.278
 **出典：**
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability
 - https://code.claude.com/docs/en/overview
 - https://code.claude.com/docs/en/hooks
 - https://www.anthropic.com/news/claude-opus-4-7
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
+- https://code.claude.com/docs/en/model-config
 
-**対応モデル：** Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5
+**対応モデル：** Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

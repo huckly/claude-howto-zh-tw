@@ -34,7 +34,7 @@ model: inherit
 - 遵循現有專案慣例
 - 撰寫具有自我說明性質的程式碼
 - 僅在邏輯複雜時才新增註解
-- 保持函數小而專注
+- 保持函式小而專注
 - 使用有意義的變數名稱
 
 ### 檔案組織
@@ -78,4 +78,8 @@ model: inherit
 - [ ] 實作了錯誤處理
 
 ---
-**上次更新**：2026 年 4 月 9 日
+**上次更新**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/sub-agents
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

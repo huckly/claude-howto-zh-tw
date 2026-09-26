@@ -1,6 +1,7 @@
 ---
-name: brand-voice-consistency
+name: brand-voice
 description: Đảm bảo tất cả các truyền thông phù hợp với hướng dẫn giọng điệu và phong cách thương hiệu. Sử dụng khi tạo bản sao marketing, truyền thông khách hàng, nội dung công khai, hoặc khi người dùng đề cập đến giọng điệu thương hiệu, ngữ điệu, hoặc phong cách viết.
+user-invocable: false
 ---
 
 # Brand Voice Skill

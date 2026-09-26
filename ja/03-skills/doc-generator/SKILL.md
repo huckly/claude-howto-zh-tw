@@ -3,7 +3,7 @@
 <!-- i18n-date: 2026-04-27 -->
 
 ---
-name: api-documentation-generator
+name: doc-generator
 description: ソースコードから包括的かつ正確な API ドキュメントを生成する。API ドキュメントの作成・更新、OpenAPI 仕様の生成時、または API ドキュメント、エンドポイント、ドキュメントについて言及がある場合に使用する。
 ---
 
@@ -22,7 +22,7 @@ description: ソースコードから包括的かつ正確な API ドキュメ�
 
 ### 各エンドポイントごと
 
-```markdown
+````markdown
 ## GET /api/v1/users/:id
 
 ### Description
@@ -77,4 +77,4 @@ response = requests.get(
 )
 user = response.json()
 ```
-```
+````

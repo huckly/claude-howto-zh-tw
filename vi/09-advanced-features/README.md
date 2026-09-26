@@ -43,7 +43,7 @@ Advanced features in Claude Code extend the core capabilities with planning, rea
 **Key advanced features include:**
 - **Planning Mode**: Create detailed implementation plans before coding
 - **Extended Thinking**: Deep reasoning for complex problems
-- **Auto Mode**: Background safety classifier reviews each action before execution (Research Preview)
+- **Auto Mode**: Background safety classifier reviews each action before execution
 - **Background Tasks**: Run long operations without blocking the conversation
 - **Permission Modes**: Control what Claude can do (`default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`)
 - **Print Mode**: Run Claude Code non-interactively for automation and CI/CD (`claude -p`)
@@ -343,13 +343,13 @@ Toggle during a session with `Alt+T` / `Option+T`, set effort with `/effort`, or
 
 ## Auto Mode
 
-Auto Mode is a Research Preview permission mode (March 2026) that uses a background safety classifier to review each action before execution. It allows Claude to work autonomously while blocking dangerous operations.
+Auto Mode is a permission mode that uses a background safety classifier to review each action before execution. It allows Claude to work autonomously while blocking dangerous operations. It's available on all plans, but requires an eligible model and provider.
 
 ### Requirements
 
 - **Plan**: Team plan (Enterprise and API rolling out)
 - **Model**: Claude Sonnet 4.6 or Opus 4.6
-- **Classifier**: Runs on Claude Sonnet 4.6 (adds extra token cost)
+- **Classifier**: Tốn thêm chi phí token, ngoại trừ trên gói Enterprise và tài khoản Claude API, nơi v2.1.278+ chạy kiểm tra phía máy chủ mà không tính phí
 
 ### Enabling Auto Mode
 
@@ -445,15 +445,14 @@ The script adds rules across these categories:
 
 | Category | Examples |
 |----------|---------|
-| Core read-only tools | `Read(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)`, `WebFetch(*)` |
+| Core read-only tools | `Read(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)`, `WebFetch(*)` |
 | Local inspection | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)`, `Bash(cat:*)` |
-| Optional edits | `Edit(*)`, `Write(*)`, `NotebookEdit(*)` |
+| Optional edits | `Edit(*)` |
 | Optional test/build | `Bash(pytest:*)`, `Bash(python3 -m pytest:*)`, `Bash(cargo test:*)` |
-| Optional git writes | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git stash:*)` |
-| Git (local write) | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
-| Package managers | `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(cargo build:*)` |
+| Optional git writes | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)`, `Bash(git switch:*)`, `Bash(git stash:*)`, `Bash(git tag:*)` |
+| Package managers | `Bash(npm ci:*)`, `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(pip3 install:*)` |
 | Build & test | `Bash(make:*)`, `Bash(pytest:*)`, `Bash(go test:*)` |
-| Common shell | `Bash(ls:*)`, `Bash(cat:*)`, `Bash(find:*)`, `Bash(cp:*)`, `Bash(mv:*)` |
+| Common shell | `Bash(ls:*)`, `Bash(cat:*)`, `Bash(find:*)` |
 | GitHub CLI | `Bash(gh pr view:*)`, `Bash(gh pr create:*)`, `Bash(gh issue list:*)` |
 
 Dangerous operations (`rm -rf`, `sudo`, force push, `DROP TABLE`, `terraform destroy`, etc.) are intentionally excluded. The script is idempotent — running it twice won't duplicate rules.
@@ -571,17 +570,14 @@ Claude: [Shows linter output from bg-5002]
 
 ### Configuration
 
-```json
-{
-  "backgroundTasks": {
-    "enabled": true,
-    "maxConcurrentTasks": 5,
-    "notifyOnCompletion": true,
-    "autoCleanup": true,
-    "logOutput": true
-  }
-}
+There is no `settings.json` block for background tasks. The feature is controlled by an environment variable:
+
+```bash
+# Turn background tasks off entirely
+export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=true
 ```
+
+Concurrency is not a background-task setting either — how many agents run at once is governed by `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (default `20`).
 
 ---
 
@@ -672,7 +668,7 @@ Permission modes control what actions Claude can take without explicit approval.
 | `default` | Read files only; prompts for all other actions |
 | `acceptEdits` | Read and edit files; prompts for commands |
 | `plan` | Read files only (research mode, no edits) |
-| `auto` | All actions with background safety classifier checks (Research Preview) |
+| `auto` | All actions with background safety classifier checks |
 | `bypassPermissions` | All actions, no permission checks (dangerous) |
 | `dontAsk` | Only pre-approved tools execute; all others denied |
 
@@ -948,7 +944,7 @@ Claude Code supports keyboard shortcuts for efficiency. Here's the complete refe
 | `Ctrl+C` | Cancel current input/generation |
 | `Ctrl+D` | Exit Claude Code |
 | `Ctrl+G` | Edit plan in external editor |
-| `Ctrl+L` | Clear terminal screen |
+| `Ctrl+L` | Vẽ lại màn hình (chỉ repaint — phím tắt nhấn đúp để `/clear` đã bị gỡ ở v2.1.238) |
 | `Ctrl+O` | Toggle verbose output (view reasoning) |
 | `Ctrl+R` | Reverse search history |
 | `Ctrl+T` | Toggle task list view |
@@ -1428,7 +1424,7 @@ Connect external services for richer context:
 
 ### Permission modes in Desktop
 
-The Desktop App supports the same 4 permission modes as the CLI:
+The Desktop App supports the same permission modes as the CLI:
 
 | Mode | Behavior |
 |------|----------|
@@ -1672,7 +1668,7 @@ Since v2.1.83, administrators can deploy multiple managed settings files into a 
 ```json
 {
   "permissions": {
-    "mode": "default"
+    "defaultMode": "manual"
   },
   "hooks": {
     "PreToolUse:Edit": "eslint --fix ${file_path}",
@@ -1695,7 +1691,7 @@ Since v2.1.83, administrators can deploy multiple managed settings files into a 
 ```json
 {
   "permissions": {
-    "mode": "default",
+    "defaultMode": "manual",
     "allowedTools": ["Bash(git log:*)", "Read"],
     "disallowedTools": ["Bash(rm -rf:*)"]
   },
@@ -1797,7 +1793,7 @@ Create `.claude/config.json` in your project:
     "PreToolUse": [{ "matcher": "Bash", "hooks": ["npm test && npm run lint"] }]
   },
   "permissions": {
-    "mode": "default"
+    "defaultMode": "manual"
   },
   "mcp": {
     "servers": {
@@ -1873,6 +1869,9 @@ For more information about Claude Code and related features:
 
 ---
 
-**Cập Nhật Lần Cuối**: Tháng 4 năm 2026
-**Phiên Bản Claude Code**: 2.1+
+**Cập Nhật Lần Cuối**: Ngày 19 tháng 9 năm 2026
+**Phiên Bản Claude Code**: 2.1.278
+**Nguồn**:
+- https://code.claude.com/docs/en/permissions
+- https://code.claude.com/docs/en/auto-mode-classifier-billing
 **Các Mô Hình Tương Thích**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5

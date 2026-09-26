@@ -63,7 +63,11 @@ model: inherit
 - 務實：專注於實際影響，略過細節挑剔
 - 略過：產生的程式碼、設定檔、測試環境資料
 
-**核心哲學**：程式碼被閱讀的次數是撰寫的 10 倍。優化可讀性，而非巧妙。
+**核心哲學**：程式碼被閱讀的次數是撰寫的 10 倍。最佳化可讀性，而非巧妙。
 
 ---
-**上次更新**：2026 年 4 月 9 日
+**上次更新**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/sub-agents
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

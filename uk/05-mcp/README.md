@@ -109,6 +109,28 @@ claude mcp add --transport stdio myserver --env KEY=value -- npx server
 claude mcp add --transport sse legacy-server https://example.com/sse
 ```
 
+### WebSocket-транспорт (`ws`)
+
+WebSocket-сервери тримають постійне двонаправлене зʼєднання, що підходить віддаленим MCP-серверам, які надсилають події до Claude без запиту. Використовуйте HTTP, якщо ваш сервер лише відповідає на запити, оскільки HTTP підтримує OAuth і прапорець `claude mcp add --transport`, а WebSocket — жодного з них.
+
+Оскільки `--transport` не приймає `ws`, налаштуйте його в `.mcp.json` або через `claude mcp add-json`:
+
+```json
+{
+  "type": "ws",
+  "url": "wss://mcp.example.com/socket",
+  "headers": {
+    "Authorization": "Bearer YOUR_TOKEN"
+  }
+}
+```
+
+Запис `type: "ws"` приймає ті самі поля `url`, `headers`, `headersHelper`, `timeout` і `alwaysLoad`, що й `http`. Автентифікація **лише через заголовки** — потоку OAuth для WebSocket-серверів немає.
+
+> **Примітка**: WebSocket-сервери не зʼявляються у виводі `claude mcp list`. Для перевірки використовуйте `claude mcp get <назва>` або панель `/mcp`.
+
+Як і HTTP та SSE, WebSocket-зʼєднання використовує 5-хвилинне вікно простою; stdio і WebSocket не мають таймера на окремий запит. Запис `url` без `type` призводить до помилки, яка називає `"http"`, `"sse"`, `"ws"` як допустимі значення.
+
 ### Примітка для Windows
 
 На нативній Windows (не WSL) використовуйте `cmd /c` для команд npx:
@@ -259,11 +281,22 @@ MCP-сервери можуть надавати промпти, що відоб
 
 Конфігурації MCP можна зберігати на різних рівнях з різним ступенем поширення:
 
-| Рівень | Розташування | Опис | Доступний для | Потребує підтвердження |
-|--------|-------------|------|---------------|----------------------|
-| **Local** (за замовч.) | `~/.claude.json` (під шляхом проєкту) | Приватний для поточного користувача, лише поточний проєкт (раніше називався `project`) | Лише ви | Ні |
-| **Project** | `.mcp.json` | Комітиться в git-репозиторій | Члени команди | Так (при першому використанні) |
-| **User** | `~/.claude.json` | Доступний у всіх проєктах (раніше називався `global`) | Лише ви | Ні |
+| Рівень | Прапорець | Розташування | Опис | Доступний для | Потребує підтвердження |
+|--------|-----------|-------------|------|---------------|----------------------|
+| **Local** (за замовч.) | `--scope local` | `~/.claude.json` (під шляхом проєкту) | Приватний для поточного користувача, лише поточний проєкт (раніше називався `project`) | Лише ви | Ні |
+| **Project** | `--scope project` | `.mcp.json` | Комітиться в git-репозиторій | Члени команди | Так (при першому використанні) |
+| **User** | `--scope user` | `~/.claude.json` | Доступний у всіх проєктах (раніше називався `global`) | Лише ви | Ні |
+
+Обирайте рівень при додаванні сервера через `--scope` (коротка форма `-s`). Якщо
+прапорець не вказано, Claude Code використовує `local`:
+
+```bash
+# Рівень project — записує в .mcp.json, щоб конфігурацію бачила вся команда
+claude mcp add --scope project --transport http github https://api.github.com/mcp
+
+# Рівень user — доступний у кожному проєкті
+claude mcp add --scope user --transport stdio memory -- npx @modelcontextprotocol/server-memory
+```
 
 ### Використання рівня Project
 
@@ -307,7 +340,12 @@ claude mcp reset-project-choices
 
 # Імпорт з Claude Desktop
 claude mcp add-from-claude-desktop
+
+# Додати сервер із JSON-блоку (зручно для скриптового налаштування)
+claude mcp add-json events-server '{"type":"stdio","command":"npx","args":["@modelcontextprotocol/server-events"]}'
 ```
+
+> **Примітка**: у JSON-конфігураціях — `.mcp.json`, `~/.claude.json` або `claude mcp add-json` — поле `type` приймає `streamable-http` як аліас для `http`. Специфікація MCP називає цей транспорт `streamable-http`, тому конфігурації, скопійовані з документації самого сервера, працюють без змін.
 
 ## Таблиця доступних MCP-серверів
 
@@ -430,7 +468,7 @@ claude mcp add --transport stdio github -- npx @modelcontextprotocol/server-gith
       "command": "npx",
       "args": ["@modelcontextprotocol/server-database"],
       "env": {
-        "DATABASE_URL": "postgresql://user:pass@localhost/mydb"
+        "DATABASE_URL": "${DATABASE_URL}"
       }
     }
   }
@@ -600,42 +638,61 @@ claude mcp add --transport stdio claude-agent -- claude mcp serve
 
 ## Managed MCP Configuration (Enterprise)
 
-Для корпоративних розгортань IT-адміністратори можуть застосовувати політики MCP-серверів через конфігураційний файл `managed-mcp.json`. Цей файл забезпечує ексклюзивний контроль над дозволеними або заблокованими MCP-серверами на рівні організації.
+Для корпоративних розгортань IT-адміністратори застосовують політику MCP-серверів через два окремі механізми: файл `managed-mcp.json`, який розгортає фіксований набір серверів з ексклюзивним контролем, і ключі налаштувань `allowedMcpServers` / `deniedMcpServers`, які фільтрують, яким із налаштованих серверів дозволено завантажитись.
 
 **Розташування:**
 - macOS: `/Library/Application Support/ClaudeCode/managed-mcp.json`
-- Linux: `~/.config/ClaudeCode/managed-mcp.json`
-- Windows: `%APPDATA%\ClaudeCode\managed-mcp.json`
+- Linux і WSL: `/etc/claude-code/managed-mcp.json`
+- Windows: `C:\Program Files\ClaudeCode\managed-mcp.json`
 
-**Функції:**
-- `allowedMcpServers` — білий список дозволених серверів
-- `deniedMcpServers` — чорний список заборонених серверів
-- Підтримує зіставлення за назвою сервера, командою та URL-патернами
-- Загальноорганізаційні політики MCP застосовуються перед конфігурацією користувача
-- Запобігає неавторизованим підключенням серверів
+`managed-mcp.json` використовує той самий формат, що й проєктний `.mcp.json` — мапу `mcpServers` на верхньому рівні. Він розгортає сервери, а не фільтрує їх:
+
+```json
+{
+  "mcpServers": {
+    "example-remote": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp"
+    },
+    "company-internal": {
+      "type": "stdio",
+      "command": "/usr/local/bin/company-mcp-server",
+      "args": ["--config", "/etc/company/mcp-config.json"]
+    }
+  }
+}
+```
+
+Цей файл може прочитати будь-який користувач машини, тож ніколи не зберігайте облікові дані у блоці `env`. Використовуйте розгортання `${VAR}`, OAuth або `headersHelper`.
+
+**Фільтрація: списки дозволених і заборонених**
+
+`allowedMcpServers` і `deniedMcpServers` — це **ключі налаштувань, а не поля `managed-mcp.json`**. Щоб вони мали примусову дію, розміщуйте їх у керованому джерелі налаштувань: server-managed settings, `managed-settings.json`, MDM-профілі або реєстрі.
+
+- `allowedMcpServers` — список дозволених серверів. Задайте поруч, у тому самому керованому джерелі, `allowManagedMcpServersOnly: true`, інакше списки дозволених зливаються з усіх областей і користувач зможе розширити ваш.
+- `deniedMcpServers` — список заблокованих серверів. Зливається з усіх областей у будь-якому разі.
+
+Кожен запис — це об'єкт з **одним** ключем:
+
+| Ключ | Що зіставляє |
+|------|--------------|
+| `serverUrl` | URL віддаленого сервера, точний або з шаблонами `*` |
+| `serverCommand` | Точну команду та аргументи запуску stdio-сервера, у вигляді масиву — кожен аргумент, за порядком |
+| `serverName` | Призначену користувачем назву. **Лише точний збіг; шаблони не розгортаються** |
 
 **Приклад конфігурації:**
 
 ```json
 {
   "allowedMcpServers": [
-    {
-      "serverName": "github",
-      "serverUrl": "https://api.github.com/mcp"
-    },
-    {
-      "serverName": "company-internal",
-      "serverCommand": "company-mcp-server"
-    }
+    { "serverUrl": "https://mcp.example.com/*" },
+    { "serverCommand": ["/usr/local/bin/company-mcp-server", "--config", "/etc/company/mcp-config.json"] }
   ],
   "deniedMcpServers": [
-    {
-      "serverName": "untrusted-*"
-    },
-    {
-      "serverUrl": "http://*"
-    }
-  ]
+    { "serverName": "untrusted-server" },
+    { "serverUrl": "http://*" }
+  ],
+  "allowManagedMcpServersOnly": true
 }
 ```
 
@@ -1081,6 +1138,9 @@ export GITHUB_TOKEN="your_token"
 - [Документація Claude API](https://docs.anthropic.com)
 
 ---
-**Останнє оновлення**: 9 квітня 2026
-**Версія Claude Code**: 2.1.97
+**Останнє оновлення**: 6 вересня 2026
+**Версія Claude Code**: 2.1.263
+**Джерела**:
+- https://code.claude.com/docs/en/mcp
+- https://code.claude.com/docs/en/managed-mcp
 **Сумісні моделі**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5

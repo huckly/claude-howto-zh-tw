@@ -152,4 +152,8 @@ Branch: [分支] → origin/[分支]
 **⚠️ 提醒**: 提交前請務必審查變更。如果猶豫不決，請使用個別 git 命令以獲得更多控制。
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/commands
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

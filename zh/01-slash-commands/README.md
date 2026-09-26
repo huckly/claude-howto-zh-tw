@@ -24,7 +24,9 @@ Claude Code 目前提供 55+ 个内置命令和 5 个内置 Skills。你可以�
 |---------|---------|
 | `/add-dir <path>` | 添加工作目录 |
 | `/agents` | 管理 agent 配置 |
-| `/branch [name]` | 将当前对话分支到新会话（别名：`/fork`。注意：`/fork` 在 v2.1.77 中更名为 `/branch`） |
+| `/branch [name]` | 切换到当前对话的一个副本，原对话保持不变 |
+| `/fork [prompt]` | 把当前对话复制到一个新的**后台会话**，你可以继续在这里工作；从这一刻起两者互相独立，副本会在 `claude agents` 里占一行（v2.1.212+） |
+| `/subtask <task>` | 派生一个**forked subagent**，它继承完整对话并去执行该任务，你可以继续工作；任务完成后结果会返回到本对话（v2.1.212+） |
 | `/btw <question>` | 额外问题，不写入历史 |
 | `/chrome` | 配置 Chrome 浏览器集成 |
 | `/clear` | 清空对话（别名：`/reset`、`/new`） |
@@ -57,6 +59,7 @@ Claude Code 目前提供 55+ 个内置命令和 5 个内置 Skills。你可以�
 | `/memory` | 编辑 `CLAUDE.md`，切换自动记忆 |
 | `/mobile` | 生成移动端扫码二维码（别名：`/ios`、`/android`） |
 | `/model [model]` | 选择模型，并可用左右箭头调整 effort |
+| `/output-style [name]` | 列出并切换 output style（v2.1.91 移除后，于 v2.1.269 重新加回）。不带参数时列出所有 style 并标记当前使用的那个。在 headless 和 Remote Control 会话中均可使用；选择结果保存到 `.claude/settings.local.json` |
 | `/passes` | 分享一周免费 Claude Code 使用权 |
 | `/permissions` | 查看或更新权限（别名：`/allowed-tools`） |
 | `/plan [description]` | 进入规划模式 |
@@ -64,12 +67,12 @@ Claude Code 目前提供 55+ 个内置命令和 5 个内置 Skills。你可以�
 | `/pr-comments [PR]` | 获取 GitHub PR 评论 |
 | `/privacy-settings` | 隐私设置（仅 Pro/Max） |
 | `/release-notes` | 查看更新日志 |
-| `/reload-plugins` | 重新加载当前插件 |
+| `/reload-plugins` | 重新加载当前插件。自 v2.1.221 起，大多数安装会立即生效，只有当安装摘要提示 `Run /reload-plugins to activate.` 时才需要执行 |
 | `/remote-control` | 从 claude.ai 进行远程控制（别名：`/rc`） |
 | `/remote-env` | 配置默认远程环境 |
 | `/rename [name]` | 重命名会话 |
 | `/resume [session]` | 恢复对话（别名：`/continue`） |
-| `/review` | **已弃用**，请改用 `code-review` 插件 |
+| `/review [low\|medium\|high\|xhigh\|max\|ultra] [--fix] [--comment] [pr#\|branch\|path]` | `/code-review` 的别名（v2.1.223）：审查当前 diff，或你传入的 PR 编号、分支、路径 —— 例如 `/review 1234`。接受相同的 effort 级别和标志。未指定级别时，复用你上次输入的 `low`–`max` 级别 |
 | `/rewind` | 回退对话和/或代码（别名：`/checkpoint`） |
 | `/sandbox` | 切换沙盒模式 |
 | `/schedule [description]` | 创建/管理定时任务 |
@@ -99,16 +102,13 @@ Claude Code 目前提供 55+ 个内置命令和 5 个内置 Skills。你可以�
 
 | 命令 | 状态 |
 |---------|--------|
-| `/review` | 已弃用，已被 `code-review` 插件替代 |
-| `/output-style` | 自 v2.1.73 起弃用 |
-| `/fork` | 已重命名为 `/branch`（别名仍可用，v2.1.77） |
 | `/vim` | 自 v2.1.92 起移除；改用 `/config → Editor mode` |
 
 ### 最近变化
 
-- `/fork` 已更名为 `/branch`，但保留 `/fork` 作为别名（v2.1.77）
-- `/output-style` 已弃用（v2.1.73）
-- `/review` 已弃用，推荐改用 `code-review` 插件
+- `/fork` 与 `/subtask` 在 **v2.1.212** 互换了角色。`/fork` 现在是把对话复制到一个独立的后台会话；原来的 forked subagent 行为转移到了新命令 `/subtask`。历史：v2.1.77–v2.1.161 期间 `/fork` 是 `/branch` 的别名；v2.1.161–v2.1.211 期间它启动 forked subagent（即现在 `/subtask` 的行为）。关闭 agent view 时 `/subtask` 不可用，`/fork` 仍保留 forked subagent 行为
+- `/output-style` 曾被弃用（v2.1.73）并于 v2.1.91 移除，随后**在 v2.1.269 重新加回** — 在 v2.1.278 中它又是一个可用命令，并且在 headless 和 Remote Control 会话中都能工作。output styles 同样仍可通过 `/config` → Output style 或 `outputStyle` 设置使用
+- `/review` 成为 `/code-review` 的完整别名 —— 目标、effort 级别和标志完全相同（v2.1.223）。历史：它在 v2.1.186 首次迁移到 `/code-review medium` 引擎，但当时仅支持 PR
 - 新增 `/effort`，其中 `max` 级别需要 Opus 4.6
 - 新增 `/voice`，用于按住说话语音输入
 - 新增 `/schedule`，用于创建和管理定时任务
@@ -548,8 +548,12 @@ allowed-tools: Bash(npm *), Bash(git *)
 
 ---
 
-**最后更新**: 2026 年 4 月 9 日
-**Claude Code 版本**: 2.1.97
+**最后更新**: 2026 年 9 月 19 日
+**Claude Code 版本**: 2.1.278
+**来源**:
+- https://code.claude.com/docs/en/commands
+- https://code.claude.com/docs/en/output-styles
+**兼容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5
 
 ---
 

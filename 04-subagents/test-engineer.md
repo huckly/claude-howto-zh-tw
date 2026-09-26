@@ -17,7 +17,7 @@ model: inherit
 
 ## 測試策略
 
-1. **單元測試** - 個別函數/方法在隔離狀態下
+1. **單元測試** - 個別函式/方法在隔離狀態下
 2. **整合測試** - 元件互動
 3. **端到端測試** - 完整的流程
 4. **邊緣案例** - 邊界條件、空值、空集合
@@ -74,4 +74,8 @@ describe('Feature: User Authentication', () => {
 ```
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/sub-agents
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

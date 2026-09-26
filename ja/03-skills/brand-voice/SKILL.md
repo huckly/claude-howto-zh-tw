@@ -3,8 +3,9 @@
 <!-- i18n-date: 2026-04-27 -->
 
 ---
-name: brand-voice-consistency
+name: brand-voice
 description: すべてのコミュニケーションがブランドボイスとトーンのガイドラインに沿うことを保証する。マーケティングコピー、顧客向け連絡、公開コンテンツの作成時、またはブランドボイス、トーン、文体について言及がある場合に使用する。
+user-invocable: false
 ---
 
 # ブランドボイス・スキル

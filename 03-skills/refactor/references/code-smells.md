@@ -1,4 +1,4 @@
-﻿# 程式碼壞味道目錄
+# 程式碼壞味道目錄
 
 基於 Martin Fowler《重構》（第二版）的程式碼壞味道完整參考。程式碼壞味道是更深層問題的症狀 — 它們表明你的程式碼設計可能有問題。
 
@@ -667,3 +667,11 @@ const managerName = employee.getManagerName();
 - Fowler, M. (2018). *Refactoring: Improving the Design of Existing Code* (2nd ed.)
 - Kerievsky, J. (2004). *Refactoring to Patterns*
 - Feathers, M. (2004). *Working Effectively with Legacy Code*
+
+---
+
+**最後更新日期**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/skills
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

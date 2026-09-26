@@ -13,7 +13,7 @@
 - **分類**：10 個功能分類
 - **Plugins**：3 個完整外掛
 - **Skills**：6 個完整技能
-- **Hooks**：9 個範例鉤子
+- **Hooks**：11 個範例鉤子
 - **就緒狀態**：所有範例皆可直接使用
 
 ---
@@ -24,7 +24,7 @@
 
 | 檔案 | 描述 | 使用情境 |
 |------|-------------|----------|
-| `optimize.md` | 程式碼優化分析器 | 尋找效能問題 |
+| `optimize.md` | 程式碼最佳化分析器 | 尋找效能問題 |
 | `pr.md` | Pull request 準備 | PR 工作流程自動化 |
 | `generate-api-docs.md` | API 文件產生器 | 產生 API 文件 |
 | `commit.md` | Commit 訊息助手 | 標準化 commit |
@@ -58,14 +58,16 @@
 
 **用法**：由 Claude 自動載入
 
+**AGENTS.md**（v2.1.277）：當工作目錄及其上層都不存在 `CLAUDE.md`、`.claude/CLAUDE.md` 或 `CLAUDE.local.md` 時，會被當作專案指示讀取——請參閱 `02-memory/README.md#agentsmd`
+
 ---
 
-## 03. 技能 (16 個檔案)
+## 03. 技能 (23 個檔案)
 
 透過腳本與範本自動觸發的能力。
 
 ### Code Review 技能 (5 個檔案)
-```
+```text
 code-review-specialist/
 ├── SKILL.md                          # 技能定義
 ├── scripts/
@@ -83,7 +85,7 @@ code-review-specialist/
 ---
 
 ### Brand Voice 技能 (4 個檔案)
-```
+```text
 brand-voice/
 ├── SKILL.md                          # 技能定義
 ├── templates/
@@ -99,7 +101,7 @@ brand-voice/
 ---
 
 ### Documentation Generator 技能 (2 個檔案)
-```
+```text
 doc-generator/
 ├── SKILL.md                          # 技能定義
 └── generate-docs.py                  # Python 文件提取器
@@ -112,7 +114,7 @@ doc-generator/
 ---
 
 ### Refactor 技能 (5 個檔案)
-```
+```text
 refactor/
 ├── SKILL.md                          # 技能定義
 ├── scripts/
@@ -132,17 +134,17 @@ refactor/
 ---
 
 ### Claude MD 技能 (1 個檔案)
-```
+```text
 claude-md/
 └── SKILL.md                          # 技能定義
 ```
 
-**目的**：管理與優化 CLAUDE.md 檔案
+**目的**：管理與最佳化 CLAUDE.md 檔案
 
 ---
 
 ### Blog Draft 技能 (3 個檔案)
-```
+```text
 blog-draft/
 ├── SKILL.md                          # 技能定義
 └── templates/
@@ -158,20 +160,21 @@ blog-draft/
 
 ---
 
-## 04. Subagents (9 個檔案)
+## 04. Subagents (10 個檔案)
 
-具有自定義能力的專業化 AI 助手。
+具有自訂能力的專業化 AI 助手。
 
 | 檔案 | 描述 | 工具 | 使用情境 |
 |------|-------------|-------|----------|
-| `code-reviewer.md` | 程式碼品質分析 | read, grep, diff, lint_runner | 全面性審查 |
-| `test-engineer.md` | 測試覆蓋率分析 | read, write, bash, grep | 測試自動化 |
-| `documentation-writer.md` | 文件建立 | read, write, grep | 文件生成 |
-| `secure-reviewer.md` | 安全性審查 (唯讀) | read, grep | 安全稽核 |
-| `implementation-agent.md` | 全功能實作 | read, write, bash, grep, edit, glob | 功能開發 |
-| `debugger.md` | 除錯專家 | read, bash, grep | Bug 調查 |
-| `data-scientist.md` | 資料分析專家 | read, write, bash | 資料工作流程 |
-| `clean-code-reviewer.md` | Clean code 標準 | read, grep | 程式碼品質 |
+| `code-reviewer.md` | 程式碼品質分析 | Read, Grep, Glob, Bash | 全面性審查 |
+| `test-engineer.md` | 測試覆蓋率分析 | Read, Write, Bash, Grep | 測試自動化 |
+| `documentation-writer.md` | 文件建立 | Read, Write, Grep | 文件生成 |
+| `secure-reviewer.md` | 安全性審查 (唯讀) | Read, Grep | 安全稽核 |
+| `implementation-agent.md` | 全功能實作 | Read, Write, Edit, Bash, Grep, Glob | 功能開發 |
+| `debugger.md` | 除錯專家 | Read, Edit, Bash, Grep, Glob | Bug 調查 |
+| `data-scientist.md` | 資料分析專家 | Bash, Read, Write | 資料工作流程 |
+| `clean-code-reviewer.md` | Clean code 標準 | Read, Grep, Glob, Bash | 程式碼品質 |
+| `performance-optimizer.md` | 效能瓶頸分析 | Read, Edit, Bash, Grep, Glob | 最佳化工作 |
 | `README.md` | 文件 | - | 設定與使用指南 |
 
 **安裝路徑**: `.claude/agents/`
@@ -198,40 +201,45 @@ blog-draft/
 
 ---
 
-## 06. Hooks (9 個檔案)
+## 06. Hooks (12 個檔案)
 
 事件驅動的自動化腳本，會自動執行。
 
 | 檔案 | 描述 | 事件 | 使用情境 |
 |------|-------------|-------|----------|
-| `format-code.sh` | 自動格式化程式碼 | PreToolUse:Write | 程式碼格式化 |
-| `pre-commit.sh` | 在 commit 前執行測試 | PreToolUse:Bash | 測試自動化 |
-| `security-scan.sh` | 安全掃描 | PostToolUse:Write | 安全檢查 |
-| `log-bash.sh` | 記錄 bash 指令 | PostToolUse:Bash | 指令記錄 |
-| `validate-prompt.sh` | 驗證提示詞 | PreToolUse | 輸入驗證 |
-| `notify-team.sh` | 發送通知 | Notification | 團隊通知 |
-| `context-tracker.py` | 追蹤 context window 使用量 | PostToolUse | Context 監控 |
-| `context-tracker-tiktoken.py` | 基於 token 的 context 追蹤 | PostToolUse | 精確的 token 計數 |
+| `format-code.sh` | 自動格式化程式碼 | PostToolUse (matcher: Write) | 程式碼格式化 |
+| `pre-commit.sh` | 在 commit 前執行測試 | PreToolUse (matcher: Bash) | 測試自動化 |
+| `pre-tool-check.sh` | 在指令執行前驗證並稽核 | PreToolUse (matcher: Bash) | 防護機制、稽核紀錄 |
+| `security-scan.sh` | 安全掃描 | PostToolUse (matcher: Write) | 安全檢查 |
+| `dependency-check.sh` | 掃描相依套件清單中的漏洞 | PostToolUse (matcher: Write) | 供應鏈檢查 |
+| `log-bash.sh` | 記錄 bash 指令 | PostToolUse (matcher: Bash) | 指令記錄 |
+| `notify-team.sh` | 發送通知 | PostToolUse (matcher: Bash) | 團隊通知 |
+| `validate-prompt.sh` | 驗證提示詞 | UserPromptSubmit | 輸入驗證 |
+| `session-end.sh` | 工作階段結束時擷取進度 | SessionEnd | 進度追蹤 |
+| `context-tracker.py` | 追蹤 context window 使用量 | UserPromptSubmit, Stop | Context 監控 |
+| `context-tracker-tiktoken.py` | 基於 token 的 context 追蹤 | UserPromptSubmit, Stop | 精確的 token 計數 |
 | `README.md` | 文件 | - | 安裝與使用指南 |
 
-**安裝路徑**：在 `~/.claude/settings.json` 中進行配置
+**安裝路徑**：在 `~/.claude/settings.json` 中設定
 
-**用法**：在設定中配置，並自動執行
+**用法**：在設定檔中設定，並自動執行
 
-**Hook 類型**（5 種類型，29 個事件）：
+**Hook 類型**（5 種）：`command`、`http`、`prompt`、`mcp_tool`、`agent`——決定 hook 如何執行。
+
+**Hook 事件**（33 個，分為 4 類）——決定 hook 何時執行：
 - Tool Hooks: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied
 - Session Hooks: SessionStart, Setup, SessionEnd, Stop, StopFailure, SubagentStart, SubagentStop
-- Task Hooks: UserPromptSubmit, UserPromptExpansion, TaskCompleted, TaskCreated, TeammateIdle
-- Lifecycle Hooks: ConfigChange, CwdChanged, FileChanged, PreCompact, PostCompact, WorktreeCreate, WorktreeRemove, Notification, InstructionsLoaded, Elicitation, ElicitationResult
+- Task Hooks: UserPromptSubmit, UserPromptExpansion, MessageDisplay, TaskCompleted, TaskCreated, TeammateIdle（TaskCompleted/TaskCreated 只有在啟用 todo 工具時才會觸發——todo 工具預設僅在 Claude 3.x 模型、Opus 4 至 4.7、Sonnet 4 至 4.6 以及 Haiku 4.5 上提供）
+- Lifecycle Hooks: ConfigChange, CwdChanged, DirectoryAdded, FileChanged, PreCompact, PostCompact, PreModelSwitch, PostModelSwitch, WorktreeCreate, WorktreeRemove, Notification, InstructionsLoaded, Elicitation, ElicitationResult
 
 ---
 
-## 07. Plugins (3 個完整外掛，27 個檔案)
+## 07. Plugins (3 個完整外掛，39 個檔案)
 
 功能組合包。
 
 ### PR Review Plugin (10 個檔案)
-```
+```text
 pr-review/
 ├── .claude-plugin/
 │   └── plugin.json                   # Plugin manifest
@@ -259,7 +267,7 @@ pr-review/
 ---
 
 ### DevOps Automation Plugin (15 個檔案)
-```
+```text
 devops-automation/
 ├── .claude-plugin/
 │   └── plugin.json                   # Plugin manifest
@@ -279,12 +287,12 @@ devops-automation/
 │   └── post-deploy.js                # 部署後任務
 ├── scripts/
 │   ├── deploy.sh                     # 部署自動化
-│   ├── rollback.sh                   # 回滾自動化
+│   ├── rollback.sh                   # 復原自動化
 │   └── health-check.sh               # 健康檢查
 └── README.md                         # 外掛文件
 ```
 
-**功能**: Kubernetes 部署、回滾、監控、事件響應
+**功能**: Kubernetes 部署、復原、監控、事件回應
 
 **斜線命令**: `/deploy`、`/rollback`、`/status`、`/incident`
 
@@ -293,7 +301,7 @@ devops-automation/
 ---
 
 ### Documentation Plugin (14 個檔案)
-```
+```text
 documentation/
 ├── .claude-plugin/
 │   └── plugin.json                   # 外掛清單
@@ -332,7 +340,7 @@ documentation/
 | 檔案 | 說明 | 內容 |
 |------|-------------|---------|
 | `README.md` | 文件 | 全面的檢查點指南 |
-| `checkpoint-examples.md` | 真實案例 | 資料庫遷移、效能優化、UI 迭代、除錯 |
+| `checkpoint-examples.md` | 真實案例 | 資料庫遷移、效能最佳化、UI 迭代、除錯 |
 | | | |
 
 **核心概念**：
@@ -341,7 +349,7 @@ documentation/
 - **Branch Point**: 探索多種方法
 
 **用法**：
-```
+```text
 # Checkpoints 會隨著每個使用者提示詞自動建立
 # 若要 rewind，請按兩次 Esc 或使用：
 /rewind
@@ -358,7 +366,7 @@ documentation/
 
 ---
 
-## 09. Advanced Features (3 個檔案)
+## 09. Advanced Features (4 個檔案)
 
 用於複雜工作流程的高階功能。
 
@@ -367,10 +375,13 @@ documentation/
 | `README.md` | 完整指南 | 所有高階功能文件 |
 | `config-examples.json` | 設定範例 | 10 個以上特定使用情境的設定 |
 | `planning-mode-examples.md` | 規劃範例 | REST API、資料庫遷移、重構 |
+| `setup-auto-mode-permissions.py` | 為 auto 模式預先填入 `permissions.allow` | 冪等，支援 `--dry-run` 與選擇性啟用旗標 |
+| Dynamic Workflows | 透過 `/workflows` 進行確定性的多代理協調 (v2.1.154) | 全面稽核、遷移、橫向擴展 |
 | Scheduled Tasks | 使用 `/loop` 與 cron 工具進行週期性任務 | 自動化週期性工作流程 |
 | Chrome Integration | 透過 headless Chromium 進行瀏覽器自動化 | 網頁測試與爬蟲 |
-| Remote Control (expanded) | 連線方式、安全性、比較表 | 遠端會話管理 |
-| Keyboard Customization | 自定義按鍵綁定、和弦支援、上下文 | 個人化快捷鍵 |
+| Remote Control (expanded) | 連線方式、安全性、比較表、裝置卡片 | 遠端工作階段管理（已不再是研究預覽） |
+| Cross-Session Messaging | `SendMessage` / `ListAgents`，包括 `notify_when_idle` (v2.1.236) | 協調同一台機器上的工作階段 |
+| Keyboard Customization | 自訂按鍵綁定、和弦支援、上下文 | 個人化快捷鍵 |
 | Desktop App (expanded) | 連接器、launch.json、企業級功能 | 桌面整合 |
 | | | |
 
@@ -387,16 +398,22 @@ documentation/
 - 權衡評估
 
 ### Background Tasks
-- 無須阻塞的長時間運行操作
+- 無須阻塞的長時間執行操作
 - 並行開發工作流程
 - 任務管理與監控
 
+### Dynamic Workflows (v2.1.154)
+- 以確定性方式協調數十到數百個背景 subagent
+- 扇出／管線／平行階段，達到全面涵蓋
+- 使用 `/workflows` 檢視執行紀錄；`ultracode` `/effort` 可為工作階段開啟此功能
+- 自 v2.1.219 起預設規模準則為 medium（目標少於 10 個代理）——可在 `/config` 的 **Dynamic workflow size** 中變更
+
 ### Permission Modes
-- **default**: 對於風險行為請求核准
+- **manual**: 對於風險行為請求核准（於 v2.1.200 從 `default` 更名；仍接受 `default`）
 - **acceptEdits**: 自動接受檔案編輯，其他行為則請求核准
 - **plan**: 唯讀分析，不進行修改
-- **auto**: 自動核准安全行為，對風險行為發出提示
-- **dontAsk**: 除了風險行為外，接受所有操作
+- **auto**: 全部允許，但有背景安全檢查——由分類器審查指令與受保護目錄的寫入（透過 `autoMode` 設定物件設定）
+- **dontAsk**: 僅限預先核准的工具——自動拒絕所有原本會提示的呼叫。Claude 只會執行符合 `permissions.allow` 的項目、唯讀 Bash 指令，以及經 `PreToolUse` hook 核准的呼叫
 - **bypassPermissions**: 接受所有操作（需要 `--dangerously-skip-permissions`）
 
 ### Headless Mode (`claude -p`)
@@ -405,9 +422,9 @@ documentation/
 - 批次處理
 
 ### Session Management
-- 多個工作會話
-- 會話切換與儲存
-- 會話持久化
+- 多個工作階段
+- 工作階段切換與儲存
+- 工作階段持久化
 
 ### Interactive Features
 - 鍵盤快捷鍵
@@ -418,7 +435,7 @@ documentation/
 ### Configuration
 - 全面的設定管理
 - 特定環境的設定
-- 每個專案的自定義
+- 每個專案的自訂
 
 ### 排程任務
 - 使用 `/loop` 命令的循環任務
@@ -434,15 +451,21 @@ documentation/
 - 連線方式與協定
 - 安全性考量與最佳實踐
 - 遠端存取選項的比較表
+- 已結束研究預覽——執行 `claude remote-control` 的機器會以裝置卡片形式出現在 Claude app 的 Code 分頁中
 
-### 鍵盤自定義
-- 自定義按鍵綁定配置
+### 跨工作階段訊息
+- 在同一台機器上的工作階段之間使用 `SendMessage`
+- `notify_when_idle`——當另一個工作階段下次閒置時，傳送一次需選擇啟用的通知 (v2.1.236)
+- `ListAgents` 會回報工作階段自己的名稱並列出存活中的隊友 (v2.1.239)
+
+### 鍵盤自訂
+- 自訂按鍵綁定設定
 - 支援多鍵組合快捷鍵的 Chord 功能
 - 具備上下文感知能力的按鍵綁定啟動
 
 ### Desktop App (擴充)
 - 用於 IDE 整合的連接器
-- `launch.json` 配置
+- `launch.json` 設定
 - 企業級功能與部署
 
 ---
@@ -456,10 +479,10 @@ documentation/
 | `README.md` | CLI 文件 | 旗標 (Flags)、選項與使用模式 |
 
 **關鍵 CLI 功能**：
-- `claude` - 啟動互動式會話
+- `claude` - 啟動互動式工作階段
 - `claude -p "prompt"` - Headless/非互動模式
-- `claude web` - 啟動網頁會話
-- `claude --model` - 選擇模型 (Sonnet 4.6, Opus 4.7, Haiku 4.5)
+- `claude web` - 啟動網頁工作階段
+- `claude --model` - 選擇模型 (Opus 5, Sonnet 5, Sonnet 4.6, Opus 4.8, Haiku 4.5)
 - `claude --permission-mode` - 設定權限模式
 - `claude --remote` - 透過 WebSocket 啟用遠端控制
 
@@ -487,7 +510,7 @@ documentation/
 
 ## 完整檔案樹
 
-```
+```text
 claude-howto/
 ├── README.md                                    # 主要概覽
 ├── INDEX.md                                     # 本檔案
@@ -718,7 +741,7 @@ mkdir -p ~/.claude/hooks
 cp 06-hooks/*.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
 
-# 在設定中配置鉤子 (~/.claude/settings.json)
+# 在設定檔中設定鉤子 (~/.claude/settings.json)
 # 請參閱 06-hooks/README.md
 ```
 
@@ -733,7 +756,7 @@ chmod +x ~/.claude/hooks/*.sh
 
 ### 進階工作流程
 ```bash
-# 配置進階功能
+# 設定進階功能
 # 請參閱 09-advanced-features/config-examples.json
 
 # 使用規劃模式
@@ -750,7 +773,7 @@ claude -p "Run tests and report results"
 # 執行背景任務
 Run tests in background
 
-# 請參閱 09-advanced-features/README.md 以獲取完整指南
+# 請參閱 09-advanced-features/README.md 以取得完整指南
 ```
 
 ---
@@ -761,13 +784,13 @@ Run tests in background
 |----------|----------|--------|-----|-------|---------|-----------|------|--------|-------|
 | **01 Slash Commands** | 8 | - | - | - | - | - | 1 | 1 | **10** |
 | **02 Memory** | - | - | - | - | - | 3 | 1 | 2 | **6** |
-| **03 Skills** | - | - | - | - | 5 | 9 | 1 | - | **28** |
-| **04 Subagents** | - | 8 | - | - | - | - | 1 | - | **9** |
+| **03 Skills** | - | - | - | - | 5 | 7 | 11 | - | **23** |
+| **04 Subagents** | - | 9 | - | - | - | - | 1 | - | **10** |
 | **05 MCP** | - | - | 4 | - | - | - | 1 | - | **5** |
-| **06 Hooks** | - | - | - | 8 | - | - | 1 | - | **9** |
-| **07 Plugins** | 11 | 9 | 3 | 3 | 3 | 3 | 4 | - | **40** |
+| **06 Hooks** | - | - | - | 11 | - | - | 1 | - | **12** |
+| **07 Plugins** | 11 | 9 | 3 | 3 | 3 | 3 | 7 | - | **39** |
 | **08 Checkpoints** | - | - | - | - | - | - | 1 | 1 | **2** |
-| **09 Advanced** | - | - | - | - | - | - | 1 | 2 | **3** |
+| **09 Advanced** | - | - | - | - | 1 | 1 | 2 | - | **4** |
 | **10 CLI** | - | - | - | - | - | - | 1 | - | **1** |
 
 ---
@@ -788,18 +811,18 @@ Run tests in background
 
 ### 高階者 (第 4 週+)
 1. ✅ 安裝完整外掛
-2. ✅ 建立自定義斜線命令
-3. ✅ 建立自定義子代理
-4. ✅ 建立自定義技能
+2. ✅ 建立自訂斜線命令
+3. ✅ 建立自訂子代理
+4. ✅ 建立自訂技能
 5. ✅ 開發你自己的外掛
 
 ### 專家 (第 5 週+)
 1. ✅ 設定自動化鉤子
 2. ✅ 使用檢查點進行實驗
-3. ✅ 配置規劃模式
+3. ✅ 設定規劃模式
 4. ✅ 有效使用權限模式
 5. ✅ 為 CI/CD 設定無頭模式 (headless mode)
-6. ✅ 精通會話管理
+6. ✅ 精通工作階段管理
 
 ---
 
@@ -847,7 +870,7 @@ Run tests in background
 - `09-advanced-features/planning-mode-examples.md` - 規劃模式範例
 - `09-advanced-features/README.md` - 延伸思考
 
-### 配置
+### 設定
 - `09-advanced-features/config-examples.json` - 設定範例
 
 ---
@@ -859,7 +882,7 @@ Run tests in background
 - 範例遵循 Claude Code 最佳實務
 - 每個類別都有其專屬的 README，包含詳細說明
 - 腳本包含適當的錯誤處理
-- 範本可自定義
+- 範本可自訂
 
 ---
 
@@ -874,17 +897,23 @@ Run tests in background
 
 ---
 
-**Last Updated**: May 25, 2026
-**Claude Code Version**: 2.1.150
-**Sources**:
+**最後更新日期**：2026 年 9 月 19 日
+**Claude Code 版本**：2.1.278
+**來源**：
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability
+- https://code.claude.com/docs/en/workflows#set-a-size-guideline
+- https://code.claude.com/docs/en/memory#agents-md
 - https://code.claude.com/docs/en/overview
 - https://code.claude.com/docs/en/hooks
 - https://code.claude.com/docs/en/commands
-- https://github.com/anthropics/claude-code/releases/tag/v2.1.144
-- https://github.com/anthropics/claude-code/releases/tag/v2.1.145
-**Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
-**Total Examples**: 100+ files
-**Categories**: 10 features
-**Hooks**: 9 automation scripts
-**Configuration Examples**: 10+ scenarios
-**Ready to Use**: All examples
+- https://code.claude.com/docs/en/permission-modes
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.153
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.154
+- https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+- https://code.claude.com/docs/en/model-config
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5
+**範例總數**：100+ 個檔案
+**分類**：10 項功能
+**Hooks**：11 個自動化腳本
+**設定範例**：10+ 種情境
+**就緒狀態**：所有範例皆可直接使用
