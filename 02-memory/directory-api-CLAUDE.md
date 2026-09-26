@@ -1,6 +1,6 @@
 # API 模組標準
 
-此檔案會覆寫根 CLAUDE.md 檔案，用於 /src/api/ 中的所有內容。
+此檔案補充根 CLAUDE.md，適用於 /src/api/ 中的所有內容。記憶檔案是串接而非覆寫——根 CLAUDE.md 仍然適用，而 Claude Code 會在讀取此子樹中的檔案時按需載入此檔案。
 
 ## API 專屬標準
 
@@ -55,10 +55,14 @@
 - 包含 retry-after 標頭
 
 ### 快取
-- 使用 Redis 進行會話快取
+- 使用 Redis 進行工作階段快取
 - 快取時長：預設 5 分鐘
 - 在寫入操作時使快取失效
 - 使用資源類型標記快取金鑰
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/memory
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

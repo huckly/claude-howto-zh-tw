@@ -1,5 +1,5 @@
 ---
-name: api-documentation-generator
+name: doc-generator
 description: 从源代码生成全面且准确的 API 文档。适用于创建或更新 API 文档、生成 OpenAPI 规范，或在用户提到 API 文档、端点或说明时使用。
 ---
 
@@ -18,7 +18,7 @@ description: 从源代码生成全面且准确的 API 文档。适用于创建�
 
 ### 每个端点的写法
 
-```markdown
+````markdown
 ## GET /api/v1/users/:id
 
 ### 描述
@@ -73,4 +73,4 @@ response = requests.get(
 )
 user = response.json()
 ```
-```
+````

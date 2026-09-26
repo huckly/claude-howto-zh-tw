@@ -64,7 +64,7 @@
 
 ---
 
-## 03. Навички (Skills) (28 файлів)
+## 03. Навички (Skills) (23 файли)
 
 Автоматично викликані можливості зі скриптами та шаблонами.
 
@@ -168,20 +168,21 @@ blog-draft/
 
 ---
 
-## 04. Субагенти (9 файлів)
+## 04. Субагенти (10 файлів)
 
 Спеціалізовані AI-помічники з налаштованими можливостями.
 
 | Файл | Опис | Інструменти | Сценарій |
 |------|------|-------------|----------|
-| `code-reviewer.md` | Аналіз якості коду | read, grep, diff, lint_runner | Комплексне ревʼю |
-| `test-engineer.md` | Аналіз покриття тестами | read, write, bash, grep | Автоматизація тестування |
-| `documentation-writer.md` | Створення документації | read, write, grep | Генерація документації |
-| `secure-reviewer.md` | Ревʼю безпеки (лише читання) | read, grep | Аудит безпеки |
-| `implementation-agent.md` | Повна реалізація | read, write, bash, grep, edit, glob | Розробка функцій |
-| `debugger.md` | Спеціаліст з налагодження | read, bash, grep | Дослідження помилок |
-| `data-scientist.md` | Спеціаліст з аналізу даних | read, write, bash | Робота з даними |
-| `clean-code-reviewer.md` | Стандарти чистого коду | read, grep | Якість коду |
+| `code-reviewer.md` | Аналіз якості коду | Read, Grep, Glob, Bash | Комплексне ревʼю |
+| `test-engineer.md` | Аналіз покриття тестами | Read, Write, Bash, Grep | Автоматизація тестування |
+| `documentation-writer.md` | Створення документації | Read, Write, Grep | Генерація документації |
+| `secure-reviewer.md` | Ревʼю безпеки (лише читання) | Read, Grep | Аудит безпеки |
+| `implementation-agent.md` | Повна реалізація | Read, Write, Edit, Bash, Grep, Glob | Розробка функцій |
+| `debugger.md` | Спеціаліст з налагодження | Read, Edit, Bash, Grep, Glob | Дослідження помилок |
+| `data-scientist.md` | Спеціаліст з аналізу даних | Bash, Read, Write | Робота з даними |
+| `clean-code-reviewer.md` | Стандарти чистого коду | Read, Grep, Glob, Bash | Якість коду |
+| `performance-optimizer.md` | Аналіз вузьких місць продуктивності | Read, Edit, Bash, Grep, Glob | Робота з оптимізації |
 | `README.md` | Документація | - | Керівництво |
 
 **Шлях встановлення**: `.claude/agents/`
@@ -208,36 +209,40 @@ blog-draft/
 
 ---
 
-## 06. Хуки (9 файлів)
+## 06. Хуки (11 файлів)
 
 Скрипти автоматизації, що виконуються при певних подіях.
 
 | Файл | Опис | Подія | Сценарій |
 |------|------|-------|----------|
-| `format-code.sh` | Автоформатування коду | PreToolUse:Write | Форматування коду |
-| `pre-commit.sh` | Тести перед комітом | PreToolUse:Bash | Автоматизація тестів |
-| `security-scan.sh` | Сканування безпеки | PostToolUse:Write | Перевірка безпеки |
-| `log-bash.sh` | Логування bash-команд | PostToolUse:Bash | Журналювання команд |
-| `validate-prompt.sh` | Валідація промптів | PreToolUse | Валідація вводу |
-| `notify-team.sh` | Надсилання сповіщень | Notification | Сповіщення команди |
-| `context-tracker.py` | Відстеження контекстного вікна | PostToolUse | Моніторинг контексту |
-| `context-tracker-tiktoken.py` | Підрахунок токенів | PostToolUse | Точний підрахунок токенів |
+| `format-code.sh` | Автоформатування коду | PostToolUse (matcher: Write) | Форматування коду |
+| `pre-commit.sh` | Тести перед комітом | PreToolUse (matcher: Bash) | Автоматизація тестів |
+| `pre-tool-check.sh` | Валідація та аудит команд перед виконанням | PreToolUse (matcher: Bash) | Захисні бар'єри, журнал аудиту |
+| `security-scan.sh` | Сканування безпеки | PostToolUse (matcher: Write) | Перевірка безпеки |
+| `dependency-check.sh` | Сканування маніфестів залежностей на вразливості | PostToolUse (matcher: Write) | Перевірки ланцюга постачання |
+| `log-bash.sh` | Логування bash-команд | PostToolUse (matcher: Bash) | Журналювання команд |
+| `notify-team.sh` | Надсилання сповіщень | PostToolUse (matcher: Bash) | Сповіщення команди |
+| `validate-prompt.sh` | Валідація промптів | UserPromptSubmit | Валідація вводу |
+| `context-tracker.py` | Відстеження контекстного вікна | UserPromptSubmit, Stop | Моніторинг контексту |
+| `context-tracker-tiktoken.py` | Підрахунок токенів | UserPromptSubmit, Stop | Точний підрахунок токенів |
 | `README.md` | Документація | - | Керівництво |
 
 **Шлях встановлення**: Конфігурація в `~/.claude/settings.json`
 
 **Використання**: Налаштовуються в settings, виконуються автоматично
 
-**Типи хуків** (4 типи, 25 подій):
+**Типи хуків** (5): `command`, `http`, `prompt`, `mcp_tool`, `agent` — як саме виконується хук.
 
-- Хуки інструментів: PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest
-- Хуки сесії: SessionStart, SessionEnd, Stop, StopFailure, SubagentStart, SubagentStop
-- Хуки завдань: UserPromptSubmit, TaskCompleted, TaskCreated, TeammateIdle
-- Хуки життєвого циклу: ConfigChange, CwdChanged, FileChanged, PreCompact, PostCompact, WorktreeCreate, WorktreeRemove, Notification, InstructionsLoaded, Elicitation, ElicitationResult
+**Події хуків** (33, у 4 категоріях) — коли він виконується:
+
+- Хуки інструментів: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied
+- Хуки сесії: SessionStart, Setup, SessionEnd, Stop, StopFailure, SubagentStart, SubagentStop
+- Хуки завдань: UserPromptSubmit, UserPromptExpansion, MessageDisplay, TaskCompleted, TaskCreated, TeammateIdle (TaskCompleted/TaskCreated спрацьовують лише коли увімкнені todo-інструменти — доступні типово тільки на Claude 3.x, Opus 4–4.7, Sonnet 4–4.6 та Haiku 4.5; `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` повертає їх)
+- Хуки життєвого циклу: ConfigChange, CwdChanged, DirectoryAdded, FileChanged, PreCompact, PostCompact, PreModelSwitch, PostModelSwitch, WorktreeCreate, WorktreeRemove, Notification, InstructionsLoaded, Elicitation, ElicitationResult
 
 ---
 
-## 07. Плагіни (3 повних плагіни, 40 файлів)
+## 07. Плагіни (3 повних плагіни, 39 файлів)
 
 Пакетні набори функціональності.
 
@@ -374,7 +379,7 @@ documentation/
 
 ---
 
-## 09. Розширені функції (3 файли)
+## 09. Розширені функції (4 файли)
 
 Просунуті можливості для складних робочих процесів.
 
@@ -383,6 +388,7 @@ documentation/
 | `README.md` | Повний посібник | Документація всіх розширених функцій |
 | `config-examples.json` | Приклади конфігурації | 10+ конфігурацій для різних сценаріїв |
 | `planning-mode-examples.md` | Приклади планування | REST API, міграція БД, рефакторинг |
+| `setup-auto-mode-permissions.py` | Початкове заповнення `permissions.allow` для режиму auto | Ідемпотентний, `--dry-run` та явні прапорці |
 | Заплановані завдання | Повторювані завдання з `/loop` та cron | Автоматичні повторювані процеси |
 | Інтеграція з Chrome | Автоматизація браузера через headless Chromium | Веб-тестування та скрейпінг |
 | Віддалене керування (розширено) | Методи підключення, безпека, порівняння | Управління віддаленими сесіями |
@@ -414,8 +420,8 @@ documentation/
 - **default**: Запитувати дозвіл на ризиковані дії
 - **acceptEdits**: Автоматично приймати редагування, запитувати інше
 - **plan**: Лише аналіз, без змін (тільки читання)
-- **auto**: Автоматично схвалювати безпечні дії, запитувати ризиковані
-- **dontAsk**: Приймати всі дії, крім ризикованих
+- **auto**: Виконує все з фоновими перевірками безпеки — класифікатор перевіряє команди та запис у захищені каталоги (налаштовується через об'єкт `autoMode` у налаштуваннях)
+- **dontAsk**: Лише попередньо затверджені інструменти — автоматично відхиляє кожен виклик, який інакше вимагав би запиту. Claude виконує лише збіги з `permissions.allow`, Bash-команди лише для читання та виклики, схвалені хуком `PreToolUse`
 - **bypassPermissions**: Приймати все (потребує `--dangerously-skip-permissions`)
 
 ### Headless-режим (`claude -p`)
@@ -798,13 +804,13 @@ Run tests in background
 |-----------|---------|--------|-----|------|---------|---------|------|------------|-------|
 | **01 Слеш-команди** | 8 | - | - | - | - | - | 1 | 1 | **10** |
 | **02 Пам'ять** | - | - | - | - | - | 3 | 1 | 2 | **6** |
-| **03 Навички** | - | - | - | - | 5 | 9 | 1 | - | **28** |
-| **04 Субагенти** | - | 8 | - | - | - | - | 1 | - | **9** |
+| **03 Навички** | - | - | - | - | 5 | 7 | 11 | - | **23** |
+| **04 Субагенти** | - | 9 | - | - | - | - | 1 | - | **10** |
 | **05 MCP** | - | - | 4 | - | - | - | 1 | - | **5** |
-| **06 Хуки** | - | - | - | 8 | - | - | 1 | - | **9** |
-| **07 Плагіни** | 11 | 9 | 3 | 3 | 3 | 3 | 4 | - | **40** |
+| **06 Хуки** | - | - | - | 10 | - | - | 1 | - | **11** |
+| **07 Плагіни** | 11 | 9 | 3 | 3 | 3 | 3 | 7 | - | **39** |
 | **08 Контрольні точки** | - | - | - | - | - | - | 1 | 1 | **2** |
-| **09 Розширені** | - | - | - | - | - | - | 1 | 2 | **3** |
+| **09 Розширені** | - | - | - | - | 1 | 1 | 2 | - | **4** |
 | **10 CLI** | - | - | - | - | - | - | 1 | - | **1** |
 
 ---
@@ -926,10 +932,13 @@ Run tests in background
 
 ---
 
-**Останнє оновлення**: 9 квітня 2026
-**Версія Claude Code**: 2.1.97
+**Останнє оновлення**: 19 вересня 2026
+**Версія Claude Code**: 2.1.278
 **Прикладів**: 100+ файлів
 **Категорій**: 10 функцій
 **Хуків**: 8 скриптів автоматизації
 **Прикладів конфігурації**: 10+ сценаріїв
 **Готові до використання**: Усі приклади
+**Джерела**:
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability
+- https://code.claude.com/docs/en/hooks

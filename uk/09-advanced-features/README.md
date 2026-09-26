@@ -44,7 +44,7 @@
 **Ключові розширені функції:**
 - **Режим планування**: Створення детальних планів реалізації перед кодуванням
 - **Розширене мислення**: Глибоке міркування для складних проблем
-- **Auto Mode**: Фоновий класифікатор безпеки перевіряє кожну дію перед виконанням (Research Preview)
+- **Auto Mode**: Фоновий класифікатор безпеки перевіряє кожну дію перед виконанням
 - **Фонові завдання**: Виконання тривалих операцій без блокування розмови
 - **Режими дозволів**: Контроль дій Claude (`default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`)
 - **Режим друку**: Неінтерактивний запуск Claude Code для автоматизації та CI/CD (`claude -p`)
@@ -197,10 +197,6 @@ claude --model opusplan "design and implement the new API"
 
 **Редагування плану зовні**: Натисніть `Ctrl+G`, щоб відкрити поточний план у зовнішньому редакторі для детальних змін.
 
-### Ultraplan
-
-Використовуйте `/ultraplan <prompt>` для наскрізного робочого процесу планування: Claude складає детальний план, відкриває його у браузері для перегляду, потім виконує план віддалено або повертає його у ваш термінал для локального виконання.
-
 ---
 
 ## Розширене мислення
@@ -348,14 +344,14 @@ export CLAUDE_CODE_EFFORT_LEVEL=high
 
 ## Auto Mode
 
-Auto Mode — це режим дозволів Research Preview (березень 2026), який використовує фоновий класифікатор безпеки для перевірки кожної дії перед виконанням. Він дозволяє Claude працювати автономно, блокуючи небезпечні операції.
+Auto Mode — це режим дозволів, який використовує фоновий класифікатор безпеки для перевірки кожної дії перед виконанням. Він дозволяє Claude працювати автономно, блокуючи небезпечні операції. Доступний на всіх планах, але вимагає відповідної моделі та провайдера.
 
 ### Вимоги
 
 - **План**: Team, Enterprise або API (недоступно на планах Pro або Max)
 - **Модель**: Claude Sonnet 4.6 або Opus 4.6
 - **Провайдер**: Тільки Anthropic API (не підтримується на Bedrock, Vertex або Foundry)
-- **Класифікатор**: Працює на Claude Sonnet 4.6 (додаткова вартість токенів)
+- **Класифікатор**: Додаткова вартість токенів, окрім планів Enterprise та акаунтів Claude API, де v2.1.278+ виконує перевірку на боці сервера без оплати
 
 ### Увімкнення Auto Mode
 
@@ -451,15 +447,14 @@ python3 09-advanced-features/setup-auto-mode-permissions.py --include-git-write 
 
 | Категорія | Приклади |
 |----------|---------|
-| Базові інструменти тільки для читання | `Read(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)`, `WebFetch(*)` |
+| Базові інструменти тільки для читання | `Read(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)`, `WebFetch(*)` |
 | Локальне інспектування | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git diff:*)`, `Bash(cat:*)` |
-| Опціональне редагування | `Edit(*)`, `Write(*)`, `NotebookEdit(*)` |
+| Опціональне редагування | `Edit(*)` |
 | Опціональні тести/збірка | `Bash(pytest:*)`, `Bash(python3 -m pytest:*)`, `Bash(cargo test:*)` |
-| Опціональний запис у git | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git stash:*)` |
-| Git (локальний запис) | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)` |
-| Менеджери пакетів | `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(cargo build:*)` |
+| Опціональний запис у git | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git checkout:*)`, `Bash(git switch:*)`, `Bash(git stash:*)`, `Bash(git tag:*)` |
+| Менеджери пакетів | `Bash(npm ci:*)`, `Bash(npm install:*)`, `Bash(pip install:*)`, `Bash(pip3 install:*)` |
 | Збірка та тести | `Bash(make:*)`, `Bash(pytest:*)`, `Bash(go test:*)` |
-| Звичайні shell-команди | `Bash(ls:*)`, `Bash(cat:*)`, `Bash(find:*)`, `Bash(cp:*)`, `Bash(mv:*)` |
+| Звичайні shell-команди | `Bash(ls:*)`, `Bash(cat:*)`, `Bash(find:*)` |
 | GitHub CLI | `Bash(gh pr view:*)`, `Bash(gh pr create:*)`, `Bash(gh issue list:*)` |
 
 Небезпечні операції (`rm -rf`, `sudo`, force push, `DROP TABLE`, `terraform destroy` тощо) навмисно виключені. Скрипт ідемпотентний — повторний запуск не дублює правила.
@@ -577,17 +572,14 @@ Claude: [Shows linter output from bg-5002]
 
 ### Конфігурація
 
-```json
-{
-  "backgroundTasks": {
-    "enabled": true,
-    "maxConcurrentTasks": 5,
-    "notifyOnCompletion": true,
-    "autoCleanup": true,
-    "logOutput": true
-  }
-}
+Немає блоку `settings.json` для фонових завдань. Функція керується змінною середовища:
+
+```bash
+# Повністю вимкнути фонові завдання
+export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=true
 ```
+
+Паралельність теж не є налаштуванням фонових завдань — кількість одночасно запущених агентів визначає `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (за замовчуванням `20`).
 
 ---
 
@@ -678,7 +670,7 @@ export CLAUDE_CODE_DISABLE_CRON=1
 | `default` | Тільки читання файлів; запитує дозвіл на всі інші дії |
 | `acceptEdits` | Читання та редагування файлів; запитує дозвіл на команди |
 | `plan` | Тільки читання файлів (режим дослідження, без редагувань) |
-| `auto` | Усі дії з перевірками фонового класифікатора безпеки (Research Preview) |
+| `auto` | Усі дії з перевірками фонового класифікатора безпеки |
 | `bypassPermissions` | Усі дії, без перевірки дозволів (небезпечно) |
 | `dontAsk` | Виконуються лише попередньо затверджені інструменти; всі інші відхиляються |
 
@@ -954,7 +946,7 @@ Claude Code підтримує клавіатурні скорочення дл�
 | `Ctrl+C` | Скасувати поточний ввід/генерацію |
 | `Ctrl+D` | Вийти з Claude Code |
 | `Ctrl+G` | Редагувати план у зовнішньому редакторі |
-| `Ctrl+L` | Очистити екран терміналу |
+| `Ctrl+L` | Перемалювати екран (лише перемальовування — подвійне натискання для `/clear` вилучено у v2.1.238) |
 | `Ctrl+O` | Перемкнути детальний вивід (перегляд міркувань) |
 | `Ctrl+R` | Зворотний пошук в історії |
 | `Ctrl+T` | Перемкнути перегляд списку завдань |
@@ -1440,7 +1432,7 @@ claude --teleport
 
 ### Режими дозволів у десктопному додатку
 
-Десктопний додаток підтримує ті самі 4 режими дозволів, що й CLI:
+Десктопний додаток підтримує ті самі режими дозволів, що й CLI:
 
 | Режим | Поведінка |
 |------|----------|
@@ -1684,7 +1676,7 @@ claude --no-sandbox    # Вимкнути пісочницю
 ```json
 {
   "permissions": {
-    "mode": "default"
+    "defaultMode": "manual"
   },
   "hooks": {
     "PreToolUse:Edit": "eslint --fix ${file_path}",
@@ -1707,7 +1699,7 @@ claude --no-sandbox    # Вимкнути пісочницю
 ```json
 {
   "permissions": {
-    "mode": "default",
+    "defaultMode": "manual",
     "allowedTools": ["Bash(git log:*)", "Read"],
     "disallowedTools": ["Bash(rm -rf:*)"]
   },
@@ -1809,7 +1801,7 @@ User: /config
     "PreToolUse": [{ "matcher": "Bash", "hooks": ["npm test && npm run lint"] }]
   },
   "permissions": {
-    "mode": "default"
+    "defaultMode": "manual"
   },
   "mcp": {
     "servers": {
@@ -1940,6 +1932,10 @@ claude --teammate-mode in-process
 - [Офіційна документація Agent Teams](https://code.claude.com/docs/en/agent-teams)
 
 ---
-**Останнє оновлення**: 9 квітня 2026
-**Версія Claude Code**: 2.1.97
+**Останнє оновлення**: 19 вересня 2026
+**Версія Claude Code**: 2.1.278
+**Джерела**:
+- https://code.claude.com/docs/en/permissions
+- https://code.claude.com/docs/en/auto-mode-classifier-billing
+- https://code.claude.com/docs/en/commands
 **Сумісні моделі**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5

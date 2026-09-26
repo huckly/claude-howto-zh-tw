@@ -20,13 +20,13 @@
 | 機能 | 組み込み | 例 | 合計 | リファレンス |
 |---------|----------|----------|-------|-----------|
 | **スラッシュコマンド** | 60 個以上 | 8 | 68 個以上 | [01-slash-commands/](01-slash-commands/) |
-| **サブエージェント** | 6 | 11 | 17 | [04-subagents/](04-subagents/) |
-| **スキル** | バンドル 5 | 4 | 9 | [03-skills/](03-skills/) |
+| **サブエージェント** | 6 | 9 | 15 | [04-subagents/](04-subagents/) |
+| **スキル** | バンドル 10 | 6 | 16 | [03-skills/](03-skills/) |
 | **プラグイン** | - | 3 | 3 | [07-plugins/](07-plugins/) |
-| **MCP サーバ** | 1 | 8 | 9 | [05-mcp/](05-mcp/) |
-| **フック** | 28 イベント | 8 | 8 | [06-hooks/](06-hooks/) |
-| **メモリ** | 7 種類 | 3 | 3 | [02-memory/](02-memory/) |
-| **合計** | **99** | **45** | **119** | |
+| **MCP サーバ** | 1 | 4 | 5 | [05-mcp/](05-mcp/) |
+| **フック** | 33 イベント | 9 | 42 | [06-hooks/](06-hooks/) |
+| **メモリ** | 7 種類 | 3 | 10 | [02-memory/](02-memory/) |
+| **合計** | **117** | **42** | **159** | |
 
 ---
 
@@ -70,7 +70,7 @@
 | `/logout` | サインアウト | アカウント切替 |
 | `/sandbox` | サンドボックスモード切替 | 安全なコマンド実行 |
 | `/doctor` | 診断を実行 | 問題のトラブルシューティング |
-| `/reload-plugins` | インストール済みプラグインを再読込 | プラグイン管理 |
+| `/reload-plugins` | インストール済みプラグインを再読込。v2.1.221 以降、ほとんどのインストールは即座に有効化されるため、インストール要約が `Run /reload-plugins to activate.` と示した場合にのみ必要 | プラグイン管理 |
 | `/release-notes` | リリースノートを表示 | 新機能の確認 |
 | `/remote-control` | リモートコントロールを有効化 | リモートアクセス |
 | `/permissions` | 権限を管理 | アクセス制御 |
@@ -92,12 +92,11 @@
 | `/stickers` | セッションステッカーを表示 | 楽しいご褒美 |
 | `/fast` | 高速出力モード切替 | 応答の高速化 |
 | `/terminal-setup` | ターミナル統合を設定 | ターミナル機能のセットアップ |
-| `/undo` | `/rewind` のエイリアス（v2.1.108） | `/rewind` と同じ |
+| `/undo` | **公式ドキュメントに記載なし** — v2.1.108 で `/rewind` のエイリアスとして追加されたが、公式のコマンドリファレンスには一切登場しない | 代わりに `/rewind`（または `Esc Esc`）を使う |
 | `/upgrade` | アップデート確認 | バージョン管理 |
 | `/team-onboarding` | このプロジェクトの Claude Code 利用状況からオンボーディングガイドを生成 | 新メンバーのオンボーディング（v2.1.101） |
-| `/ultraplan` | プランニングタスクを Claude Code Web セッションに渡す（plan モード） | 重い計画作業のオフロード（Research Preview、v2.1.91+） |
-| `/ultrareview` | 現在の変更に対するクラウドのマルチエージェントコードレビューを実行 | マージ前の深いマルチエージェントレビュー（v2.1.112） |
-| `/less-permission-prompts` | トランスクリプトをスキャンし、よく使う読取専用ツールの優先許可リストを提案 | プロジェクトでの権限プロンプト繰り返しを削減（v2.1.112） |
+| `/code-review ultra` | 現在の変更に対するクラウドのマルチエージェントコードレビューを実行。`/ultrareview` はエイリアスとして残っており、`/code-review ultra` が推奨の呼び出し。Pro と Max では 3 回まで無料、以降は使用クレジットが必要 | マージ前の深いマルチエージェントレビュー（v2.1.112） |
+| `/fewer-permission-prompts` | トランスクリプトをスキャンし、よく使う読取専用ツールの優先許可リストを提案 | プロジェクトでの権限プロンプト繰り返しを削減（v2.1.112） |
 
 ### カスタムコマンド（例）
 
@@ -132,11 +131,11 @@ Claude Code はツール使用の許可を制御する 6 つの権限モード�
 | `default` | ツール呼び出しごとに確認 | 標準的な対話利用 |
 | `acceptEdits` | ファイル編集を自動承認、それ以外は確認 | 信頼できる編集ワークフロー |
 | `plan` | 読み取り専用ツールのみ、書き込みなし | 計画と探索 |
-| `auto` | プロンプトなしですべてのツールを承認 | 完全自律動作（Research Preview） |
+| `auto` | バックグラウンドの安全分類器のチェック付きで全操作を許可 | 長時間タスク、確認プロンプトの削減 |
 | `bypassPermissions` | すべての権限チェックをスキップ | CI/CD、ヘッドレス環境 |
 | `dontAsk` | 権限が必要なツールをスキップ | 非対話スクリプト |
 
-> **注**：`auto` モードは Research Preview 機能（2026 年 3 月）。`bypassPermissions` は信頼されたサンドボックス環境でのみ利用すること。
+> **注**：`auto` モードは対象プラン・モデル・プロバイダの条件を満たす必要がある — [09-advanced-features/](09-advanced-features/#auto-mode) を参照。`bypassPermissions` は信頼されたサンドボックス環境でのみ利用すること。
 
 **リファレンス**：[公式ドキュメント](https://code.claude.com/docs/en/permissions)
 
@@ -152,10 +151,10 @@ Claude Code はツール使用の許可を制御する 6 つの権限モード�
 |-------|-------------|-------|-------|-------------|
 | **general-purpose** | 多段タスク、調査 | 全ツール | モデル継承 | 複雑な調査、複数ファイルタスク |
 | **Plan** | 実装計画 | Read、Glob、Grep、Bash | モデル継承 | アーキテクチャ設計、計画 |
-| **Explore** | コードベース探索 | Read、Glob、Grep | Haiku 4.5 | 高速検索、コード理解 |
-| **Bash** | コマンド実行 | Bash | モデル継承 | Git 操作、ターミナル作業 |
+| **Explore** | コードベース探索 | Read、Glob、Grep | 継承（上限は Opus） | 高速検索、コード理解 |
+| **claude** | より専門的なエージェントに当てはまらないタスク向けの汎用エージェント | 全ツール | モデル継承 | 専用エージェントがないタスク、ディスパッチされたバックグラウンドセッションのデフォルト |
 | **statusline-setup** | ステータスライン設定 | Bash、Read、Write | Sonnet 4.6 | ステータスライン表示の設定 |
-| **Claude Code Guide** | ヘルプとドキュメント | Read、Glob、Grep | Haiku 4.5 | ヘルプ、機能学習 |
+| **claude-code-guide** | ヘルプとドキュメント | Read、Glob、Grep | Haiku 4.5 | ヘルプ、機能学習 |
 
 ### サブエージェント設定フィールド
 
@@ -285,7 +284,7 @@ cp -r 03-skills/* ~/.claude/skills/
 /plugin list              # インストール済みプラグイン一覧
 /plugin install <name>    # プラグインをインストール
 /plugin remove <name>     # プラグインを削除
-/plugin update <name>     # プラグインを更新
+claude plugin update <name>   # プラグインを更新（CLI。/plugin update というスラッシュ形式は説明文中で言及されるが、コマンドリファレンスには存在しない）
 ```
 
 ---
@@ -344,25 +343,33 @@ Claude Code のイベントでシェルコマンドを自動実行するイベ�
 | イベント | 説明 | 発火タイミング | ユースケース |
 |-------|-------------|----------------|-----------|
 | `SessionStart` | セッション開始・再開 | セッション初期化時 | セットアップタスク |
+| `Setup` | 初期環境セットアップ（セッションごとに 1 回） | 初回セッション起動時 | ツール準備、依存関係インストール |
 | `InstructionsLoaded` | 指示読み込み完了 | CLAUDE.md またはルールファイルの読込時 | カスタム指示の処理 |
 | `UserPromptSubmit` | プロンプト処理前 | ユーザーがメッセージ送信時 | 入力検証 |
+| `UserPromptExpansion` | プロンプト展開（@メンション、スラッシュコマンド解決） | 展開後、送信前 | 展開後プロンプトの変換・検査 |
 | `PreToolUse` | ツール実行前 | 任意のツールが走る前 | 検証、ログ |
 | `PermissionRequest` | 権限ダイアログ表示 | 機微な操作の前 | カスタム承認フロー |
+| `PermissionDenied` | ユーザーが権限要求を拒否 | 権限拒否後 | ログ、分析、ポリシー適用 |
 | `PostToolUse` | ツール成功後 | 任意のツール完了後 | 整形、通知 |
 | `PostToolUseFailure` | ツール実行失敗 | ツールエラー後 | エラー処理、ログ |
+| `PostToolBatch` | ツール実行バッチの完了後 | ツールバッチ終了時 | 集約レポート、バッチ検証 |
 | `Notification` | 通知送信 | Claude が通知送信時 | 外部アラート |
+| `MessageDisplay` | アシスタントのメッセージ表示時 | メッセージ描画中 | 表示テキストの変換・非表示 |
 | `SubagentStart` | サブエージェント生成 | サブエージェントタスク開始時 | サブエージェントコンテキスト初期化 |
 | `SubagentStop` | サブエージェント終了 | サブエージェントタスク完了時 | アクション連鎖 |
 | `Stop` | Claude が応答完了 | 応答完了時 | 後処理、レポート |
 | `StopFailure` | API エラーでターン終了 | API エラー発生時 | エラー復旧、ログ |
 | `TeammateIdle` | チームメンバーエージェントがアイドル | エージェントチーム協調時 | 作業の分配 |
-| `TaskCompleted` | タスク完了マーク | タスク完了時 | タスク後処理 |
-| `TaskCreated` | TaskCreate でタスク作成 | 新タスク作成時 | タスク追跡、ログ |
+| `TaskCompleted` | タスク完了マーク（todo ツールが有効なときのみ発火 — Claude 3.x、Opus 4〜4.7、Sonnet 4〜4.6、Haiku 4.5 でのみデフォルト有効。`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で復活） | タスク完了時 | タスク後処理 |
+| `TaskCreated` | TaskCreate でタスク作成（todo ツールが有効なときのみ発火 — Claude 3.x、Opus 4〜4.7、Sonnet 4〜4.6、Haiku 4.5 でのみデフォルト有効。`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で復活） | 新タスク作成時 | タスク追跡、ログ |
 | `ConfigChange` | 設定更新 | 設定変更時 | 設定変更への対応 |
 | `CwdChanged` | 作業ディレクトリ変更 | ディレクトリ変更時 | ディレクトリ別セットアップ |
+| `DirectoryAdded` | セッション中に作業ディレクトリが追加登録 | `/add-dir` または SDK `register_repo_root` | 新規ディレクトリ向けツール設定 |
 | `FileChanged` | 監視ファイルの変更 | ファイル変更時 | ファイル監視、再ビルド |
 | `PreCompact` | コンパクト操作前 | コンテキスト圧縮時 | 状態保全 |
 | `PostCompact` | コンパクト完了後 | コンパクト完了時 | コンパクト後アクション |
+| `PreModelSwitch` | モデル切り替えの適用前 | モデル切り替え要求時 | モデル変更のゲート・拒否 |
+| `PostModelSwitch` | セッションのモデル変更後 | モデル切り替え完了時 | モデル変更のログ・連動 |
 | `WorktreeCreate` | ワークツリー作成中 | Git ワークツリー作成時 | ワークツリー環境セットアップ |
 | `WorktreeRemove` | ワークツリー削除中 | Git ワークツリー削除時 | ワークツリーリソースのクリーンアップ |
 | `Elicitation` | MCP サーバが入力を要求 | MCP elicitation 発生時 | 入力検証 |
@@ -450,10 +457,9 @@ cp 02-memory/personal-CLAUDE.md ~/.claude/CLAUDE.md
 | **/proactive** | `/loop` のエイリアス — 同じ反復タスク動作（v2.1.105） | `/proactive` を `/loop` と互換に利用 |
 | **/recap** | 既存セッションに戻ったときに要約を表示（v2.1.108） | 離席後に `/recap` を実行して文脈を取り戻す |
 | **/tui** | フルスクリーン TUI モードを切替してちらつきのない描画（v2.1.110） | フルスクリーンターミナルや tmux で `/tui` を使う |
-| **/undo** | `/rewind` のエイリアス — 直前のチェックポイントへ戻す（v2.1.108） | `/undo` を `/rewind` と互換に利用 |
+| **/undo** | **公式ドキュメントに記載なし** — v2.1.108 で `/rewind` のエイリアスとして追加されたが、公式のコマンドリファレンスには一切登場しない | 代わりに `/rewind`（または `Esc Esc`）を使う |
 | **Monitor ツール** | バックグラウンドコマンドの stdout を監視し、ポーリングではなくイベントで反応（v2.1.98+） | [高度な機能](09-advanced-features/) 経由で Monitor ツールを利用 |
 | **/team-onboarding** | プロジェクトの Claude Code 設定からオンボーディングガイドを自動生成（v2.1.101） | プロジェクトで `/team-onboarding` を実行 |
-| **Ultraplan 自動作成** | 初回 `/ultraplan` 実行時にクラウド環境を自動作成、手動セットアップ不要（v2.1.101） | `/ultraplan <prompt>` を使う |
 | **リモートコントロール** | API 経由で Claude Code セッションを遠隔制御 | リモートコントロール API でプロンプト送信と応答取得をプログラム的に行う |
 | **Web セッション** | ブラウザベース環境で Claude Code を実行 | `claude web` または Anthropic Console でアクセス |
 | **デスクトップアプリ** | Claude Code のネイティブデスクトップアプリ | `/desktop` または Anthropic サイトからダウンロード |
@@ -467,7 +473,7 @@ cp 02-memory/personal-CLAUDE.md ~/.claude/CLAUDE.md
 | **スケジュールタスク** | `/loop` および cron ツールで反復タスクを設定 | `/loop 5m /command` または CronCreate ツールを使う |
 | **Chrome 連携** | ヘッドレス Chromium によるブラウザ自動化 | `--chrome` フラグまたは `/chrome` コマンドを使う |
 | **キーバインドカスタマイズ** | コード対応を含むキーバインドのカスタマイズ | `/keybindings` を使うか `~/.claude/keybindings.json` を編集 |
-| **Auto Mode** | 権限プロンプトなしの完全自律動作（Research Preview） | `--mode auto` または `/permissions auto` を使う、2026 年 3 月 |
+| **Auto Mode** | バックグラウンドの安全分類器チェック付きで完全自律動作 | `Shift+Tab` で切り替え、または `--permission-mode auto` |
 | **チャンネル** | 複数チャネル通信（Telegram、Slack など）（Research Preview） | チャンネルプラグインを設定、2026 年 3 月 |
 | **音声入力** | プロンプトの音声入力 | マイクアイコンまたは音声キーバインドを使う |
 | **Agent フック種別** | シェルコマンド実行ではなくサブエージェントを生成するフック | フック設定で `"type": "agent"` を指定 |
@@ -534,11 +540,14 @@ chmod +x ~/.claude/hooks/*.sh
 
 ---
 
-**最終更新**：2026 年 4 月 24 日
-**Claude Code バージョン**：2.1.119
+**最終更新**：2026 年 9 月 19 日
+**Claude Code バージョン**：2.1.278
 **情報源**：
+- https://code.claude.com/docs/en/tools-reference#task-tool-availability
 - https://code.claude.com/docs/en/overview
 - https://code.claude.com/docs/en/commands
 - https://code.claude.com/docs/en/hooks
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.118
-**互換モデル**：Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5
+- https://code.claude.com/docs/en/plugins-reference
+- https://code.claude.com/docs/en/discover-plugins
+**互換モデル**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

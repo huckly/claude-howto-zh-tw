@@ -226,6 +226,7 @@ Claude Code використовує багаторівневу ієрархіч
 
 3. **Project Memory** — спільний контекст команди (версіонований)
    - `./.claude/CLAUDE.md` або `./CLAUDE.md` (у корені репозиторію)
+   - Починаючи з v2.1.277, на цьому ж рівні натомість завантажується `./AGENTS.md`, якщо ні в робочому каталозі, ні вище немає `CLAUDE.md` чи `CLAUDE.local.md` — керується через **Project instructions** у `/config`
 
 4. **Project Rules** — модульні, тематичні інструкції проєкту
    - `./.claude/rules/*.md`
@@ -301,9 +302,9 @@ graph TD
 |--------|-------------|-------------|
 | 1 (Найвищий) | Managed policy (системний рівень) | Загальноорганізаційне застосування |
 | 2 | `managed-settings.d/` (v2.1.83+) | Модульні drop-in політики, об'єднані за алфавітом |
-| 3 | `~/.claude/settings.json` | Налаштування користувача |
+| 3 | `.claude/settings.local.json` | Локальні перевизначення (ігнорується git) |
 | 4 | `.claude/settings.json` | Рівень проєкту (комітиться в git) |
-| 5 (Найнижчий) | `.claude/settings.local.json` | Локальні перевизначення (ігнорується git) |
+| 5 (Найнижчий) | `~/.claude/settings.json` | Налаштування користувача |
 
 **Платформо-специфічна конфігурація (v2.1.51+):**
 
@@ -637,7 +638,9 @@ Claude завантажить CLAUDE.md із зазначеного додатк
 ````markdown
 # API Module Standards
 
-This file overrides root CLAUDE.md for everything in /src/api/
+This file supplements root CLAUDE.md for everything in /src/api/. Memory files are
+concatenated, not overridden — the root CLAUDE.md still applies, and Claude Code
+loads this file on demand when it reads files in this subtree.
 
 ## API-Specific Standards
 
@@ -905,7 +908,7 @@ graph LR
   - **Directory memory**: правила та перевизначення для конкретних модулів
 
 - **Використовуйте імпорти**: синтаксис `@шлях/до/файлу` для посилання на наявну документацію
-  - Підтримує до 5 рівнів рекурсивного вкладення
+  - Підтримує максимум 4 хопи рекурсивного вкладення
   - Уникає дублювання між файлами пам'яті
   - Приклад: `See @README.md for project overview`
 
@@ -933,7 +936,7 @@ graph LR
 
 - **Не забувайте оновлювати**: застаріла пам'ять може спричинити плутанину та використання застарілих практик
 
-- **Не перевищуйте ліміти вкладення**: імпорти пам'яті підтримують до 5 рівнів вкладення
+- **Не перевищуйте ліміти вкладення**: імпорти пам'яті підтримують максимум 4 хопи рекурсивного вкладення
 
 ### Поради з управління пам'яттю
 
@@ -1079,7 +1082,9 @@ Claude запропонує обрати, який файл пам'яті оно
    cat > /path/to/directory/CLAUDE.md << 'EOF'
    # [Directory Name] Standards
 
-   This file overrides root CLAUDE.md for this directory.
+   This file supplements root CLAUDE.md for this directory. Memory files are
+   concatenated, not overridden — Claude Code loads this file on demand when it
+   reads files in this directory.
 
    ## [Specific Standards]
    EOF
@@ -1154,6 +1159,9 @@ Claude запропонує обрати, який файл пам'яті оно
 - [Офіційна документація пам'яті](https://code.claude.com/docs/en/memory) — документація Anthropic
 
 ---
-**Останнє оновлення**: 9 квітня 2026
-**Версія Claude Code**: 2.1.97
+**Останнє оновлення**: 19 вересня 2026
+**Версія Claude Code**: 2.1.278
+**Джерела**:
+- https://code.claude.com/docs/en/memory
+- https://code.claude.com/docs/en/memory#agents-md
 **Сумісні моделі**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5

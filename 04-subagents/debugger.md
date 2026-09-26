@@ -34,7 +34,7 @@ model: inherit
    - 檢查變數狀態
 
 4. **隔離失敗**
-   - 縮小到特定的函數/行
+   - 縮小到特定的函式/行
    - 建立最小的重現案例
    - 驗證隔離
 
@@ -80,4 +80,8 @@ npm test -- --grep "test name"
 - [ ] 未引入任何回歸
 
 ---
-**上次更新**: 2026年4月9日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/sub-agents
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

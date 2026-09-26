@@ -96,7 +96,7 @@ sequenceDiagram
 | **Project** | `.claude/skills/<skill-name>/SKILL.md` | チーム | あり（git 経由） | チームの標準 |
 | **Plugin** | `<plugin>/skills/<skill-name>/SKILL.md` | 有効化された範囲 | プラグインに依存 | プラグインへのバンドル |
 
-スキル名がレベル間で重複する場合、優先度の高い配置場所が優先される: **enterprise > personal > project**。プラグインスキルは `plugin-name:skill-name` の名前空間を用いるため衝突しない。
+スキル名がレベル間で重複する場合、優先度の高い配置場所が優先される: **enterprise > personal > project**。個人スキルはデフォルトでプロジェクトスキルを上書きする。プラグインスキルは `plugin-name:skill-name` の名前空間を用いるため衝突しない。
 
 ### 自動検出
 
@@ -137,10 +137,12 @@ Provide clear, step-by-step guidance for Claude.
 Show concrete examples of using this Skill.
 ```
 
-### 必須フィールド
+### 推奨フィールド
 
-- **name**: 小文字、数字、ハイフンのみ（最大 64 文字）。"anthropic" や "claude" を含めることはできない。
-- **description**: スキルが何をするかと、いつ使うか（最大 1024 文字）。Claude がスキルを発火させるべきタイミングを判断する上で重要である。
+- **description**（推奨）: スキルが何をするかと、いつ使うか。省略した場合、Claude Code は markdown 本文の最初の段落を使用する。`description` と `when_to_use` を合わせたテキストはスキル一覧で **1,536 文字**で切り詰められる（`skillListingMaxDescChars` で変更可能）。Claude がスキルを発火させるべきタイミングを判断する際に照合するのはこのテキストである。
+- **name**（任意）: 既定ではスキルの**ディレクトリ名**が使われる。指定した場合は表示名となり、小文字・数字・ハイフンのみ（最大 64 文字）で、"anthropic" や "claude" を含めることはできない。プラグインのスキルでは、`name` はコマンドの最後のセグメントも決定する。
+
+SKILL.md のフロントマターのフィールドはすべて任意であり、推奨されるのは `description` だけである。
 
 ### オプションのフロントマターフィールド
 
@@ -170,7 +172,8 @@ paths: "src/api/**/*.ts"               # スキルの発火を制限する glob 
 | フィールド | 説明 |
 |-------|-------------|
 | `name` | 小文字、数字、ハイフンのみ（最大 64 文字）。"anthropic" や "claude" を含められない。 |
-| `description` | スキルが何をするかと、いつ使うか（最大 1024 文字）。自動呼び出しのマッチングに重要。 |
+| `description` | スキルが何をするかと、いつ使うか。`description` と `when_to_use` を合わせたテキストはスキル一覧で 1,536 文字で切り詰められる（`skillListingMaxDescChars` で変更可能）。自動呼び出しのマッチングに重要。 |
+| `when_to_use` | Claude がスキルを呼び出すべきタイミングに関する補足情報。スキル一覧では `description` の後ろに連結され、1,536 文字の上限に算入される。 |
 | `argument-hint` | `/` の自動補完メニューに表示されるヒント（例: `"[filename] [format]"`）。 |
 | `disable-model-invocation` | `true` = ユーザーのみが `/name` で呼び出せる。Claude は自動呼び出ししない。 |
 | `user-invocable` | `false` = `/` メニューから非表示。Claude のみが自動呼び出し可能。 |
@@ -313,7 +316,7 @@ agent: Explore
 
 ```yaml
 ---
-name: deep-research
+name: topic-research
 description: Research a topic thoroughly
 context: fork
 agent: Explore
@@ -535,7 +538,7 @@ refactor/
 
 ```yaml
 ---
-name: code-refactor
+name: refactor
 description: Systematic code refactoring based on Martin Fowler's methodology. Use when users ask to refactor code, improve code structure, reduce technical debt, or eliminate code smells.
 ---
 
@@ -617,7 +620,7 @@ Can you help me review this code for security issues?
 
 ### スキルの更新
 
-`SKILL.md` を直接編集する。変更は次回の Claude Code 起動時に反映される。
+`SKILL.md` を直接編集し、`/reload-skills`（v2.1.152 以降）でスキルディレクトリを再スキャンする。再起動でも反映されるが必須ではない。`--add-dir` のスキルはライブ検出され、`SessionStart` フックが `reloadSkills: true` を返しても同じ再スキャンが走る。
 
 ```bash
 # 個人スキル
@@ -823,10 +826,10 @@ chmod +x ~/.claude/skills/my-skill/scripts/*.py
 - [フックガイド](../06-hooks/) - イベント駆動の自動化
 
 ---
-**最終更新**: 2026 年 4 月 24 日
-**Claude Code バージョン**: 2.1.119
+**最終更新**: 2026 年 9 月 2 日
+**Claude Code バージョン**: 2.1.257
 **情報源**:
 - https://code.claude.com/docs/en/skills
 - https://code.claude.com/docs/en/settings
 - https://code.claude.com/docs/en/changelog
-**対応モデル**: Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+**対応モデル**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

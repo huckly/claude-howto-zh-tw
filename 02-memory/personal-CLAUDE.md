@@ -28,7 +28,7 @@
 
 ## 除錯偏好
 - 使用 console.log 並加上前綴：`[DEBUG]`
-- 包含上下文：函數名稱、相關變數
+- 包含上下文：函式名稱、相關變數
 - 有堆疊追蹤時務必使用
 - 務必在日誌中包含時間戳記
 
@@ -53,11 +53,15 @@ project/
 ```
 
 ## 工具
-- **IDE**: VS Code with vim keybindings
-- **Terminal**: Zsh with Oh-My-Zsh
-- **格式化**: Prettier (100 char line length)
-- **Linter**: ESLint with airbnb config
-- **測試框架**: Jest with React Testing Library
+- **IDE**: VS Code 搭配 vim 快捷鍵
+- **Terminal**: Zsh 搭配 Oh-My-Zsh
+- **格式化**: Prettier（每行 100 字元）
+- **Linter**: ESLint 搭配 airbnb 設定
+- **測試框架**: Jest 搭配 React Testing Library
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/memory
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

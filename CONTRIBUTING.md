@@ -68,9 +68,9 @@ git checkout -b docs/improvement-area
 
 ### 3. 設定您的環境
 
-Pre-commit 鉤子會在每次提交前，於本地執行與 CI 相同的檢查。所有四項檢查都必須通過，PR 才會被接受。
+Pre-commit 鉤子會在每次提交前，於本地執行與 CI 相同的檢查。所有五項檢查都必須通過，PR 才會被接受。
 
-**必要的依賴項目：**
+**必要的依賴項：**
 
 ```bash
 # Python 工具（uv 是此專案的套件管理員）
@@ -108,7 +108,7 @@ pre-commit run --all-files
 
 ## 目錄結構
 
-```
+```text
 ├── 01-slash-commands/      # 使用者呼叫的捷徑
 ├── 02-memory/              # 持久化上下文範例
 ├── 03-skills/              # 可重複使用的能力
@@ -116,7 +116,7 @@ pre-commit run --all-files
 ├── 05-mcp/                 # Model Context Protocol 範例
 ├── 06-hooks/               # 事件驅動自動化
 ├── 07-plugins/             # 綑綁功能
-├── 08-checkpoints/         # 會話快照
+├── 08-checkpoints/         # 工作階段快照
 ├── 09-advanced-features/   # 規劃、思考、背景
 ├── 10-cli/                 # CLI 參考
 ├── scripts/                # 建置與工具腳本
@@ -153,10 +153,10 @@ pre-commit run --all-files
    - 整合範例
 3. 更新 `04-subagents/README.md`
 
-### 新增 MCP 配置
+### 新增 MCP 設定
 1. 在 `05-mcp/` 中建立一個 `.json` 檔案
 2. 內容須包含：
-   - 配置說明
+   - 設定說明
    - 必要的環境變數
    - 設定說明
    - 使用範例
@@ -196,7 +196,7 @@ pre-commit run --all-files
 
 ### JSON/YAML
 - 使用正確的縮排（一致使用 2 或 4 個空格）
-- 加入解釋配置的註解
+- 加入解釋設定的註解
 - 包含驗證範例
 
 ### 圖表
@@ -208,7 +208,7 @@ pre-commit run --all-files
 ## Commit 指引
 
 遵循 Conventional Commit 格式：
-```
+```text
 type(scope): description
 
 [optional body]
@@ -221,10 +221,10 @@ type(scope): description
 - `refactor`: 程式碼重構
 - `style`: 格式變更
 - `test`: 新增或修改測試
-- `chore`: 建置、依賴項目等
+- `chore`: 建置、依賴項等
 
 範例：
-```
+```text
 feat(slash-commands): Add API documentation generator
 docs(memory): Improve personal preferences example
 fix(README): Correct table of contents link
@@ -378,4 +378,8 @@ git diff
 感謝您的貢獻！ 🙏
 
 ---
-**最後更新日期**：2026 年 4 月 9 日
+**最後更新日期**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/overview
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

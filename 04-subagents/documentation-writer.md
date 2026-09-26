@@ -12,7 +12,7 @@ model: inherit
 當被喚起時：
 1. 分析需要記錄的程式碼或功能
 2. 確定目標受眾
-3. 遵循專案慣例創建文件
+3. 遵循專案慣例建立文件
 4. 驗證對實際程式碼的準確性
 
 ## 文件類型
@@ -53,7 +53,7 @@ model: inherit
 
 ## 輸出格式
 
-針對每個創建的文件：
+針對每個建立的文件：
 - **類型**: API / 指南 / 架構 / 變更記錄
 - **檔案**: 文件檔案路徑
 - **區段**: 涵蓋的區段列表
@@ -61,7 +61,7 @@ model: inherit
 
 ## API 文件範例
 
-```markdown
+````markdown
 ## GET /api/users/:id
 
 Retrieves a user by their unique identifier.
@@ -95,7 +95,11 @@ Retrieves a user by their unique identifier.
 curl -X GET https://api.example.com/api/users/abc123 \
   -H "Authorization: Bearer <token>"
 ```
-```
+````
 
 ---
-**上次更新**: 2026 年 4 月 9 日
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/sub-agents
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

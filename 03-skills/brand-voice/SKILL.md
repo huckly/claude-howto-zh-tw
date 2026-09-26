@@ -1,6 +1,7 @@
 ---
-name: brand-voice-consistency
+name: brand-voice
 description: 確保所有溝通符合品牌語氣和語調指南。在建立行銷文案、客戶溝通、面向公眾的內容，或使用者提到品牌語氣、語調或寫作風格時使用。
+user-invocable: false
 ---
 
 # 品牌語氣 Skill
@@ -70,3 +71,11 @@ description: 確保所有溝通符合品牌語氣和語調指南。在建立行�
 「Claude 運用尖端 AI 提供全方位的軟體開發解決方案。」
 
 為什麼無效：模糊、企業術語、沒有具體價值
+
+---
+
+**最後更新日期**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/skills
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

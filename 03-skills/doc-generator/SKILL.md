@@ -1,5 +1,5 @@
 ---
-name: api-documentation-generator
+name: doc-generator
 description: 從原始碼產生全面且準確的 API 文件。在建立或更新 API 文件、產生 OpenAPI 規格，或使用者提到 API 文件、端點或文件時使用。
 ---
 
@@ -18,7 +18,7 @@ description: 從原始碼產生全面且準確的 API 文件。在建立或更�
 
 ### 對於每個端點
 
-```markdown
+````markdown
 ## GET /api/v1/users/:id
 
 ### 說明
@@ -73,4 +73,12 @@ response = requests.get(
 )
 user = response.json()
 ```
-```
+````
+
+---
+
+**最後更新日期**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/skills
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

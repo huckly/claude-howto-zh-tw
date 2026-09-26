@@ -1,5 +1,5 @@
 ---
-name: code-refactor
+name: refactor
 description: 基於 Martin Fowler 方法論的系統化程式碼重構。在使用者要求重構程式碼、改善程式碼結構、減少技術債、清理舊版程式碼、消除程式碼壞味道或改善程式碼可維護性時使用。此 skill 引導完成分階段的研究、規劃和安全漸進式實作方法。
 ---
 
@@ -424,3 +424,11 @@ function processOrder(order) {
 ## 版本歷史
 
 - v1.0.0 (2025-01-15)：初始版本，包含 Fowler 方法論、分階段方法、使用者諮詢點
+
+---
+
+**最後更新日期**：2026 年 8 月 4 日
+**Claude Code 版本**：2.1.220
+**來源**：
+- https://code.claude.com/docs/en/skills
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

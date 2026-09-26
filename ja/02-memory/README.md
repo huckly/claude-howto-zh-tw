@@ -187,7 +187,7 @@ See @docs/architecture.md for system design
 **インポート機能:**
 
 - 相対パスと絶対パスの両方をサポート（例: `@docs/api.md`、`@~/.claude/my-project-instructions.md`）
-- 再帰的インポートをサポート（最大ネスト深さ 5）
+- 再帰的インポートをサポート（最大深度 4 ホップ）
 - 外部ロケーションからの初回インポートはセキュリティのため承認ダイアログが出る
 - インポートディレクティブは Markdown のコードスパンやコードブロック内では評価されない（例として記述しても安全）
 - 既存ドキュメントを参照することで重複を避けられる
@@ -227,6 +227,7 @@ Claude Code は多階層のメモリシステムを使う。Claude Code 起動�
 
 3. **Project Memory** — チーム共有のコンテキスト（バージョン管理対象）
    - `./.claude/CLAUDE.md` または `./CLAUDE.md`（リポジトリのルート）
+   - v2.1.277 以降、作業ディレクトリとその上位に `CLAUDE.md` も `CLAUDE.local.md` も存在しない場合、同じ階層で代わりに `./AGENTS.md` が読み込まれる。`/config` の **Project instructions** で制御する
 
 4. **Project Rules** — モジュール式・トピック別のプロジェクト指示
    - `./.claude/rules/*.md`
@@ -302,9 +303,9 @@ Claude Code の設定（`autoMemoryDirectory`、`claudeMdExcludes` などを含�
 |-------|------|--------|
 | 1（最高） | 管理ポリシー（システムレベル） | 組織全体への強制 |
 | 2 | `managed-settings.d/`（v2.1.83+） | モジュール式のポリシードロップイン、アルファベット順にマージ |
-| 3 | `~/.claude/settings.json` | ユーザー設定 |
+| 3 | `.claude/settings.local.json` | ローカルオーバーライド（git 無視） |
 | 4 | `.claude/settings.json` | プロジェクトレベル（git にコミット） |
-| 5（最低） | `.claude/settings.local.json` | ローカルオーバーライド（git 無視） |
+| 5（最低） | `~/.claude/settings.json` | ユーザー設定 |
 
 **プラットフォーム固有の設定（v2.1.51+）:**
 
@@ -314,7 +315,7 @@ Claude Code の設定（`autoMemoryDirectory`、`claudeMdExcludes` などを含�
 
 これらのプラットフォームネイティブの仕組みは JSON 設定ファイルとともに読み込まれ、同じ優先順位ルールに従う。
 
-> **注意（v2.1.119）**: `/config` の変更は `~/.claude/settings.json` に永続化されるようになった。`/config` で書かれた値は、上記のプロジェクト／ローカル／ポリシーの優先順位チェーンに参加する — もはやセッション限りではない。インタラクティブな編集には `/config` を、スクリプト化または管理された設定には `settings.json` ファイルの直接編集を使う。
+> **注意（v2.1.119）**: `/config` の変更は `~/.claude/settings.json` に永続化されるようになった。`/config` で書かれた値は、上記のポリシー／ローカル／プロジェクトの優先順位チェーンに参加する — もはやセッション限りではない。インタラクティブな編集には `/config` を、スクリプト化または管理された設定には `settings.json` ファイルの直接編集を使う。
 
 ### 保持期間とクリーンアップ設定
 
@@ -685,7 +686,9 @@ Claude は、現在の作業ディレクトリのメモリファイルに加え�
 ````markdown
 # API Module Standards
 
-This file overrides root CLAUDE.md for everything in /src/api/
+This file supplements root CLAUDE.md for everything in /src/api/. Memory files are
+concatenated, not overridden — the root CLAUDE.md still applies, and Claude Code
+loads this file on demand when it reads files in this subtree.
 
 ## API-Specific Standards
 
@@ -1127,7 +1130,9 @@ Claude はどのメモリファイルを更新するかを尋ねる。
    cat > /path/to/directory/CLAUDE.md << 'EOF'
    # [Directory Name] Standards
 
-   This file overrides root CLAUDE.md for this directory.
+   This file supplements root CLAUDE.md for this directory. Memory files are
+   concatenated, not overridden — Claude Code loads this file on demand when it
+   reads files in this directory.
 
    ## [Specific Standards]
    EOF
@@ -1174,7 +1179,7 @@ Claude はどのメモリファイルを更新するかを尋ねる。
 
 - 外部コンテンツの取り込みに `@path/to/file` を使う（例: `@~/.claude/my-project-instructions.md`）
 - 相対パスと絶対パスの両方をサポート
-- 再帰的インポートをサポート（最大ネスト深さ 5）
+- 再帰的インポートをサポート（最大深度 4 ホップ）
 - 外部からの初回インポートは承認ダイアログが出る
 - Markdown のコードスパンやコードブロック内では評価されない
 - 参照されたコンテンツが Claude のコンテキストに自動で含まれる
@@ -1202,10 +1207,11 @@ Claude はどのメモリファイルを更新するかを尋ねる。
 - [公式メモリドキュメント](https://code.claude.com/docs/en/memory) — Anthropic ドキュメント
 
 ---
-**Last Updated**: April 24, 2026
-**Claude Code Version**: 2.1.119
+**最終更新**: 2026 年 9 月 19 日
+**Claude Code バージョン**: 2.1.278
 **Sources**:
 - https://code.claude.com/docs/en/memory
+- https://code.claude.com/docs/en/memory#agents-md
 - https://code.claude.com/docs/en/settings
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.119

@@ -5,34 +5,37 @@
 
 # 子代理 - 完整參考指南
 
-Subagents 是 Claude Code 可以委派任務的專業化 AI 助手。每個 subagent 都有特定的用途，使用與主對話分離的獨立上下文視窗，並且可以配置特定的工具與自定義的系統提示詞。
+Subagents 是 Claude Code 可以委派任務的專業化 AI 助手。每個 subagent 都有特定的用途，使用與主對話分離的獨立上下文視窗，並且可以設定特定的工具與自訂的系統提示詞。
 
 ## 目錄
 
-1. [概述](#overview)
-2. [核心優勢](#key-benefits)
-3. [檔案位置](#file-locations)
-4. [配置](#configuration)
-5. [內建 Subagents](#built-in-subagents)
-6. [管理 Subagents](#managing-subagents)
-7. [使用 Subagents](#using-subagents)
-8. [可續行的代理](#resumable-agents)
-9. [鏈結 Subagents](#chaining-subagents)
-10. [Subagents 的持久化記憶](#persistent-memory-for-subagents)
-11. [背景 Subagents](#background-subagents)
-12. [Worktree 隔離](#worktree-isolation)
-13. [分叉子代理](#forked-subagents)
-14. [限制可生成的 Subagents](#restrict-spawnable-subagents)
-15. [`claude agents` CLI 命令](#claude-agents-cli-command)
-16. [代理團隊 (實驗性功能)](#agent-teams-experimental)
-17. [外掛 Subagent 安全性](#plugin-subagent-security)
-18. [架構](#architecture)
-19. [上下文管理](#context-management)
-20. [何時使用 Subagents](#when-to-use-subagents)
-21. [最佳實踐](#best-practices)
-22. [此資料夾中的範例 Subagents](#example-subagents-in-this-folder)
-23. [安裝說明](#installation-instructions)
-24. [相關概念](#related-concepts)
+1. [概觀](#概觀)
+2. [核心優勢](#核心優勢)
+3. [檔案位置](#檔案位置)
+4. [設定](#設定)
+5. [內建子代理](#內建子代理)
+6. [管理 Subagents](#管理-subagents)
+7. [使用 Subagents](#使用-subagents)
+8. [可續接代理](#可續接代理)
+9. [串聯子代理](#串聯子代理)
+10. [子代理的持久化記憶](#子代理的持久化記憶)
+11. [背景子代理](#背景子代理)
+12. [Worktree 隔離](#worktree-隔離)
+13. [分叉子代理](#分叉子代理)
+14. [限制可生成的子代理](#限制可生成的子代理)
+15. [`claude agents` CLI 命令](#claude-agents-cli-命令)
+16. [Agent Teams（實驗性功能）](#agent-teams實驗性功能)
+17. [Plugin Subagent 安全性](#plugin-subagent-安全性)
+18. [架構](#架構)
+19. [上下文管理](#上下文管理)
+20. [何時使用 Subagents](#何時使用-subagents)
+21. [最佳實踐](#最佳實踐)
+22. [此資料夾中的範例子代理](#此資料夾中的範例子代理)
+23. [安裝說明](#安裝說明)
+24. [檔案結構](#檔案結構)
+25. [相關概念](#相關概念)
+26. [可觀測性](#可觀測性)
+27. [其他資源](#其他資源)
 
 ---
 
@@ -48,7 +51,9 @@ Subagents 透過以下方式在 Claude Code 中實現委派任務執行：
 
 每個 subagent 都以乾淨的狀態獨立運作，僅接收執行任務所需的特定上下文，然後將結果回傳給主代理進行整合。
 
-**快速入門**：使用 `/agents` 命令以互動方式建立、查看、編輯及管理您的 subagents。
+**快速入門**：請 Claude 幫您建立 subagent（「create a subagent that reviews security」），或直接新增 `.claude/agents/<name>.md` 檔案 — 請參閱下方的[管理 Subagents](#管理-subagents)。
+
+> **注意**：自 v2.1.198 起，`/agents` 命令不再開啟互動式建立精靈。請透過詢問 Claude 或直接編輯 `.claude/agents/` 檔案來建立與管理 subagents。
 
 ---
 
@@ -70,16 +75,18 @@ Subagent 檔案可以儲存在具有不同範圍的多個位置：
 
 | 優先順序 | 類型 | 位置 | 範圍 |
 |----------|------|----------|-------|
-| 1 (最高) | **CLI 定義** | 透過 `--agents` 旗標 (JSON) | 僅限當前會話 |
+| 1 (最高) | **CLI 定義** | 透過 `--agents` 旗標 (JSON) | 僅限目前工作階段 |
 | 2 | **專案 subagents** | `.claude/agents/` | 目前專案 |
 | 3 | **使用者 subagents** | `~/.claude/agents/` | 所有專案 |
 | 4 (最低) | **外掛代理** | 外掛的 `agents/` 目錄 | 透過外掛使用 |
 
 當存在重複名稱時，優先順序較高的來源將會生效。
 
+> **巢狀 `.claude/` 的優先順序 (v2.1.178)**：當同一個代理名稱定義在多個巢狀的 `.claude/agents/` 目錄中（例如在 monorepo 中各套件擁有自己的 `.claude/` 資料夾），**最接近目前工作目錄的定義會勝出**。相同的「最近者勝」規則也適用於巢狀的 workflow 與 output-style 定義。
+
 ---
 
-## 配置
+## 設定
 
 ### 檔案格式
 
@@ -98,9 +105,11 @@ skills: skill1, skill2  # Optional - skills to preload into context
 mcpServers: server1  # Optional - MCP servers to make available
 memory: user  # Optional - persistent memory scope (user, project, local)
 background: false  # Optional - run as background task
-effort: high  # Optional - reasoning effort (low, medium, high, max)
+effort: high  # Optional - reasoning effort (low, medium, high, xhigh, max)
 isolation: worktree  # Optional - git worktree isolation
 initialPrompt: "Start by analyzing the codebase"  # Optional - auto-submitted first turn
+experimental:  # Optional - experimental settings block
+  cacheTtl: "1h"  # Cache TTL for this subagent: "5m" or "1h" (v2.1.248+)
 hooks:  # Optional - component-scoped hooks
   PreToolUse:
     - matcher: "Bash"
@@ -116,25 +125,39 @@ to solving problems.
 
 您的 subagent 系統提示詞位於此處。這可以包含多個段落，且應清楚定義 subagent 的角色、能力以及解決問題的方法。
 
-### 配置欄位
+### 設定欄位
 
 | 欄位 | 必要 | 說明 |
 |-------|----------|-------------|
-| `name` | 是 | 唯一識別碼（小寫字母與連字號） |
-| `description` | 是 | 用自然語言描述用途。包含 "use PROACTIVELY" 以鼓勵自動調用 |
+| `name` | 是 | 唯一識別碼（小寫字母與連字號）。查找時會正規化（不區分大小寫與分隔符號 — 見下文），但自 v2.1.218 起，含有 `:` 的名稱會**被拒絕**：`:` 保留給外掛命名空間使用 |
+| `description` | 是 | 用自然語言描述用途。包含 "use PROACTIVELY" 以鼓勵自動呼叫 |
 | `tools` | 否 | 以逗號分隔的特定工具列表。省略則繼承所有工具。支援 `Agent(agent_name)` 語法以限制可產生的 subagents |
 | `disallowedTools` | 否 | 以逗號分隔的 subagent 禁止使用的工具列表 |
 | `model` | 否 | 使用的模型：`sonnet`、`opus`、`haiku`、完整模型 ID 或 `inherit`。預設為已設定的 subagent 模型 |
-| `permissionMode` | 否 | `default`、`acceptEdits`、`dontAsk`、`bypassPermissions`、`plan` |
+| `permissionMode` | 否 | `manual`（於 v2.1.200 由 `default` 重新命名 — 仍接受舊名稱 `default`）、`acceptEdits`、`dontAsk`、`bypassPermissions`、`plan`、`auto`。自 v2.1.212 起，Task 工具的 `mode` 呼叫參數已棄用並會被忽略 — 除非在此處覆寫，否則 subagents 預設繼承父工作階段的權限模式 |
 | `maxTurns` | 否 | subagent 可進行的最大代理回合數 |
-| `skills` | 否 | 以逗號分隔的預載技能列表。啟動時會將完整的技能內容注入 subagent 的上下文。**v2.1.133+：** subagents 也可透過 Skill 工具探索專案、使用者與外掛技能，與主會話使用相同的目錄，不再侷限於自身內嵌的技能集。 |
+| `skills` | 否 | 以逗號分隔的預載技能列表。啟動時會將完整的技能內容注入 subagent 的上下文。**v2.1.133+：** subagents 也可透過 Skill 工具探索專案、使用者與外掛技能，與主工作階段使用相同的目錄，不再侷限於自身內嵌的技能集。 |
 | `mcpServers` | 否 | 提供給 subagent 使用的 MCP servers |
-| `hooks` | 否 | 組件範圍的鉤子 (PreToolUse, PostToolUse, Stop) |
+| `hooks` | 否 | 元件範圍的鉤子 (PreToolUse, PostToolUse, Stop) |
 | `memory` | 否 | 持久化記憶目錄範圍：`user`、`project` 或 `local` |
-| `background` | 否 | 設定為 `true` 以始終將此 subagent 作為背景任務執行 |
-| `effort` | 否 | 推理努力程度：`low`、`medium`、`high` 或 `max` |
+| `background` | 否 | Subagents 預設已在背景執行 (v2.1.198)。設定為 `true` 可*強制*一律在背景執行，並防止以行內方式執行 |
+| `effort` | 否 | 推理努力程度：`low`、`medium`、`high`、`xhigh` 或 `max`。會覆寫工作階段的 effort 層級；可用層級取決於模型 |
 | `isolation` | 否 | 設定為 `worktree` 以為 subagent 提供獨立的 git worktree |
 | `initialPrompt` | 否 | 當 subagent 作為主要代理執行時，自動提交的第一個回合 |
+| `color` | 否 | subagent 在任務列表與逐字稿中的顯示顏色。接受 `red`、`blue`、`green`、`yellow`、`purple`、`orange`、`pink` 或 `cyan` |
+| `experimental` | 否 | 實驗性設定區塊 (v2.1.248+)。`experimental.cacheTtl` 設定此 subagent 的快取 TTL — `"5m"` 或 `"1h"` |
+| `omitClaudeMd` | 否 | 設定為 `true` 可在不載入使用者、專案與本機 CLAUDE.md 檔案的情況下啟動 subagent (v2.1.271+)。受管政策檔案仍會載入（受管 subagents 除外）。當代理透過 `--agent` 或 `agent` 設定作為主工作階段代理執行時會被忽略。`--agents` JSON 中也接受此欄位 |
+
+#### Subagent 模型環境變數
+
+有兩個環境變數會影響 subagent 使用的模型：
+
+| 變數 | 版本 | 說明 |
+|----------|---------|-------------|
+| `CLAUDE_CODE_SUBAGENT_MODEL` | — | 設定 subagents 使用的模型 |
+| `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` | v2.1.257+ | 設定為 `1` 可強制使用 subagent 模型，覆寫 subagent frontmatter 中的 `model:` |
+
+> **v2.1.251 變更了優先順序**：在該版本之前，`CLAUDE_CODE_SUBAGENT_MODEL` 優先，會覆寫代理的 frontmatter — 包括 `model: inherit`。自 v2.1.251 起，subagent 自身的 `model:` frontmatter 勝出。若希望環境變數再次覆寫 frontmatter（例如將整個評估執行固定在單一模型），請設定 `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (v2.1.257+)。
 
 ### 主執行緒代理的 Frontmatter 支援 (v2.1.117+/v2.1.119+)
 
@@ -174,7 +197,7 @@ execute commands outside of accepted edits.
 claude --agent secure-researcher
 ```
 
-### 工具配置選項
+### 工具設定選項
 
 **選項 1：繼承所有工具（省略該欄位）**
 ```yaml
@@ -204,9 +227,9 @@ tools: Read, Bash(npm:*), Bash(test:*)
 ---
 ```
 
-### 基於 CLI 的配置
+### 基於 CLI 的設定
 
-使用 `--agents` 旗標搭配 JSON 格式，為單一會話定義子代理：
+使用 `--agents` 旗標搭配 JSON 格式，為單一工作階段定義子代理：
 
 ```bash
 claude --agents '{
@@ -232,15 +255,17 @@ claude --agents '{
 }
 ```
 
+> **注意**：自 v2.1.243 起，`--agents` 不再默默忽略無效的 JSON 或無效的代理定義 — Claude Code 會以明確的錯誤訊息結束，與 `--mcp-config` 的行為一致。
+
 **代理定義的優先順序：**
 
 代理定義按以下優先順序載入（先匹配者勝）：
-1. **CLI 定義** - `--agents` 旗標（僅限當前會話，JSON 格式）
+1. **CLI 定義** - `--agents` 旗標（僅限目前工作階段，JSON 格式）
 2. **專案層級** - `.claude/agents/`（當前專案）
 3. **使用者層級** - `~/.claude/agents/`（所有專案）
 4. **外掛層級** - 外掛的 `agents/` 目錄
 
-這使得 CLI 定義可以在單一會話中覆蓋所有其他來源。
+這使得 CLI 定義可以在單一工作階段中覆蓋所有其他來源。
 
 ---
 
@@ -252,10 +277,10 @@ Claude Code 包含數個隨時可用的內建子代理：
 |-------|-------|---------|
 | **general-purpose** | 繼承 | 複雜的多步驟任務 |
 | **Plan** | 繼承 | 規劃模式下的研究 |
-| **Explore** | Haiku | 唯讀程式碼庫探索（快速/中等/極其徹底） |
-| **Bash** | 繼承 | 在獨立上下文中的終端機指令 |
-| **statusline-setup** | Sonnet | 配置狀態列 |
-| **Claude Code Guide** | Haiku | 回答 Claude Code 功能相關問題 |
+| **Explore** | 繼承（上限為 Opus） | 唯讀程式碼庫探索（快速/中等/極其徹底） |
+| **claude** | 繼承 | 適用於不符合更專門代理之任務的通用代理；擁有 subagents 可用的所有工具。也是派發背景工作階段的預設代理 |
+| **statusline-setup** | Sonnet | 當您使用 `/statusline` 設定狀態列時執行 |
+| **claude-code-guide** | Haiku | 回答關於 Claude Code 功能的問題 |
 
 ### General-Purpose 子代理
 
@@ -281,7 +306,7 @@ Claude Code 包含數個隨時可用的內建子代理：
 
 | 屬性 | 值 |
 |----------|-------|
-| **模型** | Haiku (快速、低延遲) |
+| **模型** | 繼承工作階段模型，上限為 Opus (v2.1.198)。設定 `model: haiku` 可維持快速且低成本 |
 | **模式** | 嚴格唯讀 |
 | **工具** | Glob, Grep, Read, Bash (僅限唯讀指令) |
 | **用途** | 快速的程式碼庫搜尋與分析 |
@@ -294,15 +319,15 @@ Claude Code 包含數個隨時可用的內建子代理：
 - **"medium"** - 中度探索，在速度與徹底性之間取得平衡，為預設方式
 - **"very thorough"** - 跨多個位置與命名慣例進行全面的分析，可能需要較長時間
 
-### Bash 子代理
+### Claude 子代理
 
 | 屬性 | 值 |
 |----------|-------|
 | **模型** | 繼承自父代理 |
-| **工具** | Bash |
-| **用途** | 在獨立的上下文視窗中執行終端機指令 |
+| **工具** | subagents 可用的所有工具 |
+| **用途** | 適用於不符合更專門代理之任務的通用代理 |
 
-**使用時機**：當執行需要隔離上下文的 shell 指令時。
+**使用時機**：當任務不符合任何更專門的內建代理時。它也是派發背景工作階段的預設代理；其起始的權限模式取決於該工作階段的啟動方式。
 
 ### Statusline Setup 子代理
 
@@ -310,11 +335,11 @@ Claude Code 包含數個隨時可用的內建子代理：
 |----------|-------|
 | **模型** | Sonnet |
 | **工具** | Read, Write, Bash |
-| **用途** | 配置 Claude Code 狀態列顯示 |
+| **用途** | 設定 Claude Code 狀態列顯示 |
 
-**使用時機**：當設定或自定義狀態列時。
+**使用時機**：當設定或自訂狀態列時。
 
-### Claude Code Guide 子代理
+### Claude Code Guide 子代理 (`claude-code-guide`)
 
 | 屬性 | 值 |
 |----------|-------|
@@ -328,18 +353,17 @@ Claude Code 包含數個隨時可用的內建子代理：
 
 ## 管理 Subagents
 
-### 使用 `/agents` 命令 (建議方式)
+### 詢問 Claude (建議方式)
 
-```bash
-/agents
+建立或管理 subagent 最簡單的方式是直接詢問 Claude：
+
+```text
+Create a subagent that reviews code for security vulnerabilities.
 ```
 
-這會提供一個互動式選單，用於：
-- 查看所有可用的 subagents（內建、使用者與專案）
-- 透過引導式設定建立新的 subagents
-- 編輯現有的自定義 subagents 與工具存取權限
-- 刪除自定義 subagents
-- 當存在重複時，查看哪些 subagents 是啟用的
+Claude 會為您撰寫 `.claude/agents/<name>.md` 檔案，並選擇合適的 frontmatter（tools、model、description）。之後您可以手動調整該檔案，或請 Claude 修改。
+
+> **注意**：`/agents` 命令不再開啟互動式建立精靈（已於 v2.1.198 移除）。它現在會引導您詢問 Claude 或直接編輯 `.claude/agents/` 檔案。
 
 ### 直接進行檔案管理
 
@@ -381,7 +405,7 @@ description: Expert code review specialist. Use PROACTIVELY after writing or mod
 ---
 ```
 
-### 明確調用
+### 明確呼叫
 
 您可以明確要求使用特定的 subagent：
 
@@ -393,17 +417,17 @@ description: Expert code review specialist. Use PROACTIVELY after writing or mod
 
 > **`subagent_type` 不區分大小寫與分隔符號的比對 (v2.1.140)**：`subagent_type`（在 `Agent` 工具呼叫或 `--agent` 旗標中）的比對不區分大小寫，且會忽略分隔符號差異 — `code-reviewer`、`Code Reviewer` 與 `code_reviewer` 都會解析到同一個代理。這消除了長期以來因大小寫差異而悄悄降回預設代理的問題。
 
-### @-Mention 調用
+### @-Mention 呼叫
 
-使用 `@` 前綴來確保特定的 subagent 被調用（這會繞過自動委派的啟發式演算法）：
+使用 `@` 前綴來確保特定的 subagent 被呼叫（這會繞過自動委派的啟發式演算法）：
 
 ```
 > @"code-reviewer (agent)" review the auth module
 ```
 
-### 全會話代理
+### 全工作階段代理
 
-使用特定的 agent 作為主要代理來執行整個會話：
+使用特定的 agent 作為主要代理來執行整個工作階段：
 
 ```bash
 # 透過 CLI 參數
@@ -430,7 +454,7 @@ claude agents
 Subagents 可以繼續之前的對話，並完整保留上下文：
 
 ```bash
-# 初始調用
+# 初始呼叫
 > Use the code-analyzer agent to start reviewing the authentication module
 # 回傳 agentId: "abc123"
 
@@ -439,7 +463,7 @@ Subagents 可以繼續之前的對話，並完整保留上下文：
 ```
 
 **使用案例**：
-- 跨多個會話的長期研究
+- 跨多個工作階段的長期研究
 - 不失上下文的迭代精煉
 - 維持上下文的多步驟工作流程
 
@@ -460,7 +484,7 @@ Subagents 可以繼續之前的對話，並完整保留上下文：
 
 ## 子代理的持久化記憶
 
-`memory` 欄位為子代理提供了一個在不同會話之間持續存在的持久化目錄。這讓子代理能夠隨著時間累積知識，儲存筆記、發現以及在不同會話之間持續存在的上下文。
+`memory` 欄位為子代理提供了一個在不同工作階段之間持續存在的持久化目錄。這讓子代理能夠隨著時間累積知識，儲存筆記、發現以及在不同工作階段之間持續存在的上下文。
 
 ### 記憶範圍 (Memory Scopes)
 
@@ -476,7 +500,7 @@ Subagents 可以繼續之前的對話，並完整保留上下文：
 - `Read`、`Write` 與 `Edit` 工具會自動為子代理啟用，以便其管理記憶檔案
 - 子代理可以根據需要在其記憶目錄中建立額外的檔案
 
-### 配置範例
+### 設定範例
 
 ```yaml
 ---
@@ -507,11 +531,11 @@ graph LR
 
 ## 背景子代理
 
-子代理可以在背景執行，從而將主對話釋放給其他任務使用。
+子代理預設在背景執行 (v2.1.198)。子代理執行期間，Claude 會繼續處理主對話，並在子代理完成時收到通知，因此您不再需要等待子代理回傳才能繼續。
 
-### 配置
+### 設定
 
-在 frontmatter 中設定 `background: true`，即可讓子代理始終作為背景任務執行：
+由於背景執行已是預設行為，在 frontmatter 中設定 `background: true` 會*強制*子代理一律在背景執行，並防止其以行內方式執行：
 
 ```yaml
 ---
@@ -542,7 +566,7 @@ export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1
 
 `isolation: worktree` 設定會為子代理提供專屬的 git worktree，使其能夠獨立進行變更，而不會影響主工作樹。
 
-### 配置
+### 設定
 
 ```yaml
 ---
@@ -579,9 +603,11 @@ graph TB
 
 分叉子代理（`context: fork`）在分叉當下繼承父代理的完整對話上下文，而非從乾淨的狀態開始。這對於在不丟失既有工作的情況下探索替代路徑非常有用。
 
-> **可用性**：在 v2.1.117 中正式發布 (GA)。在外部建置版本（非第一方發行版）中，需設定 `CLAUDE_CODE_FORK_SUBAGENT=1` 以啟用分叉功能。
+> **可用性**：在 v2.1.117 中正式發布 (GA)。**自 v2.1.232 起，互動式工作階段預設啟用 fork 模式** — 適用於所有建置版本，無論是否為第一方。在非互動模式（`claude -p`）與 Agent SDK 中則預設維持關閉。若使用早於 v2.1.232 的 Claude Code，或要在預設關閉的環境中啟用，請設定 `CLAUDE_CODE_FORK_SUBAGENT=1`。
 
-### 配置
+> **Fork 模式下的子代理在背景執行。** 在啟用 fork 模式的環境中（互動式工作階段預設即是如此），Claude Code 會在背景執行子代理，無論是否為分叉子代理皆然。
+
+### 設定
 
 ```yaml
 ---
@@ -596,7 +622,10 @@ may explore an alternative approach. Return your findings and the parent
 will decide whether to adopt them.
 ```
 
-### 在外部建置版本中啟用
+### 明確啟用 Fork 模式
+
+v2.1.232+ 的互動式工作階段不需要任何旗標。在較舊版本、headless 執行
+或 Agent SDK 中請使用以下方式：
 
 ```bash
 export CLAUDE_CODE_FORK_SUBAGENT=1
@@ -639,7 +668,7 @@ You are a coordinator agent. You can delegate work to the "worker" and
 
 ## `claude agents` CLI 命令
 
-`claude agents` 命令會列出所有配置的代理，並按來源（內建、使用者層級、專案層級）進行分組：
+`claude agents` 命令會列出所有已設定的代理，並按來源（內建、使用者層級、專案層級）進行分組：
 
 ```bash
 claude agents
@@ -668,7 +697,7 @@ Agent Teams 協調多個 Claude Code 實例共同處理複雜任務。與子代�
 | **上下文** | 每個子任務擁有全新的上下文，結果會被提煉回傳 | 每位團隊成員維持其各自的持久性上下文視窗 |
 | **協調方式** | 循序或並行，由父代理管理 | 共享任務列表，具備自動依賴管理功能 |
 | **通訊** | 僅將結果回傳給父代理（無代理間訊息傳遞） | 團隊成員可以透過信箱直接互相傳送訊息 |
-| **會話恢復** | 支援 | 處理中的團隊成員不支援 |
+| **工作階段恢復** | 支援 | 處理中的團隊成員不支援 |
 | **最佳適用場景** | 專注且定義明確的子任務 | 需要代理間通訊與並行執行的複雜工作 |
 
 ### 啟用 Agent Teams
@@ -709,6 +738,7 @@ Claude 將會自動建立團隊、分配任務並協調工作。
 | **Auto** | `--teammate-mode auto` | 自動為您的終端機選擇最佳顯示模式 |
 | **In-process** (預設) | `--teammate-mode in-process` | 在目前的終端機中以行內方式顯示隊友輸出 |
 | **Split-panes** | `--teammate-mode tmux` | 在獨立的 tmux 或 iTerm2 窗格中開啟每個隊友 |
+| **iTerm2** | `--teammate-mode iterm2` | (v2.1.186+) 在專屬的 iTerm2 窗格中產生隊友。需要 `it2` CLI；若找不到，auto 模式會發出警告 |
 
 ```bash
 claude --teammate-mode tmux
@@ -728,9 +758,13 @@ claude --teammate-mode tmux
 
 在 split-pane 模式下，使用 `Shift+Down` 可以在隊友之間進行切換。
 
-### 團隊配置
+### 團隊設定
 
-團隊配置儲存在 `~/.claude/teams/{team-name}/config.json`。
+團隊設定儲存在 `~/.claude/teams/{team-name}/config.json`。
+
+### 隊友模型選擇
+
+自 v2.1.234 起，`/config` 中的「Default teammate model」設定已移除。隊友現在預設繼承團隊領導者的模型，除非產生呼叫中明確指定了不同的模型。
 
 ### 架構
 
@@ -763,9 +797,9 @@ graph TB
     style T3 fill:#e8f5e9,stroke:#333,color:#333
 ```
 
-**關鍵組件**：
+**關鍵元件**：
 
-- **Team Lead**：主要的 Claude Code 會話，負責建立團隊、分配任務與協調
+- **Team Lead**：主要的 Claude Code 工作階段，負責建立團隊、分配任務與協調
 - **Shared Task List**：同步的任務列表，具有自動依賴追蹤功能
 - **Mailbox**：代理間的訊息系統，供隊友溝通狀態與進行協調
 - **Teammates**：獨立的 Claude Code 實例，每個實例都有各自的上下文視窗
@@ -802,11 +836,11 @@ Agent Teams 引入了兩個額外的 [hook 事件](../06-hooks/)：
 ### 限制
 
 - **實驗性功能**：功能行為可能會在未來的版本中發生變化
-- **無法恢復會話**：in-process 模式下的隊友在會話結束後無法恢復
-- **單一會話僅限一個團隊**：無法在單一會話中建立巢狀團隊或多個團隊
+- **無法恢復工作階段**：in-process 模式下的隊友在工作階段結束後無法恢復
+- **單一工作階段僅限一個團隊**：無法在單一工作階段中建立巢狀團隊或多個團隊
 - **固定領導地位**：團隊領導角色無法轉移給其他隊友
 - **Split-pane 限制**：需要 tmux/iTerm2；無法在 VS Code terminal、Windows Terminal 或 Ghostty 中使用
-- **無跨會話團隊**：隊友僅存在於當前會話中
+- **無跨工作階段團隊**：隊友僅存在於目前工作階段中
 
 > **警告**：Agent Teams 是實驗性功能。請先使用非關鍵性工作進行測試，並監控隊友協調情況以觀察是否有非預期的行為。
 
@@ -817,10 +851,30 @@ Agent Teams 引入了兩個額外的 [hook 事件](../06-hooks/)：
 為了安全性考量，由外掛提供的 subagents 具有受限的 frontmatter 功能。在 plugin subagent 定義中，**不允許**使用以下欄位：
 
 - `hooks` - 不得定義生命週期鉤子
-- `mcpServers` - 不得配置 MCP servers
+- `mcpServers` - 不得設定 MCP servers
 - `permissionMode` - 不得覆寫權限設定
 
 這可以防止外掛透過 subagent hooks 進行權限提升或執行任意指令。
+
+### Subagent 輸出掃描 (v2.1.210+)
+
+自 v2.1.210 起，Claude Code 會掃描每個 subagent 的最終報告，找出模仿 harness 自身輸出格式的文字 — 偽造的 `<system-reminder>` 風格標籤、捏造的 `Human:`/`Assistant:` 回合，或提及權限繞過旗標與設定檔路徑的內容。這可以防禦經由 subagent 輸出夾帶的提示詞注入，例如 subagent 擷取到一個惡意網頁，其中含有意圖操控父工作階段的偽造控制 token。
+
+當掃描標記出可疑內容時，Claude Code 會將其無害化 — 插入反斜線或行內標記，例如 `[harness: subagent output matched instruction-shaped pattern(s): ...]`，並註明觸發掃描的內容 — 父工作階段應將被標記的文字視為要轉達的發現，而非要遵循的指令。此掃描預設啟用，且沒有文件記載的停用方式。它傾向於寧可多標記：即使沒有任何惡意行為，一份逐字引用真實旗標名稱（例如 `--dangerously-skip-permissions`）的正當 subagent 報告也可能觸發標記 — 誤報總比漏掉注入來得好。
+
+### Subagent 並行數與深度限制
+
+> **每個工作階段的產生上限已移除。** Claude Code 自 v2.1.212 起將每個工作階段的 subagent 產生數量上限設為 200，但 **v2.1.224 移除了該上限** — 長時間執行的工作階段不再拒絕新的代理，官方 subagents 參考文件現在也明確表示，Claude 在一個工作階段中可產生的 subagents 總數沒有限制。用來覆寫該上限的 `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION` 變數也隨之移除。
+
+仍有兩項 subagent 擴散限制適用，皆透過環境變數設定：
+
+- `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (v2.1.217) - 同時**並行**執行的 subagents 最大數量。預設值：20。
+- `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (v2.1.217) - subagents 產生自己的 subagents 時的最大**巢狀深度**。**自 v2.1.219 起預設值為 3**（v2.1.217–v2.1.218 為 1）。設定為 `1` 可停用巢狀（請參閱[關鍵行為](#關鍵行為)）。
+
+```bash
+export CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS=20
+export CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=5
+```
 
 ---
 
@@ -900,16 +954,23 @@ graph TB
 
 ### 效能考量
 
-- **上下文效率** - 代理會保留主上下文，從而實現更長的會話
+- **上下文效率** - 代理會保留主上下文，從而實現更長的工作階段
 - **延遲** - 子代理從乾淨的狀態開始，在收集初始上下文時可能會增加延遲
 
 ### 關鍵行為
 
-- **禁止巢狀生成** - 子代理無法生成其他子代理
+- **預設啟用巢狀生成，深度為 3 (v2.1.219)** - 子代理可以在主對話之下最多三層的範圍內生成自己的子代理。設定 `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` 可變更此限制，設為 `1` 則關閉巢狀。達到深度限制時，Claude Code 會對分叉以外的所有子代理隱藏 `Agent` 工具。（歷史：v2.1.172–v2.1.216 預設巢狀最多 5 層且無法變更；v2.1.217 將巢狀改為選擇性啟用、深度 1；v2.1.219 將預設值設為 3。）使用 `Agent(agent_type)` 限制語法（請參閱[限制可生成的子代理](#限制可生成的子代理)）來控制特定子代理可以生成哪些子代理
 - **背景權限** - 背景子代理會自動拒絕任何未經預先核准的權限
 - **背景化** - 按下 `Ctrl+B` 可將目前正在執行的任務轉為背景執行
 - **逐字稿** - 子代理的逐字稿儲存在 `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`
 - **自動壓縮** - 子代理上下文會在容量達到約 95% 時自動進行壓縮（可透過 `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` 環境變數進行覆蓋）
+- **繼承延伸思考 (v2.1.198)** - 子代理與上下文壓縮現在會繼承工作階段的延伸思考（extended thinking）設定（先前一律停用）。沒有針對個別子代理的 thinking 欄位
+
+### 其他控制項
+
+- **停用內建的 Explore/Plan 代理** - 設定 `CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1` 可移除內建的 Explore 與 Plan 代理 (v2.1.198)
+- **附加至每個子代理的提示詞** - 在非互動 / `--print` 模式下，`--append-subagent-system-prompt "<text>"` 會將文字附加到每個子代理的系統提示詞 (v2.1.205)
+- **從檔案附加** - `--append-subagent-system-prompt-file ./subagent-rules.txt` 會從檔案讀取相同的附加文字，適用於太長而無法在命令列上傳遞的提示詞。同樣僅限 `-p`，且不能與 `--append-subagent-system-prompt` 併用 (v2.1.261)
 
 ---
 
@@ -920,8 +981,8 @@ graph TB
 | 包含多個步驟的複雜功能 | 是 | 分離關注點，防止上下文污染 |
 | 快速程式碼審查 | 否 | 不必要的額外開銷 |
 | 並行任務執行 | 是 | 每個 subagent 擁有各自的上下文 |
-| 需要專業知識時 | 是 | 使用自定義系統提示詞 |
-| 長時間運行的分析 | 是 | 防止主上下文耗盡 |
+| 需要專業知識時 | 是 | 使用自訂系統提示詞 |
+| 長時間執行的分析 | 是 | 防止主上下文耗盡 |
 | 單一任務 | 否 | 不必要地增加延遲 |
 
 ---
@@ -931,7 +992,7 @@ graph TB
 ### 設計原則
 
 **要：**
-- 從 Claude 生成的代理開始 - 先使用 Claude 生成初始 subagent，然後進行迭代以進行自定義
+- 從 Claude 生成的代理開始 - 先使用 Claude 生成初始 subagent，然後進行迭代以進行自訂
 - 設計專注的 subagents - 確保單一且明確的職責，而不是讓一個代理處理所有事情
 - 編寫詳細的提示詞 - 包含具體的指令、範例與限制條件
 - 限制工具存取權限 - 僅授予 subagent 目的所需的必要工具
@@ -993,7 +1054,7 @@ graph TB
 
 **專業領域**：
 - 安全漏洞檢測
-- 效能優化識別
+- 效能最佳化識別
 - 程式碼可維護性評估
 - 測試覆蓋率分析
 
@@ -1083,34 +1144,64 @@ graph TB
 
 ### 7. Data Scientist (`data-scientist.md`)
 
-**目的**：用於 SQL 查詢與數據洞察的數據分析專家
+**目的**：用於 SQL 查詢與資料洞察的資料分析專家
 
 **工具**：Bash, Read, Write
 
 **專業領域**：
-- SQL 查詢優化
+- SQL 查詢最佳化
 - BigQuery 操作
-- 數據分析與視覺化
+- 資料分析與視覺化
 - 統計洞察
 
-**使用時機**：當你需要數據分析、SQL 查詢或 BigQuery 操作時
+**使用時機**：當你需要資料分析、SQL 查詢或 BigQuery 操作時
+
+---
+
+### 8. Clean Code Reviewer (`clean-code-reviewer.md`)
+
+**目的**：依據 clean code 原則進行可讀性與可維護性審查
+
+**工具**：Read, Grep, Glob, Bash
+
+**專業領域**：
+- 命名、函式長度與參數數量
+- 重複與無用程式碼
+- 註解品質與意圖
+- 結構清晰優先於炫技
+
+**使用時機**：當你需要一次有別於正確性審查的風格與可維護性檢查時
+
+---
+
+### 9. Performance Optimizer (`performance-optimizer.md`)
+
+**目的**：找出並修正效能瓶頸
+
+**工具**：Read, Edit, Bash, Grep, Glob
+
+**專業領域**：
+- 演算法複雜度與熱路徑
+- 記憶體配置與洩漏
+- 快取與查詢最佳化
+- 並行與 I/O 瓶頸
+
+**使用時機**：當程式碼明顯變慢，且需要針對性最佳化時
 
 ---
 
 ## 安裝說明
 
-### 方法 1：使用 /agents 命令（推薦）
+### 方法 1：詢問 Claude（推薦）
 
-```bash
-/agents
+描述您想要的子代理，讓 Claude 建立檔案：
+
+```text
+Create a project-level subagent that runs tests and fixes failures.
+Give it access to Bash, Read, Edit, and Grep.
 ```
 
-接著：
-1. 選擇 'Create New Agent'
-2. 選擇專案層級或使用者層級
-3. 詳細描述您的子代理
-4. 選擇要授予存取權的工具（或留空以繼承所有權限）
-5. 儲存並使用
+Claude 會以合適的 frontmatter 撰寫 `.claude/agents/<name>.md`。檢查產生的檔案後即可使用。（`/agents` 互動式建立精靈已於 v2.1.198 移除 — 請改為詢問 Claude 或直接編輯檔案。）
 
 ### 方法 2：複製到專案
 
@@ -1146,13 +1237,13 @@ cp /path/to/04-subagents/debugger.md ~/.claude/agents/
 
 ### 驗證
 
-安裝完成後，驗證代理是否已被識別：
+安裝完成後，列出目錄內容以驗證代理是否已被識別：
 
 ```bash
-/agents
+ls .claude/agents/
 ```
 
-您應該會看到已安裝的代理與內建代理一起列出。
+您也可以詢問 Claude 目前工作階段中有哪些可用的子代理，它會回報可委派的內建與自訂代理。
 
 ---
 
@@ -1168,7 +1259,9 @@ project/
 │       ├── secure-reviewer.md
 │       ├── implementation-agent.md
 │       ├── debugger.md
-│       └── data-scientist.md
+│       ├── data-scientist.md
+│       ├── clean-code-reviewer.md
+│       └── performance-optimizer.md
 └── ...
 ```
 
@@ -1179,9 +1272,9 @@ project/
 ### 相關功能
 
 - **[Slash Commands](../01-slash-commands/)** - 使用者快速呼叫的捷徑
-- **[Memory](../02-memory/)** - 跨會話的持久化上下文
+- **[Memory](../02-memory/)** - 跨工作階段的持久化上下文
 - **[Skills](../03-skills/)** - 可重複使用的自主能力
-- **[MCP Protocol](../05-mcp/)** - 即時外部數據存取
+- **[MCP Protocol](../05-mcp/)** - 即時外部資料存取
 - **[Hooks](../06-hooks/)** - 事件驅動的 shell 命令自動化
 - **[Plugins](../07-plugins/)** - 綑綁的擴充套件包
 
@@ -1216,7 +1309,7 @@ graph TD
 
 > **新增於 v2.1.139。**
 
-源自子代理的 API 請求會攜帶兩個額外的 HTTP 標頭，以便將追蹤與日誌關聯回發起會話：
+源自子代理的 API 請求會攜帶兩個額外的 HTTP 標頭，以便將追蹤與日誌關聯回發起的工作階段：
 
 | 標頭 | 說明 |
 |--------|-------------|
@@ -1225,9 +1318,9 @@ graph TD
 
 相同的識別碼也會作為屬性 `claude.code.agent.id` 與 `claude.code.agent.parent_id` 公開在 `claude_code.llm_request` OpenTelemetry span 上。可用於：
 
-- 將 API 費用歸因於特定子代理類型，而非整個父會話
+- 將 API 費用歸因於特定子代理類型，而非整個父工作階段
 - 事後重建代理呼叫鏈（parent_id 構成樹狀結構）
-- 對失控的子代理發出警報（例如：某個 `agent.id` 佔會話總花費超過 50%）
+- 對失控的子代理發出警報（例如：某個 `agent.id` 佔工作階段總花費超過 50%）
 
 關於端對端 exporter 設定，請參閱[進階功能 → 遙測](../09-advanced-features/README.md)中的 OpenTelemetry 章節。
 
@@ -1242,14 +1335,19 @@ graph TD
 
 ---
 
-**最後更新日期**：2026 年 5 月 25 日
-**Claude Code 版本**：2.1.150
+**最後更新日期**：2026 年 9 月 19 日
+**Claude Code 版本**：2.1.278
 **來源**：
 - https://code.claude.com/docs/en/sub-agents
+- https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+- https://code.claude.com/docs/en/cli-reference
 - https://code.claude.com/docs/en/agent-teams
+- https://code.claude.com/docs/en/changelog#2-1-172
+- https://code.claude.com/docs/en/changelog
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.131
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.138
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.139
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.140
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://code.claude.com/docs/en/model-config
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

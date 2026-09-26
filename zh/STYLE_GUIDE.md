@@ -597,12 +597,13 @@ docs(skills): Add comprehensive code review skill
 
 ```markdown
 ---
-**Last Updated**: March 2026
-**Claude Code Version**: 2.1.97
+**Last Updated**: August 2026
+**Claude Code Version**: 2.1.245
 **Compatible Models**: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
 ```
 
-- 使用“月份 + 年份”格式，例如 “March 2026”
+- 使用“月份 + 年份”格式，例如 “August 2026”
+- 使用当前同步运行捕获的版本号，而非此处示例中显示的值
 - 功能变化时更新版本
 - 列出所有兼容模型
 
@@ -628,3 +629,10 @@ docs(skills): Add comprehensive code review skill
 - [ ] 段落简短且聚焦
 - [ ] 相关指南章节链接到合适的课程
 - [ ] 提交信息符合 conventional commits 格式
+
+---
+
+**最后更新**: 2026 年 8 月 25 日
+**Claude Code 版本**: 2.1.245
+**来源**:
+- https://code.claude.com/docs/en/overview

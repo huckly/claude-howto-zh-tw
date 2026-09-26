@@ -1,21 +1,30 @@
-# Documentation Refactor
+---
+name: doc-refactor
+description: 重新整理專案文件結構，使其更清晰、更易於存取
+---
 
-Refactor project documentation structure adapted to project type:
+# 文件重構
 
-1. **Analyze project**: Identify type (library/API/web app/CLI/microservices), architecture, and user personas
-2. **Centralize docs**: Move technical documentation to `docs/` with proper cross-references
-3. **Root README.md**: Streamline as entry point with overview, quickstart, modules/components summary, license, contacts
-4. **Component docs**: Add module/package/service-level README files with setup and testing instructions
-5. **Organize `docs/`** by relevant categories:
-   - Architecture, API Reference, Database, Design, Troubleshooting, Deployment, Contributing (adapt to project needs)
-6. **Create guides** (select applicable):
-   - User Guide: End-user documentation for applications
-   - API Documentation: Endpoints, authentication, examples for APIs
-   - Development Guide: Setup, testing, contribution workflow
-   - Deployment Guide: Production deployment for services/apps
-7. **Use Mermaid** for all diagrams (architecture, flows, schemas)
+依專案類型調整並重構專案文件結構：
 
-Keep docs concise, scannable, and contextual to project type.
+1. **分析專案**：辨識類型（函式庫/API/Web 應用程式/CLI/微服務）、架構與使用者角色
+2. **集中文件**：將技術文件移至 `docs/`，並加上適當的交叉參照
+3. **根目錄 README.md**：精簡為入口頁，包含概覽、快速入門、模組/元件摘要、授權與聯絡方式
+4. **元件文件**：新增模組/套件/服務層級的 README 檔案，附上設定與測試說明
+5. **依相關類別整理 `docs/`**：
+   - 架構、API 參考、資料庫、設計、疑難排解、部署、貢獻指南（依專案需求調整）
+6. **建立指南**（選擇適用者）：
+   - 使用者指南：應用程式的終端使用者文件
+   - API 文件：API 的端點、驗證與範例
+   - 開發指南：環境設定、測試、貢獻流程
+   - 部署指南：服務/應用程式的正式環境部署
+7. **使用 Mermaid** 繪製所有圖表（架構、流程、結構描述）
+
+保持文件簡潔、易於瀏覽，並貼合專案類型的脈絡。
 
 ---
-**Last Updated**: April 9, 2026
+**上次更新**: 2026 年 8 月 4 日
+**Claude Code 版本**: 2.1.220
+**來源**:
+- https://code.claude.com/docs/en/commands
+**相容模型**: Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

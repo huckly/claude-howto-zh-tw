@@ -1,30 +1,25 @@
 {
-  "description": "Example Claude Code configurations for different use cases",
+  "description": "Example Claude Code settings.json configurations for different use cases",
 
   "examples": {
     "development": {
       "name": "Development Environment",
-      "description": "Configuration for active development work",
+      "description": "Configuration for active development work: auto-accept edits, prompt for commands, format/lint on write",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.7
-        },
-        "planning": {
-          "autoEnter": true,
-          "complexityThreshold": 3,
-          "requireApproval": true
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "unrestricted"
-        },
-        "backgroundTasks": {
-          "enabled": true,
-          "maxConcurrentTasks": 3
+          "defaultMode": "acceptEdits",
+          "allow": ["Bash(npm run *)", "Bash(git diff:*)", "Bash(git status:*)"]
         },
         "hooks": {
-          "PreToolUse:Write": "prettier --write ${file_path}",
-          "PostToolUse:Write": "eslint ${file_path}"
+          "PostToolUse": [
+            {
+              "matcher": "Write|Edit",
+              "hooks": [
+                { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/format-and-lint.sh" }
+              ]
+            }
+          ]
         }
       }
     },
@@ -33,46 +28,28 @@
       "name": "Code Review Mode",
       "description": "Configuration for reviewing code without modifications",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.3
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "plan"
+          "defaultMode": "plan"
         },
-        "extendedThinking": {
-          "enabled": true,
-          "showThinkingProcess": true
-        },
-        "planning": {
-          "autoEnter": false
+        "env": {
+          "CLAUDE_CODE_EFFORT_LEVEL": "high"
         }
       }
     },
 
     "learning": {
       "name": "Learning Mode",
-      "description": "Configuration for learning and experimentation",
+      "description": "Configuration for learning and experimentation: prompt before every action, checkpoint often",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.5
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "confirm"
+          "defaultMode": "manual"
         },
-        "extendedThinking": {
-          "enabled": true,
-          "showThinkingProcess": true
+        "env": {
+          "CLAUDE_CODE_EFFORT_LEVEL": "high"
         },
-        "planning": {
-          "autoEnter": true,
-          "requireApproval": true,
-          "showTimeEstimates": true
-        },
-        "checkpoints": {
-          "autoCheckpoint": true
-        }
+        "fileCheckpointingEnabled": true
       }
     },
 
@@ -80,50 +57,36 @@
       "name": "Production Deployment",
       "description": "Configuration for production operations with safety checks",
       "config": {
-        "general": {
-          "model": "claude-opus-4-7",
-          "temperature": 0.1
-        },
+        "model": "claude-opus-5",
         "permissions": {
-          "mode": "confirm",
-          "requireConfirmationFor": ["Bash", "Git", "Write", "Edit"]
+          "defaultMode": "manual",
+          "deny": ["Bash(git push --force*)", "Bash(rm -rf*)"]
         },
         "hooks": {
-          "PreToolUse": "~/.claude/hooks/pre-commit.sh"
+          "PreToolUse": [
+            {
+              "matcher": "Bash",
+              "hooks": [
+                { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit.sh" }
+              ]
+            }
+          ]
         },
-        "checkpoints": {
-          "autoCheckpoint": true
-        },
-        "planning": {
-          "autoEnter": true,
-          "requireApproval": true
-        }
+        "fileCheckpointingEnabled": true
       }
     },
 
     "ci_cd": {
       "name": "CI/CD Pipeline",
-      "description": "Configuration for automated CI/CD operations",
+      "description": "Configuration for automated CI/CD operations, run non-interactively via `claude -p`",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "unrestricted"
+          "defaultMode": "acceptEdits",
+          "allow": ["Bash(npm test:*)", "Bash(npm run build:*)", "Bash(npm run lint:*)"]
         },
-        "headless": {
-          "exitOnError": true,
-          "verbose": true,
-          "timeout": 3600
-        },
-        "logging": {
-          "level": "debug",
-          "file": "./ci-claude.log"
-        },
-        "planning": {
-          "autoEnter": false,
-          "requireApproval": false
+        "env": {
+          "CI": "true"
         }
       }
     },
@@ -132,20 +95,22 @@
       "name": "Security Audit",
       "description": "Configuration for security-focused code analysis",
       "config": {
-        "general": {
-          "model": "claude-opus-4-7",
-          "temperature": 0.2
-        },
+        "model": "claude-opus-5",
         "permissions": {
-          "mode": "plan"
+          "defaultMode": "plan"
         },
-        "extendedThinking": {
-          "enabled": true,
-          "showThinkingProcess": true,
-          "minThinkingTime": 10
+        "env": {
+          "CLAUDE_CODE_EFFORT_LEVEL": "max"
         },
         "hooks": {
-          "PostToolUse:Read": "~/.claude/hooks/security-scan.sh ${file_path}"
+          "PostToolUse": [
+            {
+              "matcher": "Read",
+              "hooks": [
+                { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/security-scan.sh" }
+              ]
+            }
+          ]
         }
       }
     },
@@ -154,21 +119,11 @@
       "name": "Performance Optimization",
       "description": "Configuration for performance analysis and optimization",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.4
+        "model": "claude-sonnet-5",
+        "permissions": {
+          "defaultMode": "acceptEdits"
         },
-        "planning": {
-          "autoEnter": true,
-          "requireApproval": true
-        },
-        "backgroundTasks": {
-          "enabled": true,
-          "maxConcurrentTasks": 5
-        },
-        "checkpoints": {
-          "autoCheckpoint": true
-        }
+        "fileCheckpointingEnabled": true
       }
     },
 
@@ -176,73 +131,58 @@
       "name": "Pair Programming",
       "description": "Configuration for collaborative development",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.6
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "confirm"
+          "defaultMode": "manual"
         },
-        "planning": {
-          "autoEnter": true,
-          "requireApproval": true,
-          "showTimeEstimates": true
-        },
-        "extendedThinking": {
-          "enabled": true,
-          "showThinkingProcess": true
-        },
-        "ui": {
-          "compactMode": false,
-          "showProgress": true
+        "env": {
+          "CLAUDE_CODE_EFFORT_LEVEL": "high"
         }
       }
     },
 
     "refactoring": {
       "name": "Large Refactoring",
-      "description": "Configuration for major refactoring work",
+      "description": "Configuration for major refactoring work: backup before edits, run related tests after",
       "config": {
-        "general": {
-          "model": "claude-opus-4-7",
-          "temperature": 0.3
-        },
-        "planning": {
-          "autoEnter": true,
-          "requireApproval": true,
-          "showTimeEstimates": true
-        },
-        "checkpoints": {
-          "autoCheckpoint": true
-        },
-        "hooks": {
-          "PreToolUse:Edit": "~/.claude/hooks/backup-file.sh ${file_path}",
-          "PostToolUse:Edit": "npm test -- --findRelatedTests ${file_path}"
-        },
+        "model": "claude-opus-5",
         "permissions": {
-          "mode": "confirm"
+          "defaultMode": "manual",
+          "allow": ["Bash(npm test -- --findRelatedTests *)"]
+        },
+        "fileCheckpointingEnabled": true,
+        "hooks": {
+          "PreToolUse": [
+            {
+              "matcher": "Edit",
+              "hooks": [
+                { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/backup-file.sh" }
+              ]
+            }
+          ],
+          "PostToolUse": [
+            {
+              "matcher": "Edit",
+              "hooks": [
+                { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/run-related-tests.sh" }
+              ]
+            }
+          ]
         }
       }
     },
 
     "autonomous": {
       "name": "Autonomous Development",
-      "description": "Configuration for autonomous work with auto mode safety checks",
+      "description": "Configuration for autonomous work with auto mode's background safety classifier plus a filesystem/network sandbox",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.5
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "auto"
+          "defaultMode": "auto"
         },
         "sandbox": {
           "enabled": true,
           "failIfUnavailable": false
-        },
-        "backgroundTasks": {
-          "enabled": true,
-          "maxConcurrentTasks": 3
         }
       }
     },
@@ -251,15 +191,20 @@
       "name": "Documentation Writing",
       "description": "Configuration for writing documentation",
       "config": {
-        "general": {
-          "model": "claude-sonnet-4-6",
-          "temperature": 0.7
-        },
+        "model": "claude-sonnet-5",
         "permissions": {
-          "mode": "unrestricted"
+          "defaultMode": "acceptEdits",
+          "allow": ["Edit(**/*.md)"]
         },
         "hooks": {
-          "PostToolUse:Write": "markdownlint ${file_path}"
+          "PostToolUse": [
+            {
+              "matcher": "Write",
+              "hooks": [
+                { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/markdownlint.sh" }
+              ]
+            }
+          ]
         }
       }
     }

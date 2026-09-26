@@ -9,9 +9,7 @@ dependencies = [
     "ebooklib",
     "markdown",
     "beautifulsoup4",
-    "httpx",
     "pillow",
-    "tenacity",
     "jinja2",
 ]
 
@@ -44,7 +42,9 @@ exclude = ["tests", "tests.*"]
 [tool.ruff]
 target-version = "py310"
 line-length = 88
-include = ["scripts/**/*.py"]
+# Ruff resolves these patterns relative to this file's directory (scripts/),
+# not the repo root — "scripts/**/*.py" would mean scripts/scripts/**/*.py.
+include = ["**/*.py"]
 exclude = [
     ".git",
     ".venv",
@@ -72,6 +72,7 @@ select = [
 ignore = [
     "E501",     # Line too long (handled by formatter)
     "PLR0913",  # Too many arguments
+    "PLR0917",  # Too many positional arguments (stable since ruff 0.16)
     "PLR2004",  # Magic value comparison
     "PLR0915",  # Too many statements
     "PERF203",  # try-except in loop (acceptable for error handling)
@@ -89,7 +90,8 @@ force-single-line = false
 combine-as-imports = true
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/tests/*.py" = ["S101", "PLR2004"]
+# Also relative to scripts/ — see the note on [tool.ruff] include above.
+"tests/*.py" = ["S101", "PLR2004"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -120,4 +122,4 @@ ignore_errors = true
 [tool.bandit]
 targets = ["scripts"]
 exclude_dirs = ["scripts/tests", ".venv", "__pycache__"]
-skips = ["B101", "B113"]  # B113: httpx timeout false positive (timeout is set)
+skips = ["B101"]

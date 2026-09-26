@@ -5,7 +5,7 @@
 
 # Checkpoints 檢查點
 
-Checkpoints 讓您可以儲存對話狀態，並在您的 Claude Code 會話中回溯到先前的點。這對於探索不同的方法、從錯誤中恢復或比較替代方案來說非常寶貴。
+Checkpoints 讓您可以儲存對話狀態，並在您的 Claude Code 工作階段中回溯到先前的點。這對於探索不同的方法、從錯誤中恢復或比較替代方案來說非常寶貴。
 
 ## 概述
 
@@ -13,7 +13,7 @@ Checkpoints 讓您可以儲存對話狀態並回溯到先前的點，從而實�
 - 所有交換的訊息
 - 所做的檔案修改
 - 工具使用歷史
-- 會話上下文
+- 工作階段上下文
 
 在探索不同方法、從錯誤中恢復或比較替代方案時，Checkpoints 非常有用。
 
@@ -45,22 +45,25 @@ Checkpoints 讓您可以儲存對話狀態並回溯到先前的點，從而實�
 
 ## 回溯選項
 
-當您進行回溯時，系統會顯示五個選項的選單：
+當您進行回溯時，系統會顯示六個選項的選單：
 
 1. **Restore code and conversation** -- 將檔案與訊息同時還原至該檢查點
 2. **Restore conversation** -- 僅回溯訊息，保留您目前的程式碼不變
 3. **Restore code** -- 僅還原檔案變更，保留完整的對話歷史
-4. **Summarize from here** -- 將從此點開始的對話壓縮成由 AI 生成的摘要，以釋放上下文視窗空間。選定點之前的訊息將保持不變。磁碟上的檔案不會被更改。原始訊息會保留在會話紀錄中。您可以選擇提供指令，讓摘要集中在特定主題上。
-5. **Never mind** -- 取消並返回目前狀態
+4. **Summarize from here** -- 將從此點開始的對話壓縮成由 AI 生成的摘要，以釋放上下文視窗空間。選定點之前的訊息將保持不變。磁碟上的檔案不會被更改。原始訊息會保留在工作階段紀錄中。您可以選擇提供指令，讓摘要集中在特定主題上。
+5. **Summarize up to here** -- 反向的對應選項：將選定點*之前*的所有內容壓縮成由 AI 生成的摘要，並保留從此點開始的訊息不變。搭配「Summarize from here」，即可對上下文視窗進行雙向、有針對性的壓縮。磁碟上的檔案不會被更改，原始訊息也會保留在工作階段紀錄中。
+6. **Never mind** -- 取消並返回目前狀態
 
 > **注意**：在還原對話或進行摘要後，選定訊息中的原始提示詞會被還原到輸入欄位中，以便您可以重新發送或進行編輯。
+
+> **`/clear` 不再是硬性界線（v2.1.191+）**：`/rewind` 可以從您執行 `/clear` *之前*所建立的 checkpoint 繼續。清除對話不再會永久捨棄先前的狀態——如果您需要再次取得先前的程式碼或上下文，可以跨越該次清除進行回溯。
 
 ## 自動檢查點
 
 Claude Code 會自動為您建立檢查點：
 
 - **每一次使用者提示詞** - 每次使用者輸入都會建立一個新的檢查點
-- **持久性** - 檢查點會在不同會話之間持續存在
+- **持久性** - 檢查點會在不同工作階段之間持續存在
 - **自動清理** - 檢查點會在 30 天後自動清理
 
 這意味著您可以隨時回溯到對話中的任何先前點，從幾分鐘前到幾天前皆可。
@@ -209,21 +212,27 @@ Claude Code 會自動管理您的檢查點：
 
 ## 設定
 
-Checkpoints 是 Claude Code 內建的預設行為，不需要任何配置即可啟用。每一次的使用者 prompt 都會自動建立一個 checkpoint。
+Checkpoints 是 Claude Code 內建的預設行為，不需要任何設定即可啟用。每一次的使用者 prompt 都會自動建立一個 checkpoint。
 
-唯一與 checkpoint 相關的設定是 `cleanupPeriodDays`，它控制會話與 checkpoint 的保留時間：
+有兩個設定控制 checkpoint 的行為——是否建立快照，以及快照保留多久：
 
 ```json
 {
+  "fileCheckpointingEnabled": true,
   "cleanupPeriodDays": 30
 }
 ```
 
-- `cleanupPeriodDays`: 保留會話歷史與 checkpoint 的天數（預設值：`30`）
+| 設定 | 預設值 | 效果 |
+|---------|---------|--------|
+| `fileCheckpointingEnabled` | `true` | 在每次編輯前為檔案建立快照，讓 `/rewind` 可以還原它們。需要 v2.1.119+。在 `/config` 中顯示為 **Rewind code (checkpoints)**。對應的環境變數：`CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING` |
+| `cleanupPeriodDays` | `30` | 保留工作階段歷史與 checkpoint 的天數 |
+
+Claude Code 會保留**最近 100 個 checkpoint** 的快照；較舊的快照即使仍在保留期限內也會被捨棄。
 
 > **v2.1.117 更新**：`cleanupPeriodDays` 現在管理四個磁碟快取的保留期限，不再僅限於 checkpoints：
 >
-> - 會話 checkpoints
+> - 工作階段 checkpoints
 > - `~/.claude/tasks/` — 持久性工作清單
 > - `~/.claude/shell-snapshots/` — 已擷取的 shell 環境快照
 > - `~/.claude/backups/` — 循環式的設定檔 / CLAUDE.md 備份
@@ -237,6 +246,9 @@ Checkpoints 具有以下限制：
 - **Bash 命令變更不會被追蹤** - 在檔案系統上執行的 `rm`、`mv`、`cp` 等操作不會被記錄在 checkpoint 中
 - **外部變更不會被追蹤** - 在 Claude Code 之外（例如在您的編輯器、終端機等）所做的變更不會被記錄
 - **不能取代版本控制** - 請使用 git 對您的程式碼庫進行永久且可審核的變更
+- **Subagent 的編輯不會被還原** - 由 subagent 編輯的檔案不受追蹤，因此 `/rewind` 會保持它們原狀；例外是前景執行的 `context: fork` skill，其編輯會像主工作階段一樣被還原
+
+> **v2.1.216 更新**：`/rewind` 不再透過位於受追蹤路徑的符號連結（symlink）或硬連結（hard link）還原或刪除檔案。如果受追蹤的路徑經由符號連結或硬連結解析，rewind 會略過它而不追隨該連結，並回報因此略過的路徑數量。
 
 ## 疑難排解
 
@@ -265,7 +277,7 @@ Checkpoints 是 git 的補充（而非取代）：
 | 功能 | Git | Checkpoints |
 |---------|-----|-------------|
 | 範圍 | 檔案系統 | 對話 + 檔案 |
-| 持久性 | 永久 | 基於會話 |
+| 持久性 | 永久 | 基於工作階段 |
 | 細粒度 | Commits | 任何時間點 |
 | 速度 | 較慢 | 即時 |
 | 分享 | 是 | 有限 |
@@ -283,7 +295,7 @@ Checkpoints 是 git 的補充（而非取代）：
 1. **正常工作** - Claude Code 會自動建立檢查點 (checkpoints)
 2. **想要回溯？** - 按兩次 `Esc` 或使用 `/rewind`
 3. **選擇檢查點** - 從列表中選擇一個進行回溯
-4. **選擇要還原的內容** - 從「還原程式碼與對話」、「僅還原對話」、「僅還原程式碼」、「從此處開始摘要」或「取消」中進行選擇
+4. **選擇要還原的內容** - 從「還原程式碼與對話」、「僅還原對話」、「僅還原程式碼」、「從此處開始摘要」、「摘要至此處」或「取消」中進行選擇
 5. **繼續工作** - 您已回到該時間點
 
 ### 鍵盤快捷鍵
@@ -313,7 +325,7 @@ Checkpoints 是 git 的補充（而非取代）：
 
 ## 摘要
 
-Checkpoints 是 Claude Code 中的一項自動化功能，讓您可以安全地探索不同的方法，而無需擔心遺失工作成果。每一次的使用者 prompt 都會自動建立一個新的 checkpoint，因此您可以將會話回溯到之前的任何時間點。
+Checkpoints 是 Claude Code 中的一項自動化功能，讓您可以安全地探索不同的方法，而無需擔心遺失工作成果。每一次的使用者 prompt 都會自動建立一個新的 checkpoint，因此您可以將工作階段回溯到之前的任何時間點。
 
 核心優勢：
 - 能夠無懼地嘗試多種不同的方法進行實驗
@@ -324,10 +336,11 @@ Checkpoints 是 Claude Code 中的一項自動化功能，讓您可以安全地�
 請記住：checkpoints 並非 git 的替代品。請將 checkpoints 用於快速實驗，並將 git 用於永久性的程式碼變更。
 
 ---
-**最後更新日期**：2026 年 5 月 25 日
-**Claude Code 版本**：2.1.150
+**最後更新日期**：2026 年 9 月 19 日
+**Claude Code 版本**：2.1.278
 **來源**：
 - https://code.claude.com/docs/en/checkpointing
 - https://code.claude.com/docs/en/settings
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://code.claude.com/docs/en/model-config
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

@@ -1,12 +1,30 @@
 ---
 name: lesson-quiz
-version: 1.0.0
-description: Interactive lesson-level quiz for Claude Code tutorials. Tests understanding of a specific lesson (01-10) with 8-10 questions mixing conceptual and practical knowledge. Use before a lesson to pre-test, during to check progress, or after to verify mastery. Use when asked to "quiz me on hooks", "test my knowledge of lesson 3", "lesson quiz", "practice quiz for MCP", or "do I understand skills".
+description: "Test a learner on a single Claude Code tutorial lesson (01-10) with 10 questions, scoring answers and flagging weak spots. Use before, during, or after a lesson. Don't use for whole-tutorial assessment or explaining a topic instead of testing it."
+effort: high
+metadata:
+  version: 1.3.0
+  author: Luong NGUYEN
 ---
 
 # 課程測驗
 
 互動式測驗，透過 8-10 道題目測試對特定 Claude Code 課程的理解，提供逐題回饋，並找出需要複習的領域。
+
+## 先決條件
+
+此 skill 需要：
+
+- 已 checkout 教學儲存庫，以便讀取課程目錄 `01-slash-commands/` … `10-cli/` 及各自的 `README.md`。
+- 此 skill 中存在 `references/question-bank.md`（所有題目的來源）。
+
+開始之前，確認目標課程的 `README.md` 存在。若不存在，不要捏造題目 — 警告使用者並請其檢查儲存庫結構（見錯誤處理）。
+
+**防護規則：**
+
+- **絕不自行編造題目或答案。** 只使用 `references/question-bank.md` 中所選課程的題目；若題庫缺少某課程的題目，應直接說明，而非自行編造。
+- **準確計分。** 為每道題記錄打亂順序後正確答案所在的位置，並據此驗證每個回答 — 絕不猜測分數。
+- **計分前先確認時機。** 學前／學中／學後的選擇會改變結果的呈現方式；不可略過。
 
 ## 說明
 
@@ -58,7 +76,7 @@ description: Interactive lesson-level quiz for Claude Code tutorials. Tests unde
 閱讀課程 README.md 檔案以更新脈絡：
 - 讀取檔案：`<lesson-directory>/README.md`
 
-然後使用 `references/question-bank.md` 中該課程的題庫。題庫為每堂課提供 10 道預設題目，附正確答案與解說。
+然後使用 `references/question-bank.md` 中該課程的題庫（10 道預設題目，附答案與解說）。為了控制脈絡預算，只讀取所選的那一堂課的 README — 不要十堂全讀。
 
 ### 步驟 3：呈現測驗
 
@@ -107,52 +125,7 @@ description: Interactive lesson-level quiz for Claude Code tutorials. Tests unde
 - 3-4：起步 — 有明顯缺口，建議複習
 - 0-2：尚未掌握 — 請從本課開頭開始學習
 
-**輸出格式：**
-
-```markdown
-## 課程測驗結果：[課程名稱]
-
-**成績：N/10** — [等級標籤]
-**測驗時機**：課程[學前 / 學中 / 學後]
-**題目分類統計**：N 題概念答對，N 題實作答對
-
-### 逐題結果
-
-| # | 類別 | 題目（簡述） | 您的回答 | 結果 |
-|---|----------|-----------------|-------------|--------|
-| 1 | 概念 | [題目簡述] | [回答] | [正確 / 錯誤] |
-| 2 | 實作 | ... | ... | ... |
-| ... | ... | ... | ... | ... |
-
-### 答錯題目 — 請複習以下內容
-
-[針對每道答錯的題目，顯示：]
-
-**Q[N]：[完整題目文字]**
-- 您的回答：[所選答案]
-- 正確答案：[正確選項]
-- 解說：[為何正確]
-- 複習：[課程 README 中應重新閱讀的特定章節]
-
-### [時機相關訊息]
-
-[若為學前測試]：
-**預先測試成績：N/10。** 這為您建立了基準！請在學習時重點關注您答錯的主題。完成課程後，重新測驗以衡量進步。
-
-[若為學中測試]：
-**進度檢查：N/10。** [若 7+：進展很好 — 繼續加油！若 4-6：請在繼續之前複習答錯的主題。若 <4：建議從頭重新閱讀。]
-
-[若為學後測試]：
-**精熟檢查：N/10。** [若 9-10：您已精通這堂課！可以進入下一課。若 7-8：即將達成 — 複習答錯的主題後重新測驗。若 <7：請花更多時間學習這堂課，特別是上面標記的章節。]
-
-### 建議的後續步驟
-
-[根據成績與時機：]
-- [若精熟]：前往學習路線圖中的下一課：[下一課連結]
-- [若熟練]：複習這些特定章節，然後重新測驗：[章節列表]
-- [若發展中或以下]：重新閱讀完整課程：[課程連結]。重點關注：[弱項類別列表]
-- [提議]：「您想要重新測驗、試試其他課程、還是針對特定主題獲取說明？」
-```
+**輸出格式：** 依照 `references/results-template.md` 中的報告範本。它定義了分數行、逐題結果表格、「答錯的題目 — 請複習這些」區塊、時機專屬訊息（學前／學中／學後），以及「建議的下一步」章節。以本次執行的資料填入其方括號佔位內容。
 
 ### 步驟 6：提供後續選項
 
@@ -169,16 +142,32 @@ description: Interactive lesson-level quiz for Claude Code tutorials. Tests unde
 若選擇**測驗其他課程**：回到步驟 1。
 若選擇**解說主題**：詢問哪個題號，然後閱讀課程 README.md 的相關章節並搭配範例解說。
 
-## 錯誤處理
+## 驗收標準
+
+完成的測驗執行必須滿足以下所有條件 — 在呈現最終結果前逐一確認：
+
+- 在提出任何題目之前，已確定恰好一堂課程（01-10）。
+- 已透過 AskUserQuestion 取得時機背景（學前／學中／學後）。
+- 已呈現 `references/question-bank.md` 中該課程的 10 道題目，分 5 回合、每回合 2 題，且每題的選項順序皆已打亂。
+- 每個回答都已依記錄的正確位置計分，得出 0-10 範圍內的整數分數。
+- **預期輸出**：一份 `## Lesson Quiz Results` 報告，包含分數行（`Score: N/10` 加上等級標籤）、逐題結果表格、每道答錯題目的「答錯的題目 — 請複習這些」區塊，以及時機專屬訊息。
+- 已提供後續選項提示（重新測驗／其他課程／解說／結束）。
+
+範例：一次 Hooks 課程「學後」測驗得 7/10，報告應顯示 `Score: 7/10 — Proficient`，結果表格列出全部 10 列，並展開 3 道答錯題目的正確答案、解說與複習指引。
+
+## 邊界情況與錯誤處理
 
 ### 無效的課程參數
 若參數不符合任何課程，顯示有效的課程列表並要求使用者選擇。
 
 ### 使用者在測驗中途想退出
-若使用者在任何回合中表示想停止，呈現已作答題目的部分結果。
+若使用者在任何回合中表示想停止，呈現目前已作答題目的部分結果（分數以已作答題數為分母，而非 10）。
 
 ### 找不到課程 README
-若在預期路徑找不到 README.md 檔案，通知使用者並建議檢查儲存庫結構。
+若在預期路徑找不到 README.md 檔案，通知使用者並建議檢查儲存庫結構。不要以捏造的內容繼續進行。
+
+### 題庫缺少某課程的題目
+若 `references/question-bank.md` 沒有所選課程的題目，告知使用者並停止 — 絕不自行編造題目來補足。
 
 ## 驗證
 

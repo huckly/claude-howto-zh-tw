@@ -5,7 +5,7 @@
 
 # MCP 伺服器（Model Context Protocol）
 
-此資料夾包含關於 MCP 伺服器配置以及在 Claude Code 中使用的完整文件與範例。
+此資料夾包含關於 MCP 伺服器設定以及在 Claude Code 中使用的完整文件與範例。
 
 ## 概述
 
@@ -118,6 +118,8 @@ claude mcp add --transport stdio myserver --env KEY=value -- npx server
 
 當您的 stdio 伺服器需要相對於專案根目錄讀取檔案，且無論 Claude Code 從哪個位置啟動皆適用時，請使用此設定。
 
+stdio MCP 伺服器也會收到 `CLAUDE_CODE_SESSION_ID`（與傳給 hooks 和 Bash 的值相同），包括使用 `--resume` 恢復工作階段時 (v2.1.163+)。
+
 ### SSE 傳輸 (已棄用)
 
 Server-Sent Events 傳輸已棄用並改由 `http` 取代，但目前仍受支援：
@@ -125,6 +127,32 @@ Server-Sent Events 傳輸已棄用並改由 `http` 取代，但目前仍受支�
 ```bash
 claude mcp add --transport sse legacy-server https://example.com/sse
 ```
+
+### WebSocket 傳輸 (`ws`)
+
+WebSocket 伺服器會維持持久的雙向連線，適合會主動向 Claude 推送事件的遠端 MCP 伺服器。若您的伺服器只回應請求，請改用 HTTP，因為 HTTP 支援 OAuth 與 `claude mcp add --transport` 旗標，而 WebSocket 兩者皆不支援。
+
+由於 `--transport` 不接受 `ws`，請在 `.mcp.json` 中或透過 `claude mcp add-json` 進行設定：
+
+```json
+{
+  "type": "ws",
+  "url": "wss://mcp.example.com/socket",
+  "headers": {
+    "Authorization": "Bearer YOUR_TOKEN"
+  }
+}
+```
+
+`type: "ws"` 項目接受與 `http` 相同的 `url`、`headers`、`headersHelper`、`timeout` 與 `alwaysLoad` 欄位。驗證方式**僅限標頭** — WebSocket 伺服器沒有 OAuth 流程。
+
+> **注意**：WebSocket 伺服器不會出現在 `claude mcp list` 的輸出中。請使用 `claude mcp get <name>` 或 `/mcp` 面板來檢查它們。
+
+與 HTTP 和 SSE 一樣，WebSocket 連線使用 5 分鐘的閒置時間窗；stdio 與 WebSocket 沒有逐請求的計時器。沒有 `type` 的 `url` 項目會產生錯誤，並指出 `"http"`、`"sse"` 與 `"ws"` 為有效值。
+
+### 工作階段工作目錄（roots/list）
+
+MCP 伺服器可以探索工作階段的工作目錄：啟動目錄以及所有 `--add-dir`/`additionalDirectories` 項目會透過 MCP `roots/list` 請求回傳，且每當該集合變更時，會送出 `notifications/roots/list_changed` 通知 (v2.1.203)。閒置逾時現在也適用於 stdio 伺服器（30 分鐘），而每個伺服器的 `timeout` 會作為閒置時間的下限 (v2.1.203)。
 
 ### Windows 特定注意事項
 
@@ -152,16 +180,16 @@ claude mcp add --transport http my-service https://my-service.example.com/mcp \
 | 功能 | 說明 |
 |---------|-------------|
 | **互動式 OAuth** | 使用 `/mcp` 觸發基於瀏覽器的 OAuth 流程 |
-| **預配置 OAuth 用戶端** | 內建用於 Notion、Stripe 等常見服務的 OAuth 用戶端 (v2.1.30+) |
-| **預配置憑證** | 提供 `--client-id`、`--client-secret`、`--callback-port` 旗標以進行自動化設定 |
+| **預先設定的 OAuth 用戶端** | 內建用於 Notion、Stripe 等常見服務的 OAuth 用戶端 (v2.1.30+) |
+| **預先設定的憑證** | 提供 `--client-id`、`--client-secret`、`--callback-port` 旗標以進行自動化設定 |
 | **token 儲存** | token 會安全地儲存在您的系統鑰匙圈 (keychain) 中 |
 | **Step-up 驗證** | 支援針對特權操作的 step-up 驗證 |
-| **探索快取** | OAuth 探索元數據 (discovery metadata) 會被快取以實現更快的重新連線 |
-| **元數據覆寫** | 在 `.mcp.json` 中使用 `oauth.authServerMetadataUrl` 來覆寫預設的 OAuth 元數據探索 |
+| **探索快取** | OAuth 探索中繼資料 (discovery metadata) 會被快取以實現更快的重新連線 |
+| **中繼資料覆寫** | 在 `.mcp.json` 中使用 `oauth.authServerMetadataUrl` 來覆寫預設的 OAuth 中繼資料探索 |
 
-#### 覆寫 OAuth 元數據探索
+#### 覆寫 OAuth 中繼資料探索
 
-如果您的 MCP 伺服器在標準 OAuth 元數據端點 (`/.well-known/oauth-authorization-server`) 回傳錯誤，但卻提供了一個可用的 OIDC 端點，您可以指示 Claude Code 從特定 URL 獲取 OAuth 元數據。請在伺服器設定的 `oauth` 物件中設定 `authServerMetadataUrl`：
+如果您的 MCP 伺服器在標準 OAuth 中繼資料端點 (`/.well-known/oauth-authorization-server`) 回傳錯誤，但卻提供了一個可用的 OIDC 端點，您可以指示 Claude Code 從特定 URL 獲取 OAuth 中繼資料。請在伺服器設定的 `oauth` 物件中設定 `authServerMetadataUrl`：
 
 ```json
 {
@@ -179,13 +207,20 @@ claude mcp add --transport http my-service https://my-service.example.com/mcp \
 
 該 URL 必須使用 `https://`。此選項需要 Claude Code v2.1.64 或更高版本。
 
+#### 驗證啟動通知與動態標頭重新整理 (v2.1.193)
+
+- **啟動驗證通知 (v2.1.193+)**：啟動時，Claude Code 會顯示一則通知，列出仍需驗證的 MCP 伺服器，避免需要登入的伺服器在無聲無息中無法運作。
+- **`headersHelper` 自動重新整理 (v2.1.193+)**：若您透過 `headersHelper` 提供自訂驗證，當伺服器回傳 HTTP 401 或 403 時，helper 會自動重新呼叫。憑證會即時重新整理，無需手動重新連線。請參閱 [Use dynamic headers for custom authentication](https://code.claude.com/docs/en/mcp)。
+
+> **警告** (v2.1.238)：專案 `.mcp.json` 中的 `headersHelper`，以及專案或 `--add-dir` 代理檔案中的內嵌 MCP 伺服器，現在要求該資料夾的信任對話框已被接受 — 包括在 `claude -p` 下。這類 helper 也會在**不繼承憑證環境變數**的情況下執行；使用者、受管與 claude.ai 範圍的 helper 則改為從 Claude 設定目錄執行。依賴繼承憑證或在未受信任狀態下執行的專案設定將會停止運作，直到您接受信任對話框並以其他方式提供憑證。
+
 ### Claude.ai MCP Connectors
 
-在您的 Claude.ai 帳戶中配置的 MCP servers 會自動在 Claude Code 中可用。這意味著您透過 Claude.ai 網頁介面建立的任何 MCP 連線都無需額外配置即可直接存取。
+在您的 Claude.ai 帳戶中設定的 MCP servers 會自動在 Claude Code 中可用。這意味著您透過 Claude.ai 網頁介面建立的任何 MCP 連線都無需額外設定即可直接存取。
 
 Claude.ai MCP connectors 也可用於 `--print` 模式（v2.1.83+），使其能夠進行非互動式與腳本化使用。
 
-> **啟動注意（v2.1.117+）：** 當本地與 claude.ai MCP 伺服器同時配置時，預設改為並行連線（先前為序列），可在多個伺服器同時使用時降低啟動延遲。
+> **啟動注意（v2.1.117+）：** 當本地與 claude.ai MCP 伺服器同時設定時，預設改為並行連線（先前為序列），可在多個伺服器同時使用時降低啟動延遲。
 
 若要在 Claude Code 中停用 Claude.ai MCP servers，請將 `ENABLE_CLAUDEAI_MCP_SERVERS` 環境變數設定為 `false`：
 
@@ -229,7 +264,7 @@ sequenceDiagram
 | 設定 | 值 | 說明 |
 |---------|-------|-------------|
 | `ENABLE_TOOL_SEARCH` | `auto` (預設) | 當 tool 描述超過 context 的 10% 時自動啟用 |
-| `ENABLE_TOOL_SEARCH` | `auto:<N>` | 在自定義的 `N` 個 tools 門檻時自動啟用 |
+| `ENABLE_TOOL_SEARCH` | `auto:<N>` | 在自訂的 `N` 個 tools 門檻時自動啟用 |
 | `ENABLE_TOOL_SEARCH` | `true` | 無論 tool 數量多少皆始終啟用 |
 | `ENABLE_TOOL_SEARCH` | `false` | 已停用；所有 tool 描述將完整傳送 |
 
@@ -259,7 +294,7 @@ Claude Code 支援 MCP `list_changed` 通知。當 MCP server 動態新增、移
 
 ## MCP Apps
 
-MCP Apps 是第一個官方 MCP 擴充功能，它讓 MCP 工具呼叫可以回傳互動式 UI 元件，並直接在聊天介面中渲染。MCP server 不再僅限於純文字回應，而是可以提供豐富的儀表板、表單、數據視覺化以及多步驟工作流程——所有內容皆以行內（inline）方式顯示，無需離開對話介面。
+MCP Apps 是第一個官方 MCP 擴充功能，它讓 MCP 工具呼叫可以回傳互動式 UI 元件，並直接在聊天介面中渲染。MCP server 不再僅限於純文字回應，而是可以提供豐富的儀表板、表單、資料視覺化以及多步驟工作流程——所有內容皆以行內（inline）方式顯示，無需離開對話介面。
 
 ## MCP 誘導（Elicitation）
 
@@ -281,13 +316,13 @@ MCP server 可以公開提示詞（prompts），使其在 Claude Code 中以斜�
 
 ## Server 重複定義處理
 
-當同一個 MCP server 在多個範圍（local、project、user）中被定義時，local 設定將具有最高優先權。這讓您能夠使用 local 自定義設定來覆蓋 project 層級或 user 層級的 MCP 設定，而不會產生衝突。
+當同一個 MCP server 在多個範圍（local、project、user）中被定義時，local 設定將具有最高優先權。這讓您能夠使用 local 自訂設定來覆蓋 project 層級或 user 層級的 MCP 設定，而不會產生衝突。
 
 ## 近期生命週期修復（v2.1.136）
 
 v2.1.136 修復了兩個長期存在的 MCP 生命週期錯誤——若您使用多伺服器設定，建議升級：
 
-- **MCP 伺服器在 `/clear` 後持續存在**：透過 `.mcp.json`、外掛或 claude.ai connectors 配置的伺服器，在 VS Code、JetBrains 或 Agent SDK 中執行 `/clear` 後不再消失。舊版本會靜默地將其移除，需要重新啟動才能恢復。
+- **MCP 伺服器在 `/clear` 後持續存在**：透過 `.mcp.json`、外掛或 claude.ai connectors 設定的伺服器，在 VS Code、JetBrains 或 Agent SDK 中執行 `/clear` 後不再消失。舊版本會靜默地將其移除，需要重新啟動才能恢復。
 - **OAuth refresh token 並行刷新修復**：多伺服器 OAuth 設定在多個伺服器同時競相刷新時，不再遺失 refresh token。這消除了影響多個 OAuth 保護 MCP 伺服器設定的「每天早上都要重新驗證」現象。
 
 ## 透過 @ 提及功能使用 MCP Resources
@@ -310,11 +345,22 @@ v2.1.136 修復了兩個長期存在的 MCP 生命週期錯誤——若您使用
 
 MCP 設定可以儲存在不同的範圍中，具有不同的共享層級：
 
-| 範圍 | 位置 | 說明 | 共享對象 | 是否需要核准 |
-|-------|----------|-------------|-------------|------------------|
-| **Local** (預設) | `~/.claude.json` (位於專案路徑下) | 僅限目前使用者與目前專案私有（舊版本稱為 `project`） | 僅限您自己 | 否 |
-| **Project** | `.mcp.json` | 已提交至 git 儲存庫 | 團隊成員 | 是 (首次使用時) |
-| **User** | `~/.claude.json` | 可用於所有專案（舊版本稱為 `global`） | 僅限您自己 | 否 |
+| 範圍 | 旗標 | 位置 | 說明 | 共享對象 | 是否需要核准 |
+|-------|------|----------|-------------|-------------|------------------|
+| **Local** (預設) | `--scope local` | `~/.claude.json` (位於專案路徑下) | 僅限目前使用者與目前專案私有（舊版本稱為 `project`） | 僅限您自己 | 否 |
+| **Project** | `--scope project` | `.mcp.json` | 已提交至 git 儲存庫 | 團隊成員 | 是 (首次使用時) |
+| **User** | `--scope user` | `~/.claude.json` | 可用於所有專案（舊版本稱為 `global`） | 僅限您自己 | 否 |
+
+新增伺服器時使用 `--scope`（簡寫 `-s`）選擇範圍。若省略，
+Claude Code 會使用 `local`：
+
+```bash
+# Project 範圍 — 寫入 .mcp.json，讓團隊共享
+claude mcp add --scope project --transport http github https://api.github.com/mcp
+
+# User 範圍 — 在每個專案中皆可用
+claude mcp add --scope user --transport stdio memory -- npx @modelcontextprotocol/server-memory
+```
 
 ### 使用 Project 範圍
 
@@ -331,7 +377,7 @@ MCP 設定可以儲存在不同的範圍中，具有不同的共享層級：
 }
 ```
 
-團隊成員在首次使用專案 MCP 時，會看到核准提示。
+團隊成員在首次使用專案 MCP 時，會看到核准提示。在未受信任的工作區中，儲存庫透過已提交的 `.claude/settings.json` 自行核准的伺服器，**不會**被 `claude mcp list`/`get` 自動啟動 — 它們會顯示 `⏸ Pending approval`，直到您接受信任對話框為止；且在未受信任的資料夾中，`enableAllProjectMcpServers` 會被忽略 (v2.1.196)。
 
 ## MCP 設定管理
 
@@ -356,9 +402,24 @@ claude mcp remove github
 # 重設專案特定的核准選項
 claude mcp reset-project-choices
 
+# 從 CLI 驗證 MCP server (v2.1.186+)
+claude mcp login github
+
+# 登出 MCP server (v2.1.186+)
+claude mcp logout github
+
 # 從 Claude Desktop 匯入
 claude mcp add-from-claude-desktop
+
+# 從 JSON 字串新增 server（適用於腳本化設定）
+claude mcp add-json events-server '{"type":"stdio","command":"npx","args":["@modelcontextprotocol/server-events"]}'
 ```
+
+> **注意**：在 JSON 設定中 — `.mcp.json`、`~/.claude.json` 或 `claude mcp add-json` — `type` 欄位接受 `streamable-http` 作為 `http` 的別名。MCP 規格將此傳輸命名為 `streamable-http`，因此從伺服器自身文件複製而來的設定無需修改即可使用。
+
+自 v2.1.238 起，`claude mcp list` 與 `claude mcp get` 會將已停用的伺服器顯示為 `⊘ Disabled`，且不會為了健康檢查而連線到它們。
+
+`claude mcp login <name>` / `claude mcp logout <name>` 是 `/mcp` 選單中 OAuth 流程的非互動式對應方式 — 無需開啟選單即可驗證或登出。在 `login` 加上 `--no-browser`，即可透過 SSH 或在 headless 工作階段中完成 OAuth（它會將流程導向 stdin）。
 
 ## 可用 MCP Servers 表格
 
@@ -370,7 +431,7 @@ claude mcp add-from-claude-desktop
 | **Database** | SQL 查詢 | query, insert, update | 憑證 | ✅ 是 |
 | **Google Docs** | 文件存取 | read, write, share | OAuth | ✅ 是 |
 | **Asana** | 專案管理 | create_task, update_status | API Key | ✅ 是 |
-| **Stripe** | 付款數據 | list_charges, create_invoice | API Key | ✅ 是 |
+| **Stripe** | 付款資料 | list_charges, create_invoice | API Key | ✅ 是 |
 | **Memory** | 持久化記憶 | store, retrieve, delete | 本地 | ❌ 否 |
 
 ## 實際範例
@@ -472,7 +533,7 @@ MCP 設定支援環境變數擴充以及預設值回退。`${VAR}` 和 `${VAR:-d
 
 ### 範例 2：Database MCP 設定
 
-**配置：**
+**設定：**
 
 ```json
 {
@@ -481,7 +542,7 @@ MCP 設定支援環境變數擴充以及預設值回退。`${VAR}` 和 `${VAR:-d
       "command": "npx",
       "args": ["@modelcontextprotocol/server-database"],
       "env": {
-        "DATABASE_URL": "postgresql://user:pass@localhost/mydb"
+        "DATABASE_URL": "${DATABASE_URL}"
       }
     }
   }
@@ -563,7 +624,7 @@ WHERE created_at > NOW() - INTERVAL '1 day'
 💰 日銷售額 $12,450
 ```
 
-**Setup**:
+**設定**：
 ```bash
 export GITHUB_TOKEN="your_github_token"
 export DATABASE_URL="postgresql://user:pass@localhost/mydb"
@@ -573,7 +634,7 @@ export SLACK_TOKEN="your_slack_token"
 
 ### 範例 4：Filesystem MCP 操作
 
-**配置：**
+**設定：**
 
 ```json
 {
@@ -597,7 +658,7 @@ export SLACK_TOKEN="your_slack_token"
 | 搜尋 | `grep "async function"` | 在檔案中搜尋 |
 | 刪除 | `rm old-file.js` | 刪除檔案 |
 
-**Setup**:
+**設定**：
 ```bash
 # 使用 CLI 直接新增：
 claude mcp add --transport stdio filesystem -- npx @modelcontextprotocol/server-filesystem /home/user/projects
@@ -682,45 +743,66 @@ claude mcp add --transport stdio claude-agent -- claude mcp serve
 
 ## 管理式 MCP 設定（企業版）
 
-對於企業級部署，IT 管理員可以透過 `managed-mcp.json` 設定檔來強制執行 MCP 伺服器政策。此檔案提供了對全組織範圍內允許或封鎖哪些 MCP 伺服器的排他性控制。
+對於企業級部署，IT 管理員透過兩種不同的機制來強制執行 MCP 伺服器政策：一個是 `managed-mcp.json` 檔案，用來部署一組具有排他性控制的固定伺服器；另一個是 `allowedMcpServers` / `deniedMcpServers` 設定鍵，用來過濾哪些已設定的伺服器可以載入。
 
 **位置：**
 - macOS: `/Library/Application Support/ClaudeCode/managed-mcp.json`
-- Linux: `~/.config/ClaudeCode/managed-mcp.json`
-- Windows: `%APPDATA%\ClaudeCode\managed-mcp.json`
+- Linux 與 WSL: `/etc/claude-code/managed-mcp.json`
+- Windows: `C:\Program Files\ClaudeCode\managed-mcp.json`
 
-**功能：**
-- `allowedMcpServers` -- 允許伺服器的白名單
-- `deniedMcpServers` -- 禁止伺服器的黑名單
-- `allowAllClaudeAiMcps` -- 允許在全組織範圍內載入 claude.ai 雲端 MCP connectors 的管理設定（v2.1.149+）
-- 支援透過伺服器名稱、指令與 URL 模式進行比對
-- 在使用者設定之前強制執行全組織範圍的 MCP 政策
-- 防止未經授權的伺服器連線
+`managed-mcp.json` 使用與專案 `.mcp.json` 相同的格式 — 一個頂層的 `mcpServers` 對應表。它負責部署伺服器，而不是過濾伺服器：
+
+```json
+{
+  "mcpServers": {
+    "example-remote": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp"
+    },
+    "company-internal": {
+      "type": "stdio",
+      "command": "/usr/local/bin/company-mcp-server",
+      "args": ["--config", "/etc/company/mcp-config.json"]
+    }
+  }
+}
+```
+
+機器上的任何使用者都能讀取此檔案，因此切勿在 `env` 區塊中放入憑證。請改用 `${VAR}` 展開、OAuth 或 `headersHelper`。
+
+**過濾：允許清單與拒絕清單**
+
+`allowedMcpServers`、`deniedMcpServers` 與 `allowAllClaudeAiMcps` 是**設定鍵，而非 `managed-mcp.json` 的欄位**。請將它們放在受管設定來源中 — 伺服器端受管設定、`managed-settings.json`、MDM 設定檔或登錄檔 — 才能強制執行：
+
+- `allowedMcpServers` -- 允許伺服器的允許清單。請在同一個受管來源中同時設定 `allowManagedMcpServersOnly: true`，否則允許清單會從所有範圍合併，使用者可以擴大您的清單。
+- `deniedMcpServers` -- 封鎖伺服器的拒絕清單。無論如何都會從所有範圍合併。
+- `allowAllClaudeAiMcps` -- 在已部署的 `managed-mcp.json` 之外，同時載入 claude.ai 雲端 connectors（v2.1.149+）。僅從管理員控制的政策層級讀取。
+
+每個項目都是一個只有**單一**鍵的物件：
+
+| 鍵 | 比對對象 |
+|-----|---------|
+| `serverUrl` | 遠端伺服器 URL，可完全相符或使用 `*` 萬用字元 |
+| `serverCommand` | 啟動 stdio 伺服器的確切指令與參數，以陣列表示 — 包含每個參數，且順序一致 |
+| `serverName` | 使用者指定的標籤。**僅限完全相符；不會展開萬用字元** |
 
 **範例設定：**
 
 ```json
 {
   "allowedMcpServers": [
-    {
-      "serverName": "github",
-      "serverUrl": "https://api.github.com/mcp"
-    },
-    {
-      "serverName": "company-internal",
-      "serverCommand": "company-mcp-server"
-    }
+    { "serverUrl": "https://mcp.example.com/*" },
+    { "serverCommand": ["/usr/local/bin/company-mcp-server", "--config", "/etc/company/mcp-config.json"] }
   ],
   "deniedMcpServers": [
-    {
-      "serverName": "untrusted-*"
-    },
-    {
-      "serverUrl": "http://*"
-    }
-  ]
+    { "serverName": "untrusted-server" },
+    { "serverUrl": "http://*" }
+  ],
+  "allowManagedMcpServersOnly": true
 }
 ```
+
+第三個受管設定 `managedMcpServers`（v2.1.259+）讓組織可以為每位使用者提供 HTTP/SSE MCP 伺服器。項目使用與 `.mcp.json` 相同的結構；指定要執行指令的項目會被略過。
 
 > **注意：** 當 `allowedMcpServers` 與 `deniedMcpServers` 同時符合某個伺服器時，封鎖規則具有優先權。
 
@@ -774,11 +856,20 @@ Claude Code 會對 MCP tool 的輸出進行限制，以防止上下文溢出：
 | **預設最大值** | 25,000 tokens | 超過此限制的輸出將被截斷 |
 | **磁碟持久化** | 50,000 字元 | 超過 50K 字元的工具結果將被持久化到磁碟 |
 
-最大輸出限制可以透過 `MAX_MCP_OUTPUT_TOKENS` 環境變數進行配置：
+最大輸出限制可以透過 `MAX_MCP_OUTPUT_TOKENS` 環境變數進行設定：
 
 ```bash
 # 將最大輸出增加到 50,000 tokens
 export MAX_MCP_OUTPUT_TOKENS=50000
+```
+
+## 自動將長時間執行的工具呼叫轉至背景 (v2.1.212)
+
+執行超過 2 分鐘的 MCP 工具呼叫現在會自動移至背景，讓工作階段保持可用，而不會因緩慢的工具而阻塞。此門檻可以設定，行為也可透過 `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` 調整或停用：
+
+```bash
+# 將自動轉背景的門檻改為 5 分鐘（300,000ms）
+export CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS=300000
 ```
 
 ## 透過程式碼執行解決上下文膨脹
@@ -810,7 +901,7 @@ graph LR
 
 ### 解決方案：將 MCP Tools 作為程式碼 API
 
-與其透過上下文視窗傳遞工具定義和結果，agent 會**編寫程式碼**，將 MCP tools 作為 API 進行呼叫。該程式碼在沙盒化的執行環境中運行，且只有最終結果會返回給模型。
+與其透過上下文視窗傳遞工具定義和結果，agent 會**編寫程式碼**，將 MCP tools 作為 API 進行呼叫。該程式碼在沙盒化的執行環境中執行，且只有最終結果會返回給模型。
 
 ```mermaid
 graph LR
@@ -826,7 +917,7 @@ graph LR
 
 #### 工作原理
 
-MCP 工具以帶有型別函數的檔案樹形式呈現：
+MCP 工具以帶有型別函式的檔案樹形式呈現：
 
 ```
 servers/
@@ -890,7 +981,7 @@ await salesforce.updateRecord({
 | **高效率的上下文結果** | 資料在返回模型之前，已在執行環境中完成過濾/轉換 |
 | **強大的控制流** | 迴圈、條件判斷與錯誤處理直接在程式碼中執行，無需透過模型進行往返（round-tripping） |
 | **隱私保護** | 中間資料（PII、敏感紀錄）保留在執行環境中；絕不會進入模型上下文 |
-| **狀態持久化** | 代理可以將中間結果儲存至檔案，並建立可重複使用的技能函數 |
+| **狀態持久化** | 代理可以將中間結果儲存至檔案，並建立可重複使用的技能函式 |
 
 #### 範例：過濾大型資料集
 
@@ -945,7 +1036,7 @@ console.log('Deployment notification received');
 
 | 功能 | 描述 |
 |---------|-------------|
-| **零配置發現** | 自動從 Cursor、Claude、Codex 或本地配置中發現 MCP servers |
+| **零設定發現** | 自動從 Cursor、Claude、Codex 或本地設定中發現 MCP servers |
 | **型別化工具用戶端** | `mcporter emit-ts` 會生成 `.d.ts` 介面與即插即用的包裝器 |
 | **可組合的 API** | `createServerProxy()` 將工具暴露為 camelCase 方法，並附帶 `.text()`、`.json()`、`.markdown()` 等輔助工具 |
 | **CLI 生成** | `mcporter generate-cli` 將任何 MCP server 轉換為獨立的 CLI，並支援 `--include-tools` / `--exclude-tools` 過濾 |
@@ -1021,7 +1112,7 @@ MCPorter 透過提供將 MCP tools 作為型別化 API 進行呼叫的執行環�
 
 1. **版本控制**：將 `.mcp.json` 保存在 git 中，但使用環境變數來處理秘密資訊
 2. **最小權限原則**：為每個 MCP server 授予所需的最小權限
-3. **隔離**：盡可能在獨立的程序中執行不同的 MCP servers
+3. **隔離**：盡可能在獨立的行程中執行不同的 MCP servers
 4. **監控**：記錄所有 MCP 請求與錯誤，以建立稽核軌跡
 5. **測試**：在部署到正式環境之前，測試所有 MCP 設定
 
@@ -1102,6 +1193,46 @@ npm install -g @modelcontextprotocol/server-slack
 
 ## 疑難排解
 
+### 從錯誤輸出開始 (v2.1.219+)
+
+若伺服器無法連線，請在變更任何設定之前先執行 `claude mcp list`（或在工作階段中使用 `/mcp`）。Claude Code 現在會在失敗的伺服器旁印出 **HTTP 狀態碼與伺服器的錯誤文字**，因此您會看到 `401 Unauthorized` 或 `404 Not Found`，而不是籠統的「failed to connect」：
+
+```bash
+# 顯示連線狀態，並為失敗項目附上 HTTP 狀態與錯誤文字
+claude mcp list
+```
+
+先閱讀狀態 — 它會告訴您該套用哪種修正：
+
+- `401` / `403` → 憑證錯誤或已過期；使用 `claude mcp login <name>` 重新驗證
+- `404` → URL 錯誤（通常是缺少 `/mcp` 或 `/sse` 路徑後綴）
+- `5xx` / 逾時 → 遠端伺服器已停止運作；請參閱[連線逾時](#連線逾時)
+
+### 設定值中的隱藏空白字元 (v2.1.219+)
+
+當 MCP 設定值有**開頭或結尾空白字元**時，Claude Code 會發出警告。這是驗證失敗常見且難以察覺的原因：從瀏覽器或聊天訊息複製貼上的 token 常帶有結尾空格或換行，它會被原封不動地放進 `Authorization` 標頭中送出，並因憑證無效而失敗。
+
+若看到此警告，請重新檢查 `.mcp.json` 中的值（或其展開來源的環境變數）並去除空白：
+
+```bash
+# 在分隔符號之間顯示隱藏的開頭/結尾空白字元
+printf '[%s]\n' "$GITHUB_TOKEN"
+```
+
+### Headless 執行中被略過的伺服器 (v2.1.219+)
+
+透過 `--mcp-config` 傳入但未通過設定驗證的伺服器會被**略過**，而不是中止執行，因此 headless 腳本可能看似正常運作，實際上卻少了一半的工具。Claude Code 現在會回報哪些伺服器被捨棄：
+
+- **Headless / `-p` 執行**：stream-json 的 `init` 事件帶有 `mcp_server_errors` 欄位，列出每個被略過的項目。在信任執行結果之前請先檢查它。
+- **互動式終端機執行**：相同的問題會在工作階段開始時以啟動警告的形式印出。
+
+```bash
+# 檢查 headless 執行中被略過的 --mcp-config 項目
+claude -p "list my tools" --mcp-config ./servers.json \
+  --output-format stream-json --verbose \
+  | jq -r 'select(.type == "system" and .subtype == "init") | .mcp_server_errors'
+```
+
 ### 找不到 MCP server
 ```bash
 # 確認 MCP server 是否已安裝
@@ -1135,7 +1266,7 @@ export GITHUB_TOKEN="your_token"
 - 確認所有環境變數皆已設定
 - 確保檔案權限正確
 - 嘗試重新安裝 MCP server 套件
-- 檢查是否有衝突的程序佔用了相同連接埠 (port)
+- 檢查是否有衝突的行程佔用了相同連接埠 (port)
 
 ## 相關概念
 
@@ -1164,11 +1295,14 @@ export GITHUB_TOKEN="your_token"
 - [Claude API Documentation](https://docs.anthropic.com)
 
 ---
-**最後更新日期**：2026 年 5 月 25 日
-**Claude Code 版本**：2.1.150
+**最後更新日期**：2026 年 9 月 6 日
+**Claude Code 版本**：2.1.263
 **來源**：
 - https://code.claude.com/docs/en/mcp
+- https://code.claude.com/docs/en/managed-mcp
 - https://code.claude.com/docs/en/changelog
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.139
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+- https://code.claude.com/docs/en/model-config
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

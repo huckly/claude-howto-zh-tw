@@ -9,7 +9,7 @@
 
 ## 概觀
 
-Claude Code Plugins 是整合後的自定義集合（包含斜線命令、子代理、MCP servers 與鉤子），只需透過單一指令即可完成安裝。它們代表了最高層級的擴充機制——將多個功能組合為凝聚力強且可共用的套件。
+Claude Code Plugins 是整合後的自訂集合（包含斜線命令、子代理、MCP servers 與鉤子），只需透過單一指令即可完成安裝。它們代表了最高層級的擴充機制——將多個功能組合為凝聚力強且可共用的套件。
 
 ## 外掛架構
 
@@ -58,6 +58,8 @@ sequenceDiagram
     Tools-->>Claude: Plugin installed ✅
 ```
 
+> **不再需要 marketplace (v2.1.157+)**：放在 `.claude/skills` 目錄中的外掛現在不需 marketplace 即可自動載入。使用 `claude plugin init <name>` 建立新外掛骨架，它會建立在 `~/.claude/skills/<name>/`（使用者全域），並在下一個工作階段以 `<name>@skills-dir` 的名稱自動載入。
+
 ## 外掛類型與分發
 
 | 類型 | 範圍 | 共享對象 | 權限 | 範例 |
@@ -65,7 +67,7 @@ sequenceDiagram
 | Official | 全域 | 所有使用者 | Anthropic | PR Review, Security Guidance |
 | Community | 公開 | 所有使用者 | 社群 | DevOps, Data Science |
 | Organization | 內部 | 團隊成員 | 公司 | 內部標準、工具 |
-| Personal | 個人 | 單一使用者 | 開發者 | 自定義工作流程 |
+| Personal | 個人 | 單一使用者 | 開發者 | 自訂工作流程 |
 
 ## 外掛定義結構
 
@@ -85,9 +87,23 @@ sequenceDiagram
 }
 ```
 
+除了這些識別欄位之外，manifest 也可以讓 Claude Code 指向存放在預設資料夾以外位置的組件，並攜帶探索與依賴的中繼資料：
+
+| 欄位 | 類型 | 說明 |
+|-------|------|-------------|
+| `workflows` | string \| array | 自訂 [workflow](https://code.claude.com/docs/en/workflows) 腳本檔案或目錄（取代預設的 `workflows/`） |
+| `outputStyles` | string \| array | 自訂輸出樣式檔案或目錄（取代預設的 `output-styles/`） |
+| `lspServers` | string \| array \| object | 提供程式碼智慧的 LSP server——跳至定義、尋找參照、診斷。通常為 `"./.lsp.json"`。請參閱 [LSP server 設定](#lsp-server-設定) |
+| `channels` | array | 用於訊息注入的頻道宣告（Telegram、Slack、Discord 風格） |
+| `dependencies` | array | 此外掛所需的其他外掛，可選擇性附帶 semver 版本限制 |
+| `keywords` | array | 瀏覽與搜尋 marketplace 時使用的探索標籤 |
+| `metadata` | object | 供您存放自有資料的自由格式物件，例如授權或目錄欄位 |
+| `experimental.themes` | string \| array | 色彩佈景主題檔案或目錄（取代預設的 `themes/`） |
+| `experimental.monitors` | string \| array | 外掛啟用時自動啟動的[背景監控器](#背景監控器-v21105)設定 |
+
 ## 外掛結構範例
 
-```
+```text
 my-plugin/
 ├── .claude-plugin/
 │   └── plugin.json       # Manifest (name, description, version, author)
@@ -95,7 +111,7 @@ my-plugin/
 │   ├── task-1.md
 │   ├── task-2.md
 │   └── workflows/
-├── agents/               # 自定義代理定義
+├── agents/               # 自訂代理定義
 │   ├── specialist-1.md
 │   ├── specialist-2.md
 │   └── configs/
@@ -104,11 +120,11 @@ my-plugin/
 │   └── skill-2.md
 ├── hooks/                # hooks.json 中的事件處理器
 │   └── hooks.json
-├── .mcp.json             # MCP server 配置
-├── .lsp.json             # 用於程式碼智慧的 LSP server 配置
+├── .mcp.json             # MCP server 設定
+├── .lsp.json             # 用於程式碼智慧的 LSP server 設定
 ├── bin/                  # 當外掛啟用時，會被加入 Bash 工具 PATH 的執行檔
 ├── settings.json         # 外掛啟用時套用的預設設定 (目前僅支援 `agent` 鍵)
-├── themes/               # 選用：附帶自定義 Claude Code 佈景主題 (v2.1.118+)
+├── themes/               # 選用：附帶自訂 Claude Code 佈景主題 (v2.1.118+)
 ├── templates/
 │   └── issue-template.md
 ├── scripts/
@@ -121,13 +137,15 @@ my-plugin/
     └── plugin.test.js
 ```
 
-### LSP server 配置
+> **注意**：`commands/` 屬於**舊式（legacy）**寫法。官方指引為 *"Use `skills/` for new plugins."*（新外掛請使用 `skills/`）。既有的 `commands/` 目錄仍可繼續運作——本模組的三個範例外掛都附有一個——但新外掛應將其功能以 `SKILL.md` 目錄的形式放在 `skills/` 中，而非使用扁平的 Markdown 命令檔。
+
+### LSP server 設定
 
 外掛可以包含語言伺服器協定 (LSP) 支援，以提供即時的程式碼智慧。LSP server 在您工作時提供診斷、程式碼導覽與符號資訊。
 
-**配置位置**：
+**設定位置**：
 - 外掛根目錄下的 `.lsp.json` 檔案
-- `plugin.json` 中的內聯 `lsp` 鍵
+- `plugin.json` 中的 `lspServers` 鍵——官方 manifest 欄位名稱。它接受字串、陣列或物件：字串或陣列指向 LSP 設定檔或目錄（例如 `"./.lsp.json"`），物件則直接內嵌宣告 server。
 
 #### 欄位參考
 
@@ -137,9 +155,9 @@ my-plugin/
 | `extensionToLanguage` | 是 | 將檔案副檔名映射至語言 ID |
 | `args` | 否 | 伺服器的命令列參數 |
 | `transport` | 否 | 通訊方式：`stdio` (預設) 或 `socket` |
-| `env` | 否 | 伺服器進程的環境變數 |
+| `env` | 否 | 伺服器行程的環境變數 |
 | `initializationOptions` | 否 | LSP 初始化期間傳送的選項 |
-| `settings` | 否 | 傳遞給伺服器的工作區配置 |
+| `settings` | 否 | 傳遞給伺服器的工作區設定 |
 | `workspaceFolder` | 否 | 覆蓋工作區資料夾路徑 |
 | `startupTimeout` | 否 | 等待伺服器啟動的最大時間 (ms) |
 | `shutdownTimeout` | 否 | 優雅關閉的最大時間 (ms) |
@@ -196,7 +214,7 @@ my-plugin/
 
 #### 可用的 LSP 外掛
 
-官方市場包含預先配置好的 LSP 外掛：
+官方市場包含預先設定好的 LSP 外掛：
 
 | 外掛 | 語言 | Server Binary | 安裝指令 |
 |--------|----------|---------------|----------------|
@@ -206,7 +224,7 @@ my-plugin/
 
 #### LSP 功能
 
-配置完成後，LSP servers 提供：
+設定完成後，LSP servers 提供：
 
 - **即時診斷** — 編輯後立即顯示錯誤與警告
 - **程式碼導覽** — 跳轉至定義、尋找參照、實作
@@ -215,7 +233,7 @@ my-plugin/
 
 ### `bin/` 目錄加入 `PATH`
 
-當外掛啟用時，其 `bin/` 目錄會被加到會話 `PATH` 的前端。任何存放在此的執行檔，都可以直接從 Bash 工具以名稱呼叫，無需完整路徑。
+當外掛啟用時，其 `bin/` 目錄會被加到工作階段 `PATH` 的前端。任何存放在此的執行檔，都可以直接從 Bash 工具以名稱呼叫，無需完整路徑。
 
 ```bash
 # 外掛目錄結構：
@@ -224,7 +242,7 @@ my-plugin/
 └── bin/
     └── my-tool          # 執行檔 (chmod +x)
 
-# 在啟用該外掛的 Claude Code 會話中：
+# 在啟用該外掛的 Claude Code 工作階段中：
 $ my-tool --help
 ```
 
@@ -232,7 +250,7 @@ $ my-tool --help
 
 ## 外掛選項 (v2.1.83+)
 
-外掛可以透過 `userConfig` 在 manifest 中宣告使用者可配置的選項。標記為 `sensitive: true` 的數值會儲存在系統鑰匙圈（keychain）中，而非以純文字形式儲存在設定檔中：
+外掛可以透過 `userConfig` 在 manifest 中宣告使用者可設定的選項。標記為 `sensitive: true` 的數值會儲存在系統鑰匙圈（keychain）中，而非以純文字形式儲存在設定檔中：
 
 ```json
 {
@@ -253,7 +271,7 @@ $ my-tool --help
 
 ## 持久化外掛資料 (`${CLAUDE_PLUGIN_DATA}`) (v2.1.78+)
 
-外掛可以透過 `${CLAUDE_PLUGIN_DATA}` 環境變數存取持久化狀態目錄。此目錄對每個外掛都是唯一的，且在不同會話之間會持續存在，因此非常適合用於快取、資料庫及其他持久化狀態：
+外掛可以透過 `${CLAUDE_PLUGIN_DATA}` 環境變數存取持久化狀態目錄。此目錄對每個外掛都是唯一的，且在不同工作階段之間會持續存在，因此非常適合用於快取、資料庫及其他持久化狀態：
 
 ```json
 {
@@ -271,7 +289,7 @@ $ my-tool --help
 
 ### 背景監控器 (v2.1.105)
 
-外掛可以註冊背景監控器，這些監控器會在會話開始或外掛的技能被呼叫時自動啟動。請在您的外掛 manifest 中加入頂層的 `monitors` 鍵：
+外掛可以註冊背景監控器，這些監控器會在工作階段開始或外掛的技能被呼叫時自動啟動。請在您的外掛 manifest 中加入頂層的 `monitors` 鍵：
 
 ```json
 {
@@ -287,7 +305,7 @@ $ my-tool --help
 ```
 
 `trigger` 欄位接受以下值：
-- `"session_start"` — 當會話開始時自動啟動監控器
+- `"session_start"` — 當工作階段開始時自動啟動監控器
 - `"skill_invoke"` — 當外掛的技能被呼叫時啟動監控器
 
 監控器底層使用相同的 Monitor 工具，將 stdout 行串流化為 Claude 可以回應的事件。
@@ -315,7 +333,7 @@ $ my-tool --help
 
 ## 外掛設定
 
-外掛可以附帶一個 `settings.json` 檔案來提供預設配置。目前這支援 `agent` 鍵，用於設定該外掛的主執行緒代理：
+外掛可以附帶一個 `settings.json` 檔案來提供預設設定。目前這支援 `agent` 鍵，用於設定該外掛的主執行緒代理：
 
 ```json
 {
@@ -323,11 +341,11 @@ $ my-tool --help
 }
 ```
 
-當外掛包含 `settings.json` 時，其預設值會在安裝時套用。使用者可以在自己的專案或使用者配置中覆寫這些設定。
+當外掛包含 `settings.json` 時，其預設值會在安裝時套用。使用者可以在自己的專案或使用者設定中覆寫這些設定。
 
 ## 獨立模式 vs 外掛模式
 
-| 模式 | 命令名稱 | 配置方式 | 最佳適用場景 |
+| 模式 | 命令名稱 | 設定方式 | 最佳適用場景 |
 |----------|---------------|---|---|
 | **獨立模式** | `/hello` | 在 CLAUDE.md 中手動設定 | 個人、特定專案使用 |
 | **外掛模式** | `/plugin-name:hello` | 透過 plugin.json 自動化 | 分享、發布、團隊使用 |
@@ -384,7 +402,7 @@ This command initiates a complete pull request review including:
 ---
 name: security-reviewer
 description: Security-focused code review
-tools: read, grep, diff
+tools: Read, Grep, Bash
 ---
 
 # Security Reviewer
@@ -413,7 +431,7 @@ Specializes in finding security vulnerabilities:
 
 **組件：**
 
-```
+```text
 devops-automation/
 ├── commands/
 │   ├── deploy.md
@@ -442,7 +460,7 @@ devops-automation/
 
 **內含組件：**
 
-```
+```text
 documentation/
 ├── commands/
 │   ├── generate-api-docs.md
@@ -464,7 +482,16 @@ documentation/
 
 ## 外掛市場 (Plugin Marketplace)
 
-由 Anthropic 官方管理的外掛目錄為 `anthropics/claude-plugins-official`。企業管理員也可以建立私有的外掛市場進行內部發布。
+由 Anthropic 官方管理的外掛目錄為 `anthropics/claude-plugins-official`，會在首次互動式啟動時自動註冊。企業管理員也可以建立私有的外掛市場進行內部發布。
+
+另外還有一個**社群 marketplace**：`anthropics/claude-plugins-community`，收錄通過 Anthropic 自動化驗證與安全篩檢的第三方外掛——目錄中的每個外掛都固定在特定的 commit SHA。與官方 marketplace 不同，您需要手動新增它：
+
+```bash
+/plugin marketplace add anthropics/claude-plugins-community
+
+# 接著使用 claude-community 這個 marketplace 名稱從中安裝
+/plugin install <plugin-name>@claude-community
+```
 
 ```mermaid
 graph TB
@@ -495,7 +522,7 @@ graph TB
     style D fill:#fff3e0,stroke:#333,color:#333
 ```
 
-### 市場配置
+### 市場設定
 
 企業與進階使用者可以透過設定來控制市場行為：
 
@@ -505,6 +532,17 @@ graph TB
 | `strictKnownMarketplaces` | 控制使用者被允許新增哪些市場（僅限管理員） |
 | `blockedMarketplaces` | 由管理員管理的市場黑名單；自 v2.1.117 起於每次外掛生命週期事件時強制執行；自 v2.1.119 起支援 `hostPattern` / `pathPattern` 正規表示式欄位 |
 | `deniedPlugins` | 由管理員管理的黑名單，以防止特定外掛被安裝 |
+
+> **更友善的別名 (v2.1.232)**：`additionalMarketplaces` 可作為
+> `extraKnownMarketplaces` 的別名，`allowedMarketplaces` 則可作為 `strictKnownMarketplaces` 的別名。
+> **資料來源為 changelog**——v2.1.232 的 changelog 宣布了這兩個名稱，但官方設定
+> 參考文件尚未列出。原本的標準鍵名仍可安心繼續使用。
+
+> **擁有者萬用字元 (v2.1.223+)**：`"owner/*"` 項目可允許或封鎖某個 GitHub 擁有者底下的
+> 所有 marketplace 儲存庫。**僅在 `strictKnownMarketplaces` 與
+> `blockedMarketplaces` 中接受。**其他任何出現 `github` 來源的地方——包括
+> `extraKnownMarketplaces` 與 `/plugin marketplace add`——`repo` 值都必須指定
+> 單一儲存庫。
 
 > **強制執行 (v2.1.117+)**：`blockedMarketplaces` 與 `strictKnownMarketplaces` 會在每個外掛生命週期事件時強制執行——安裝、更新、重新整理與自動更新——而非僅於首次新增時。`strictKnownMarketplaces` 僅限管理員使用。
 
@@ -521,10 +559,17 @@ graph TB
 }
 ```
 
+#### Marketplace `headersHelper` (v2.1.238)
+
+`url` 類型的 marketplace——或個別的目錄項目——可以指定一個 `headersHelper` 命令，用來產生擷取目錄及任何同源封存檔時所使用的 HTTP 標頭。這讓位於權杖核發服務後方的私有 marketplace 能夠在設定中不存放靜態密鑰的情況下完成驗證。
+
+**目錄項目**的 helper 只會在安裝或更新時執行，而且只會在其命令已向您顯示之後才執行：`claude plugin install` 與 `claude plugin update` 會在執行前提示 `[y/N]`。在自動化流程中可傳入 `-y` 以略過提示直接接受。
+
 ### 其他市場功能
 
+- **Marketplace 搜尋列 (v2.1.172)**：在 `/plugin` 中瀏覽某個 marketplace 的外掛時，可使用搜尋列依名稱或關鍵字篩選該 marketplace 的外掛——在捲動完整清單很慢的大型 marketplace 中特別方便。
 - **預設 git timeout**：針對大型外掛儲存庫，從 30s 增加至 120s
-- **自定義 npm registries**：外掛可以指定自定義的 npm registry URL 以進行依賴解析
+- **自訂 npm registries**：外掛可以指定自訂的 npm registry URL 以進行依賴解析
 - **版本鎖定 (Version pinning)**：將外掛鎖定在特定版本，以確保環境的可重現性
 - **瀏覽面板中的預計 Context 成本 (v2.1.143)**：`/plugin` 市場瀏覽器會顯示每個外掛預計每輪消耗的 context token 數——為永久載入的技能、鉤子與 MCP server 描述符的總和。在安裝前用來評估外掛規模。安裝後也可透過 [`claude plugin details <name>`](#claude-plugin-details-name-v21139) 取得相同的預測。
 
@@ -576,6 +621,9 @@ docs-helper       0.9.0     community  +610       Doc-style guide enforcement
 | `plugins[].description` | 否 | 外掛簡短描述 |
 | `plugins[].version` | 否 | Semantic 版本字串 |
 | `plugins[].author` | 否 | 外掛作者名稱 |
+| `plugins[].renames` | 否 | 將外掛先前的 `name` 對應到目前的名稱（若已移除則為 `null`），讓使用者自動遷移 (v2.1.193) |
+| `plugins[].displayName` | 否 | 在 UI 中顯示的易讀名稱；不用於查找 (v2.1.143) |
+| `plugins[].defaultEnabled` | 否 | 若為 `false`，外掛安裝後會保持停用，直到使用者主動啟用 (v2.1.154) |
 
 ### 外掛來源類型
 
@@ -589,8 +637,61 @@ docs-helper       0.9.0     community  +610       Doc-style guide enforcement
 | **Git 子目錄** | `{ "source": "git-subdir", "url": "...", "path": "..." }` | `{ "source": "git-subdir", "url": "https://github.com/org/monorepo.git", "path": "packages/plugin" }` |
 | **npm** | `{ "source": "npm", "package": "..." }` | `{ "source": "npm", "package": "@acme/claude-plugin", "version": "^2.0" }` |
 | **pip** | `{ "source": "pip", "package": "..." }` | `{ "source": "pip", "package": "claude-data-plugin", "version": ">=1.0" }` |
+| **封存檔 (Archive)** (v2.1.224+) | `{ "source": "archive", "url": "..." }` | `{ "source": "archive", "url": "https://cdn.example.com/lint-plugin-1.2.0.zip", "sha256": "…" }` |
+| **命令 (Command)** (v2.1.229+) | `{ "source": "command", "command": "..." }` | `{ "source": "command", "command": "acme-plugin-resolver --print-dir" }` |
 
 GitHub 和 git 來源支援選用的 `ref` (分支/標籤) 與 `sha` (commit hash) 欄位，用於固定版本。
+
+**裸來源名稱與 `metadata.pluginRoot` (v2.1.239)**：marketplace 的 `metadata.pluginRoot` 現在會生效——目錄中的裸外掛來源名稱會解析為該根目錄下的目錄，而不必在每個項目中都寫出完整的相對路徑。
+
+**從 claude.ai 同步的技能 (v2.1.239)**：從 claude.ai 同步下來的外掛會顯示為 `name@synced`。在 `claude plugin enable <name>@synced` 與 `claude plugin disable <name>@synced` 中請以此形式指定。同步的外掛絕不會覆蓋同名的已安裝外掛——兩者並存，並以 `@synced` 後綴區分。
+
+#### `archive` 來源 (v2.1.224+)
+
+透過 HTTPS 從 zip 安裝外掛——無需 git clone，也無需 npm install。
+
+```json
+{
+  "source": "archive",
+  "url": "https://cdn.example.com/lint-plugin-1.2.0.zip",
+  "sha256": "3b1f0c2e9a7d4f5b8c6e1a2d3f4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b"
+}
+```
+
+| 欄位 | 必要 | 備註 |
+|-------|----------|-------|
+| `url` | 是 | **僅限 HTTPS。**`http://`、loopback、link-local 與雲端中繼資料主機都會被拒絕——而且會在**每一次重新導向**時重新檢查，因此重新導向無法把您偷渡到被封鎖的主機 |
+| `sha256` | 否 | 64 個十六進位字元。不相符時安裝會失敗並顯示 `Plugin archive integrity check failed` |
+
+封存檔大小上限為 **256 MiB**。對於任何不是您自己建置的封存檔，請固定 `sha256`——否則掌控該 URL 的人就掌控了在您工作階段中執行的程式碼。
+
+#### `command` 來源 (v2.1.229+)
+
+讓本機安裝的工具決定外掛所在的位置。當內部套件管理工具已經知道如何
+擷取並安排您的外掛時，這會很有用。
+
+```json
+{
+  "source": "command",
+  "command": "acme-plugin-resolver --print-dir",
+  "timeout": 60,
+  "mode": "copy"
+}
+```
+
+規範很嚴格：**該命令必須在 stdout 上剛好輸出一行，並以結束碼 0
+結束。**該行為一個包含完整外掛之目錄的絕對路徑。
+
+| 欄位 | 必要 | 預設值 | 備註 |
+|-------|----------|---------|-------|
+| `command` | 是 | — | 要執行的命令 |
+| `timeout` | 否 | `60`（秒） | 最大值 600 |
+| `mode` | 否 | `"copy"` | `"copy"` 會為目錄建立快照；`"link"` 則建立符號連結，因此編輯會即時生效 |
+
+該命令會在每個工作階段重新解析，結果無需重新啟動即可套用。
+組織可以使用 `disableCommandPluginSources` 完全封鎖此來源類型。
+
+保留的 marketplace 名稱現在包含 `first-party-plugins` 與 `healthcare` (v2.1.205)——這些名稱保留供官方使用，自訂 marketplace 無法使用。
 
 ### 發布方式
 
@@ -605,6 +706,13 @@ GitHub 和 git 來源支援選用的 `ref` (分支/標籤) 與 `sha` (commit has
 /plugin marketplace add https://gitlab.com/org/marketplace-repo.git
 ```
 
+裸 `gitlab.com` 儲存庫 URL——包含巢狀子群組——的複製方式與 `github.com`
+URL 相同 (v2.1.232)。**scheme 是必要的**：自 v2.1.196 起，裸的
+`gitlab.example.com/team/plugins` 會被視為無效的 `owner/repo` 簡寫而遭拒絕，因此請使用
+完整的 `https://gitlab.com/company/plugins.git` 形式。v2.1.232 也新增了 GitLab
+權杖類密鑰的遮蔽功能，並讓 `glab` CLI 享有與 `gh` 相同的沙盒及憑證路徑
+保護。
+
 **私有儲存庫**：可透過 git credential helpers 或環境變數 token 支援。使用者必須擁有該儲存庫的讀取權限。
 
 **官方 marketplace 提交**：透過 [claude.ai/settings/plugins/submit](https://claude.ai/settings/plugins/submit) 或 [platform.claude.com/plugins/submit](https://platform.claude.com/plugins/submit) 將外掛提交至 Anthropic 策展的 marketplace，以進行更廣泛的發布。
@@ -616,7 +724,7 @@ GitHub 和 git 來源支援選用的 `ref` (分支/標籤) 與 `sha` (commit has
 claude plugin marketplace add <source>       # 新增 marketplace（GitHub、URL、本地）
 claude plugin marketplace update [name]      # 重新整理目錄索引
 claude plugin marketplace remove <name>      # 移除 marketplace
-claude plugin marketplace list               # 列出已配置的 marketplace
+claude plugin marketplace list               # 列出已設定的 marketplace
 ```
 
 > **重要**：`marketplace update` 只會重新整理外掛目錄（可供安裝的清單），**不會**更新已安裝的外掛。請使用 `plugin update <name>` 來更新特定已安裝的外掛。
@@ -691,14 +799,31 @@ claude plugin update <name>                  # 將已安裝的外掛更新至最
 claude plugin list                           # 列出已安裝的外掛
 claude plugin enable <name>                  # 啟用已停用的外掛
 claude plugin disable <name>                 # 停用外掛
-claude plugin validate                       # 驗證外掛結構
-claude plugin tag <version>                  # 建立包含版本驗證的發布 git 標籤 (v2.1.118+)
+claude plugin validate <path>                # 驗證 <path> 處的外掛結構
+claude plugin tag [path]                     # 建立 {name}--v{version} 發布 git 標籤 (v2.1.118+)
 claude plugin prune                          # 移除孤立的自動安裝外掛依賴項 (v2.1.121+)
 claude plugin uninstall <name> --prune       # 解除安裝並串聯清除孤立依賴項 (v2.1.121+)
 claude plugin details <name>                 # 顯示組件清單與預計每輪 token 成本 (v2.1.139+)
+claude plugin init <name>                    # 建立新外掛骨架（別名：claude plugin new）
 ```
 
-範例：`claude plugin tag v0.3.0` 會驗證版本格式、建立對應的 git 標籤，是為分發切割外掛版本的推薦做法。
+**別名**：`init` 的別名為 `claude plugin new`，`uninstall` 為 `remove` / `rm`，`list` 為 `ls`，`prune` 為 `autoremove`。
+
+**值得了解的旗標：**
+
+| 命令 | 旗標 | 用途 |
+|---------|------|---------|
+| `plugin init` | `--with <components...>` | 建立特定組件資料夾：`skills`、`agents`、`hooks`、`mcp`、`lsp`、`output-style`、`channel` |
+| `plugin init` | `-f`, `--force` | 覆寫既有的 `.claude-plugin/` 目錄 |
+| `plugin install` | `--config <key=value>` | 在安裝時設定 `userConfig` 選項 |
+| `plugin install` | `-y`, `--yes` | 不經確認提示直接接受命令 |
+| `plugin list` | `--available` | 同時列出 marketplace 中可用的外掛（需搭配 `--json`） |
+| `plugin tag` | `--push` | 建立標籤後推送至遠端 |
+| `plugin tag` | `--dry-run` | 印出將會標記的內容，但不實際建立標籤 |
+| `plugin validate` | `--strict` | 將警告視為錯誤 |
+| `plugin validate` | `--json` | 輸出機器可讀的驗證報告 (v2.1.259+) |
+
+範例：`claude plugin tag ./my-plugin` 接受的是外掛的**路徑**（而非版本字串）。它會根據 `plugin.json` 建立 `{name}--v{version}` git 標籤，並驗證 `plugin.json` 與任何所屬 marketplace 項目是否一致，是為分發切割外掛版本的推薦做法。
 
 `claude plugin prune` 在安裝或解除安裝帶有自身依賴的 marketplace 外掛後非常有用——它會移除父外掛已被移除的自動安裝外掛。`plugin uninstall --prune` 可在單一步驟中完成相同的串聯清除。
 
@@ -719,6 +844,40 @@ projected ctx: +1,420 tokens per turn  ·  +9,800 tokens per /review invocation
 
 LSP server 已於 v2.1.142 加入詳細面板。另請參閱[外掛市場](#外掛市場-plugin-marketplace)中涵蓋的市場瀏覽面板預計 context 成本 (v2.1.143)。
 
+### `claude plugin eval` (v2.1.269+)
+
+`claude plugin eval` 會執行外掛的評測套件，並回報有評分、可重現的結果，讓您判斷對技能或代理的修改是否真的有所改善。結果會以 JSON 加上 HTML 報告的形式回傳。
+
+```bash
+claude plugin eval            # 執行外掛的評測套件
+claude plugin eval --help     # 完整選項列表
+```
+
+### 使用 `--json` 取得機器可讀輸出 (v2.1.268+)
+
+`install`、`uninstall`、`update`、`enable` 與 `disable` 皆接受 `--json`，讓外掛管理可以在 CI 中以腳本自動化。`claude plugin list --json` 的每一列也帶有 `errorDetails` 與 `noteDetails`，因此失敗的外掛無需再執行第二個命令即可說明原因。
+
+```bash
+claude plugin install my-plugin@my-marketplace --json
+claude plugin list --json
+```
+
+### 使用 `--accept-command` 接受確切的命令 (v2.1.271+)
+
+`install` 與 `update` 上的 `--accept-command <sha256>` 只會接受先前 `--json` 執行所顯示的那個確切命令，用來取代全面接受的 `-y`。
+
+```bash
+claude plugin install my-plugin@my-marketplace --accept-command <sha256>
+```
+
+### 從尚未新增的 marketplace 安裝 (v2.1.275+)
+
+在工作階段中，`/plugin install <plugin> --marketplace <source>` 可直接內嵌指定 marketplace，並在安裝前提議新增它，因此探索與新增 marketplace 不再是獨立的步驟。這是工作階段內的斜線命令形式，而非 `claude plugin` CLI 旗標。
+
+```bash
+/plugin install code-reviewer --marketplace anthropics/claude-code-plugins
+```
+
 ## 安裝方法
 
 ### 從 Marketplace 安裝
@@ -728,10 +887,31 @@ LSP server 已於 v2.1.142 加入詳細面板。另請參閱[外掛市場](#外�
 claude plugin install plugin-name@marketplace-name
 ```
 
+**會立即生效嗎？** 自 **v2.1.221** 起，通常會——請查看安裝摘要的
+最後一行：
+
+| 安裝摘要顯示 | 代表意義 |
+|---|---|
+| `Plugin is now active.` | Claude Code 已在安裝過程中啟用該外掛。無需其他動作。 |
+| `Run /reload-plugins to activate.` | 外掛已安裝但尚未生效——可能是啟用它會使提示快取失效，或是啟用嘗試失敗。 |
+
+在 v2.1.221 之前，任何安裝都不會在目前工作階段中生效，直到您執行
+`/reload-plugins` 或重新啟動為止，因此較舊的指南會將該步驟描述為必要步驟。
+
 ### 啟用 / 停用（具備自動偵測範圍功能）
 ```bash
 /plugin enable plugin-name
 /plugin disable plugin-name
+```
+
+`/plugin` 介面會列出未使用的外掛，方便您清理 (v2.1.187+)。當外掛的 `plugin.json` `name` 與其 marketplace 項目名稱不同時，啟用/停用也能正常運作 (v2.1.195+)。
+
+### 列出已安裝的外掛 (v2.1.163)
+確認目前工作階段中有哪些外掛處於啟用狀態：
+```bash
+/plugin list             # 所有已安裝的外掛
+/plugin list --enabled   # 僅已啟用的外掛
+/plugin list --disabled  # 僅已停用的外掛
 ```
 
 ### 本地外掛（用於開發）
@@ -743,7 +923,7 @@ claude --plugin-dir ./plugin-a --plugin-dir ./plugin-b
 # --plugin-dir 也接受 .zip 壓縮檔路徑 (v2.1.128+)
 claude --plugin-dir ./my-plugin.zip
 
-# 從 URL 取得外掛 .zip 壓縮檔以供本次會話使用 (v2.1.129+，可重複)
+# 從 URL 取得外掛 .zip 壓縮檔以供本次工作階段使用 (v2.1.129+，可重複)
 claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 ```
 
@@ -764,7 +944,7 @@ Claude Code 可以在啟動時自動更新 marketplace 及其已安裝的外掛�
 當自動更新執行時，Claude Code 會：
 1. 重新整理 marketplace 目錄
 2. 將已安裝的外掛更新至最新版本
-3. 顯示通知提示執行 `/reload-plugins`
+3. 逐一回報每個外掛的結果：若 Claude Code 已在更新過程中啟用該外掛則顯示 `Plugin is now active.`，否則顯示 `Run /reload-plugins to activate.`
 
 ### 環境變數
 
@@ -786,6 +966,8 @@ export FORCE_AUTOUPDATE_PLUGINS=1
 export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1
 claude plugin install code-reviewer@anthropic
 ```
+
+> **遠端工作階段的外掛載入 (v2.1.179)**：v2.1.179 改善了遠端工作階段中的外掛載入效能，因此連線到遠端工作階段時，外掛能更快可用。
 
 ## 何時該建立外掛
 
@@ -813,7 +995,7 @@ graph TD
 | **快速任務自動化** | ❌ 使用指令 | 過度複雜 |
 | **單一領域專業知識** | ❌ 使用技能 | 太過笨重，改用技能即可 |
 | **專業化分析** | ❌ 使用子代理 | 手動建立或使用技能 |
-| **即時數據存取** | ❌ 使用 MCP | 應作為獨立功能，不要打包進外掛 |
+| **即時資料存取** | ❌ 使用 MCP | 應作為獨立功能，不要打包進外掛 |
 
 ## 測試外掛
 
@@ -826,7 +1008,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 # --plugin-dir 也接受 .zip 壓縮檔 (v2.1.128+)
 claude --plugin-dir ./my-plugin.zip
 
-# --plugin-url 從 URL 取得外掛 .zip 以供本次會話使用 (v2.1.129+，可重複)
+# --plugin-url 從 URL 取得外掛 .zip 以供本次工作階段使用 (v2.1.129+，可重複)
 claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 ```
 
@@ -835,8 +1017,8 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 - 測試子代理與代理功能是否運作正常
 - 確認 MCP 伺服器是否正確連接
 - 驗證鉤子執行情況
-- 檢查 LSP 伺服器配置
-- 檢查是否存在任何配置錯誤
+- 檢查 LSP 伺服器設定
+- 檢查是否存在任何設定錯誤
 
 ## 熱重載 (Hot-Reload)
 
@@ -846,7 +1028,7 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 /reload-plugins
 ```
 
-這會在不重啟會話的情況下，重新讀取所有外掛清單 (manifests)、命令、代理、技能、鉤子以及 MCP/LSP 配置。
+這會在不重啟工作階段的情況下，重新讀取所有外掛清單 (manifests)、命令、代理、技能、鉤子以及 MCP/LSP 設定。
 
 ## 外掛的管理設定
 
@@ -860,15 +1042,27 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 | `strictKnownMarketplaces` | 限制使用者允許新增的市場範圍（僅限管理員；自 v2.1.117 起於每次外掛生命週期事件時強制執行） |
 | `blockedMarketplaces` | 市場黑名單；自 v2.1.117 起於每次外掛生命週期事件時強制執行；自 v2.1.119 起支援 `hostPattern` / `pathPattern` 正規表示式欄位 |
 | `allowedChannelPlugins` | 針對每個發行管道 (release channel) 控制允許的外掛 |
+| `disableCommandPluginSources` | 在整個組織中封鎖 `command` 外掛來源類型 (v2.1.229+) |
 
-這些設定可以透過管理配置檔案在組織層級套用，且優先權高於使用者層級的設定。
+> **更友善的別名 (v2.1.232)**：`additionalMarketplaces` 可作為
+> `extraKnownMarketplaces` 的別名，`allowedMarketplaces` 則可作為 `strictKnownMarketplaces` 的別名。
+> **資料來源為 changelog**——v2.1.232 的 changelog 宣布了這兩個名稱，但官方設定
+> 參考文件尚未列出。原本的標準鍵名仍可安心繼續使用。
+
+> **擁有者萬用字元 (v2.1.223+)**：`"owner/*"` 項目可允許或封鎖某個 GitHub 擁有者底下的
+> 所有 marketplace 儲存庫。**僅在 `strictKnownMarketplaces` 與
+> `blockedMarketplaces` 中接受。**其他任何出現 `github` 來源的地方——包括
+> `extraKnownMarketplaces` 與 `/plugin marketplace add`——`repo` 值都必須指定
+> 單一儲存庫。
+
+這些設定可以透過管理設定檔在組織層級套用，且優先權高於使用者層級的設定。
 
 ## 外掛安全性
 
 外掛子代理（subagents）在受限的沙盒中執行。在定義外掛子代理時，**不允許**使用以下 frontmatter 鍵值：
 
 - `hooks` -- 子代理無法註冊事件處理常式
-- `mcpServers` -- 子代理無法配置 MCP 伺服器
+- `mcpServers` -- 子代理無法設定 MCP 伺服器
 - `permissionMode` -- 子代理無法覆蓋權限模型
 
 這確保了外掛無法提升權限，或在宣告範圍之外修改主機環境。
@@ -881,7 +1075,7 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 2. 撰寫 `.claude-plugin/plugin.json` 清單
 3. 建立包含文件的 `README.md`
 4. 使用 `claude --plugin-dir ./my-plugin` 進行本地測試
-5. 使用 `claude plugin tag v0.3.0` 標記發布版本 (v2.1.118+)——此指令會驗證版本字串並建立對應的 git 標籤
+5. 使用 `claude plugin tag ./my-plugin` 標記發布版本 (v2.1.118+)——此指令接受外掛的**路徑**，並根據 `plugin.json` 建立 `{name}--v{version}` git 標籤
 6. 提交至外掛市場
 7. 經過審查與核准
 8. 在市場上發佈
@@ -921,25 +1115,25 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 ```
 
 ## Requirements
-- Claude Code 1.0+
+- Claude Code 2.1+
 - GitHub 存取權限
 - CodeQL (選填)
 ```
 
-## 外掛 vs 手動配置
+## 外掛 vs 手動設定
 
 **手動設定 (2 小時以上)：**
 - 一個一個安裝斜線命令
 - 個別建立子代理
-- 分別配置 MCP
+- 分別設定 MCP
 - 手動設定鉤子
 - 記錄所有內容
-- 與團隊分享（希望他們能正確配置）
+- 與團隊分享（希望他們能正確設定）
 
 **使用外掛 (2 分鐘)：**
 ```bash
 /plugin install pr-review
-# ✅ 所有內容皆已安裝與配置完成
+# ✅ 所有內容皆已安裝與設定完成
 # ✅ 可立即使用
 # ✅ 團隊可以重現完全相同的設定
 ```
@@ -981,7 +1175,7 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 
 2. **查看外掛詳細資訊：**
    ```bash
-   /plugin info plugin-name
+   claude plugin details plugin-name
    ```
 
 3. **安裝外掛：**
@@ -1004,13 +1198,17 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 ### 列出已安裝的外掛
 
 ```bash
-/plugin list --installed
+/plugin list             # 所有已安裝的外掛
+/plugin list --enabled   # 僅已啟用的外掛
+/plugin list --disabled  # 僅已停用的外掛
 ```
 
 ### 更新外掛
 
+請使用 CLI 形式——這是 [`plugin update`](https://code.claude.com/docs/en/plugins-reference) 文件中記載的形式，也是有更新可用時 Claude Code 本身會指引您使用的形式：
+
 ```bash
-/plugin update plugin-name
+claude plugin update plugin-name
 ```
 
 ### 停用/啟用外掛
@@ -1044,7 +1242,7 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 
 ### PR Review 外掛完整工作流程
 
-```
+```text
 1. User: /review-pr
 
 2. Plugin executes:
@@ -1073,7 +1271,7 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 - 驗證 `plugin.json` 中的路徑與實際目錄結構是否一致
 - 檢查檔案權限：`chmod +x scripts/`
 - 檢查組件檔案語法
-- 檢查日誌：`/plugin debug plugin-name`
+- 檢查組件清單：`claude plugin details plugin-name`
 
 ### MCP 連線失敗
 - 驗證環境變數是否設定正確
@@ -1082,9 +1280,9 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 - 檢查 `mcp/` 目錄中的 MCP 設定
 
 ### 安裝後指令無法使用
-- 確保外掛已成功安裝：`/plugin list --installed`
-- 檢查外掛是否已啟用：`/plugin status plugin-name`
-- 重啟 Claude Code：輸入 `exit` 並重新開啟
+- 確保外掛已成功安裝：`/plugin list`
+- 檢查外掛是否已啟用：`/plugin list --enabled`
+- 確認外掛是否已生效——請參閱[安裝方法](#安裝方法)中關於安裝摘要的說明：`Plugin is now active.` 表示無需任何動作，`Run /reload-plugins to activate.` 表示需執行該命令（不需要重新啟動）
 - 檢查是否與現有指令存在命名衝突
 
 ### 鉤子（Hook）執行問題
@@ -1104,11 +1302,16 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 - [Hook System Reference](../06-hooks/README.md)
 
 ---
-**最後更新日期**：May 25, 2026
-**Claude Code 版本**：2.1.150
+**最後更新日期**：2026 年 9 月 19 日
+**Claude Code 版本**：2.1.278
 **來源**：
 - https://code.claude.com/docs/en/plugins
+- https://code.claude.com/docs/en/plugins-reference
+- https://code.claude.com/docs/en/changelog#2-1-172
+- https://code.claude.com/docs/en/changelog
+- https://code.claude.com/docs/en/commands
 - https://code.claude.com/docs/en/plugin-marketplaces
+- https://code.claude.com/docs/en/discover-plugins.md
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.118
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.131
@@ -1117,4 +1320,7 @@ claude --plugin-url https://example.com/releases/my-plugin-0.3.0.zip
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.141
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.142
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.143
-**相容模型**：Claude Sonnet 4.6, Claude Opus 4.7, Claude Haiku 4.5
+- https://code.claude.com/docs/en/cli-reference
+- https://code.claude.com/docs/en/model-config
+- https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

@@ -35,7 +35,7 @@
 
 課程資料夾使用**兩位數字前綴**後接 **kebab-case** 描述詞：
 
-```
+```text
 01-slash-commands/
 02-memory/
 03-skills/
@@ -52,7 +52,7 @@
 | **課程 README** | `README.md` | `01-slash-commands/README.md` |
 | **功能檔案** | Kebab-case `.md` | `code-reviewer.md`、`generate-api-docs.md` |
 | **Shell 腳本** | Kebab-case `.sh` | `format-code.sh`、`validate-input.sh` |
-| **配置檔案** | 標準名稱 | `.mcp.json`、`settings.json` |
+| **設定檔** | 標準名稱 | `.mcp.json`、`settings.json` |
 | **Memory 檔案** | 範圍前綴 | `project-CLAUDE.md`、`personal-CLAUDE.md` |
 | **頂層文件** | UPPER_CASE `.md` | `CATALOG.md`、`QUICK_REFERENCE.md`、`CONTRIBUTING.md` |
 | **圖片資產** | Kebab-case | `pr-slash-command.png`、`claude-howto-logo.svg` |
@@ -154,7 +154,7 @@
 |------|---------|------|
 | **粗體**（`**text**`） | 關鍵術語、表格中的標籤、重要概念 | `**安裝**：` |
 | *斜體*（`*text*`） | 技術術語首次使用、書籍/文件標題 | `*frontmatter*` |
-| `程式碼`（`` `text` ``） | 檔案名稱、指令、配置值、程式碼參考 | `` `CLAUDE.md` `` |
+| `程式碼`（`` `text` ``） | 檔案名稱、指令、設定值、程式碼參考 | `` `CLAUDE.md` `` |
 
 ### 提示區塊引用
 
@@ -183,14 +183,14 @@
 
 ### 無序列表
 
-使用連字號（`-`），嵌套時使用 2 個空格縮排：
+使用連字號（`-`），巢狀時使用 2 個空格縮排：
 
 ```markdown
 - 第一項
 - 第二項
-  - 嵌套項目
-  - 另一個嵌套項目
-    - 深層嵌套（避免超過 3 層）
+  - 巢狀項目
+  - 另一個巢狀項目
+    - 深層巢狀（避免超過 3 層）
 - 第三項
 ```
 
@@ -221,7 +221,7 @@
 - 保持一致的縮排（每層 2 個空格）
 - 列表前後加入空行
 - 保持列表項目結構平行（全部以動詞開頭，或全部是名詞等）
-- 避免嵌套超過 3 層
+- 避免巢狀超過 3 層
 
 ---
 
@@ -286,8 +286,8 @@
 | Python | `python` | Python 程式碼 |
 | JavaScript | `javascript` | JS 程式碼 |
 | TypeScript | `typescript` | TS 程式碼 |
-| JSON | `json` | 配置檔案 |
-| YAML | `yaml` | Frontmatter、配置 |
+| JSON | `json` | 設定檔 |
+| YAML | `yaml` | Frontmatter、設定 |
 | Markdown | `markdown` | Markdown 範例 |
 | SQL | `sql` | 資料庫查詢 |
 | 純文字 | （無標籤） | 預期輸出、目錄樹 |
@@ -412,7 +412,7 @@ graph TB
 | 淺藍 | `#e1f5fe` | 主要元件、輸入 |
 | 淺粉 | `#fce4ec` | 處理、中介層 |
 | 淺綠 | `#e8f5e9` | 輸出、結果 |
-| 淺黃 | `#fff9c4` | 配置、可選 |
+| 淺黃 | `#fff9c4` | 設定、可選 |
 | 淺紫 | `#f3e5f5` | 使用者介面 |
 
 ### 規則
@@ -433,10 +433,27 @@ Emoji 的使用應**節制且有目的**——僅在特定上下文中使用：
 
 | 上下文 | Emoji | 範例 |
 |--------|-------|------|
-| 根 README 區段標題 | 類別圖示 | `## 學習路徑` |
-| 技能程度指示器 | 彩色圓圈 | 入門、中級、進階 |
-| 建議/避免 | 打勾/打叉 | 建議這樣做、避免這樣做 |
-| 複雜度評級 | 星星 | 三顆星 |
+| 根 README 區段標題 | 類別圖示 | `## 📚 學習路徑` |
+| 技能程度指示器 | 彩色圓圈 | 🟢 入門、🔵 中級、🔴 進階 |
+| 建議/避免 | 打勾/打叉 | ✅ 建議這樣做、❌ 避免這樣做 |
+| 複雜度評級 | 星星 | ⭐⭐⭐ |
+
+### 標準 Emoji 集
+
+| Emoji | 意義 |
+|-------|------|
+| 📚 | 學習、指南、文件 |
+| ⚡ | 快速入門、快速參考 |
+| 🎯 | 功能、快速參考 |
+| 🎓 | 學習路徑 |
+| 📊 | 統計、比較 |
+| 🚀 | 安裝、快速指令 |
+| 🟢 | 入門程度 |
+| 🔵 | 中級程度 |
+| 🔴 | 進階程度 |
+| ✅ | 建議做法 |
+| ❌ | 避免／反模式 |
+| ⭐ | 複雜度評級單位 |
 
 ### 規則
 
@@ -545,7 +562,7 @@ agent: Explore                     # context: fork 時的 agent 類型
 
 遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
 
-```
+```text
 type(scope): description
 ```
 
@@ -565,7 +582,7 @@ type(scope): description
 
 使用課程名稱或檔案區域作為範圍：
 
-```
+```text
 feat(slash-commands): Add API documentation generator
 docs(memory): Improve personal preferences example
 fix(README): Correct table of contents link
@@ -580,12 +597,13 @@ docs(skills): Add comprehensive code review skill
 
 ```markdown
 ---
-**最後更新**：2026 年 3 月
-**Claude Code 版本**：2.1+
-**相容模型**：Claude Sonnet 4.6、Claude Opus 4.6、Claude Haiku 4.5
+**最後更新**：2026 年 8 月 25 日
+**Claude Code 版本**：2.1.245
+**相容模型**：Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5
 ```
 
-- 使用月份 + 年份格式（例如「2026 年 3 月」）
+- 使用本次同步時擷取的版本，而非此處顯示的值
+- 使用月份 + 日 + 年份格式（例如「2026 年 5 月 20 日」）
 - 功能變更時更新版本
 - 列出所有相容模型
 
@@ -612,3 +630,13 @@ docs(skills): Add comprehensive code review skill
 - [ ] 相關指南區段連結到相關課程
 - [ ] 提交訊息遵循 conventional commits 格式
 
+---
+
+**最後更新日期**：2026 年 8 月 25 日
+**Claude Code 版本**：2.1.245
+**來源**：
+- https://code.claude.com/docs/en/overview
+- https://code.claude.com/docs/en/changelog
+- https://code.claude.com/docs/en/model-config
+- https://github.com/anthropics/claude-code/releases/tag/v2.1.154
+**相容模型**：Claude Fable 5, Claude Opus 5, Claude Sonnet 5, Claude Sonnet 4.6, Claude Opus 4.8, Claude Haiku 4.5

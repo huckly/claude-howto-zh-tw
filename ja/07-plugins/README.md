@@ -365,7 +365,7 @@ This command initiates a complete pull request review including:
 ---
 name: security-reviewer
 description: Security-focused code review
-tools: read, grep, diff
+tools: Read, Grep, Bash
 ---
 
 # Security Reviewer
@@ -486,6 +486,10 @@ graph TB
 | `strictKnownMarketplaces` | ユーザーが追加できるマーケットプレイスを制限（管理者専用） |
 | `blockedMarketplaces` | 管理者が管理するマーケットプレイスのブロックリスト（v2.1.119 以降は `hostPattern` / `pathPattern` の正規表現フィールドをサポート） |
 | `deniedPlugins` | 管理者が管理する、特定のプラグインをインストールさせないブロックリスト |
+
+> **より分かりやすいエイリアス（v2.1.232）**：`additionalMarketplaces` は `extraKnownMarketplaces` の、`allowedMarketplaces` は `strictKnownMarketplaces` のエイリアスとして受け付けられる。**changelog 由来** — v2.1.232 の changelog で告知されたが、公式の settings リファレンスにはまだ記載がない。正式なキーをそのまま使い続けて問題ない。
+
+> **オーナーのワイルドカード（v2.1.223 以降）**：`"owner/*"` エントリは、ある GitHub オーナー配下のすべてのマーケットプレイスリポジトリを許可またはブロックする。**`strictKnownMarketplaces` と `blockedMarketplaces` でのみ受け付けられる。** `extraKnownMarketplaces` や `/plugin marketplace add` を含め、`github` ソースが登場する他の箇所では、`repo` の値は単一のリポジトリを指定しなければならない。
 
 > **適用範囲**（v2.1.117 以降）：`blockedMarketplaces` と `strictKnownMarketplaces` は最初の追加時だけでなく、インストール・更新・リフレッシュ・自動更新といったあらゆるプラグインのライフサイクルイベントで適用される。`strictKnownMarketplaces` は管理者専用。
 
@@ -662,11 +666,11 @@ claude plugin update <name>                  # Update installed plugin to latest
 claude plugin list                           # List installed plugins
 claude plugin enable <name>                  # Enable a disabled plugin
 claude plugin disable <name>                 # Disable a plugin
-claude plugin validate                       # Validate plugin structure
-claude plugin tag <version>                  # Create a release git tag with version validation (v2.1.118+)
+claude plugin validate <path>                # Validate the plugin structure at <path>
+claude plugin tag [path]                     # Create a {name}--v{version} release git tag (v2.1.118+)
 ```
 
-例：`claude plugin tag v0.3.0` はバージョン形式を検証し、対応する git タグを作成する。配布用にプラグインをリリースする際の推奨手順である。
+例：`claude plugin tag ./my-plugin` は引数にバージョン文字列ではなく**パス**を取る。`plugin.json` から導出した `{name}--v{version}` の git タグを作成し、その際 `plugin.json` と（存在すれば）マーケットプレイスのエントリが一致しているか検証する。配布用にプラグインをリリースする際の推奨手順である。
 
 ## インストール方法
 
@@ -676,6 +680,15 @@ claude plugin tag <version>                  # Create a release git tag with ver
 # or from CLI:
 claude plugin install plugin-name@marketplace-name
 ```
+
+**すぐに反映されるか？** **v2.1.221** 以降はたいてい反映される。インストール要約の最終行を確認する：
+
+| インストール要約の表示 | 意味 |
+|---|---|
+| `Plugin is now active.` | Claude Code がインストールの一環としてプラグインを有効化した。追加の操作は不要。 |
+| `Run /reload-plugins to activate.` | インストールは済んだがまだ有効ではない。有効化するとプロンプトキャッシュが無効になるため、または有効化の試行が失敗したため。 |
+
+v2.1.221 より前は、`/reload-plugins` を実行するか再起動するまで、どのインストールも現在のセッションには反映されなかった。
 
 ### 有効化 / 無効化（スコープは自動検出）
 ```bash
@@ -707,7 +720,7 @@ Claude Code は起動時にマーケットプレイスとそこにインスト�
 自動更新が走ると、Claude Code は次の処理を行う：
 1. マーケットプレイスのカタログを更新
 2. インストール済みプラグインを最新バージョンへ更新
-3. `/reload-plugins` を促す通知を表示
+3. プラグインごとに結果を報告する：更新の一環として有効化された場合は `Plugin is now active.`、そうでない場合は `Run /reload-plugins to activate.`
 
 ### 環境変数
 
@@ -793,6 +806,10 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 | `blockedMarketplaces` | マーケットプレイスのブロックリスト（v2.1.117 以降はあらゆるライフサイクルイベントで適用、v2.1.119 以降は `hostPattern` / `pathPattern` の正規表現フィールドをサポート） |
 | `allowedChannelPlugins` | リリースチャネルごとに許可するプラグインを制御 |
 
+> **より分かりやすいエイリアス（v2.1.232）**：`additionalMarketplaces` は `extraKnownMarketplaces` の、`allowedMarketplaces` は `strictKnownMarketplaces` のエイリアスとして受け付けられる。**changelog 由来** — v2.1.232 の changelog で告知されたが、公式の settings リファレンスにはまだ記載がない。正式なキーをそのまま使い続けて問題ない。
+
+> **オーナーのワイルドカード（v2.1.223 以降）**：`"owner/*"` エントリは、ある GitHub オーナー配下のすべてのマーケットプレイスリポジトリを許可またはブロックする。**`strictKnownMarketplaces` と `blockedMarketplaces` でのみ受け付けられる。** `extraKnownMarketplaces` や `/plugin marketplace add` を含め、`github` ソースが登場する他の箇所では、`repo` の値は単一のリポジトリを指定しなければならない。
+
 これらの設定は管理対象設定ファイルで組織レベルに適用でき、ユーザーレベルの設定より優先される。
 
 ## プラグインのセキュリティ
@@ -813,7 +830,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 2. `.claude-plugin/plugin.json` マニフェストを記述
 3. ドキュメント用の `README.md` を作成
 4. `claude --plugin-dir ./my-plugin` でローカルテスト
-5. `claude plugin tag v0.3.0`（v2.1.118 以降）でリリースタグを作成 — バージョン文字列を検証し、対応する git タグを作成
+5. `claude plugin tag ./my-plugin`（v2.1.118 以降）でリリースタグを作成 — プラグインの**パス**を渡すと、`plugin.json` から導出した `{name}--v{version}` の git タグを作成
 6. プラグインマーケットプレイスへ提出
 7. レビューと承認を受ける
 8. マーケットプレイスで公開
@@ -853,7 +870,7 @@ Complete PR review workflow with security, testing, and documentation checks.
 ```
 
 ## Requirements
-- Claude Code 1.0+
+- Claude Code 2.1+
 - GitHub access
 - CodeQL (optional)
 ```
@@ -913,7 +930,7 @@ Complete PR review workflow with security, testing, and documentation checks.
 
 2. **プラグインの詳細を表示：**
    ```bash
-   /plugin info plugin-name
+   claude plugin details plugin-name
    ```
 
 3. **プラグインをインストール：**
@@ -936,13 +953,17 @@ Complete PR review workflow with security, testing, and documentation checks.
 ### インストール済みプラグインの一覧
 
 ```bash
-/plugin list --installed
+/plugin list             # インストール済みの全プラグイン
+/plugin list --enabled   # 有効なプラグインのみ
+/plugin list --disabled  # 無効なプラグインのみ
 ```
 
 ### プラグインの更新
 
+更新には CLI 形式を使う。これは [`plugin update`](https://code.claude.com/docs/en/plugins-reference) として文書化されている形式であり、更新がある場合に Claude Code 自身が案内する形式でもある：
+
 ```bash
-/plugin update plugin-name
+claude plugin update plugin-name
 ```
 
 ### プラグインの無効化 / 有効化
@@ -1005,7 +1026,7 @@ Complete PR review workflow with security, testing, and documentation checks.
 - `plugin.json` のパスが実際のディレクトリ構造と一致するか確認
 - ファイル権限を確認：`chmod +x scripts/`
 - コンポーネントファイルの構文を確認
-- ログを確認：`/plugin debug plugin-name`
+- コンポーネントの一覧を確認：`claude plugin details plugin-name`
 
 ### MCP 接続が失敗する
 - 環境変数が正しく設定されているか確認
@@ -1014,9 +1035,9 @@ Complete PR review workflow with security, testing, and documentation checks.
 - `mcp/` ディレクトリ内の MCP 設定を確認
 
 ### インストール後にコマンドが利用できない
-- プラグインが正しくインストールされているか確認：`/plugin list --installed`
-- プラグインが有効か確認：`/plugin status plugin-name`
-- Claude Code を再起動：`exit` して再度開く
+- プラグインが正しくインストールされているか確認：`/plugin list`
+- プラグインが有効か確認：`/plugin list --enabled`
+- すでに有効化されているか確認 — [インストール方法](#インストール方法)のインストール要約の説明を参照：`Plugin is now active.` なら追加の操作は不要、`Run /reload-plugins to activate.` ならそのコマンドを実行する（再起動は不要）
 - 既存のコマンドと名前が衝突していないか確認
 
 ### フック実行の問題
@@ -1037,12 +1058,15 @@ Complete PR review workflow with security, testing, and documentation checks.
 
 ---
 
-**最終更新**: 2026 年 4 月 24 日
-**Claude Code バージョン**: 2.1.119
+**最終更新**: 2026 年 9 月 2 日
+**Claude Code バージョン**: 2.1.257
 **出典**:
+- https://code.claude.com/docs/en/discover-plugins
+- https://code.claude.com/docs/en/plugins-reference
+- https://code.claude.com/docs/en/settings
 - https://code.claude.com/docs/en/plugins
 - https://code.claude.com/docs/en/plugin-marketplaces
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.117
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.118
 - https://github.com/anthropics/claude-code/releases/tag/v2.1.119
-**対応モデル**: Claude Sonnet 4.6、Claude Opus 4.7、Claude Haiku 4.5
+**対応モデル**: Claude Fable 5、Claude Opus 5、Claude Sonnet 5、Claude Sonnet 4.6、Claude Opus 4.8、Claude Haiku 4.5

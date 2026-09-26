@@ -323,7 +323,7 @@ description: 启动包含安全和测试检查的完整 PR 审查
 ---
 name: security-reviewer
 description: 面向安全的代码审查
-tools: read, grep, diff
+tools: Read, Grep, Bash
 ---
 
 # Security Reviewer
@@ -443,6 +443,10 @@ graph TB
 | `extraKnownMarketplaces` | 在默认列表之外添加额外的市场源 |
 | `strictKnownMarketplaces` | 控制允许用户添加哪些市场 |
 | `deniedPlugins` | 管理员维护的黑名单，阻止特定插件被安装 |
+
+> **更友好的别名（v2.1.232）**：`additionalMarketplaces` 被接受为 `extraKnownMarketplaces` 的别名，`allowedMarketplaces` 为 `strictKnownMarketplaces` 的别名。**来源为 changelog** —— v2.1.232 的 changelog 公布了它们，但官方 settings 参考页面尚未列出。继续使用规范键名是安全的。
+
+> **owner 通配符（v2.1.223+）**：`"owner/*"` 条目可允许或阻止某个 GitHub owner 名下的所有市场仓库。**仅在 `strictKnownMarketplaces` 和 `blockedMarketplaces` 中被接受。** 在其他出现 `github` 源的地方 —— 包括 `extraKnownMarketplaces` 和 `/plugin marketplace add` —— `repo` 的值必须指向单个仓库。
 
 ### 额外的市场特性
 
@@ -591,7 +595,7 @@ claude plugin uninstall <name>               # 删除插件
 claude plugin list                           # 列出已安装插件
 claude plugin enable <name>                  # 启用已禁用的插件
 claude plugin disable <name>                 # 禁用插件
-claude plugin validate                       # 验证插件结构
+claude plugin validate <path>                # 验证 <path> 处的插件结构
 ```
 
 ## 安装方式
@@ -602,6 +606,15 @@ claude plugin validate                       # 验证插件结构
 # 或通过 CLI：
 claude plugin install plugin-name@marketplace-name
 ```
+
+**是否立即生效？** 自 **v2.1.221** 起通常会立即生效 —— 请查看安装摘要的最后一行：
+
+| 安装摘要显示 | 含义 |
+|---|---|
+| `Plugin is now active.` | Claude Code 已在安装过程中激活该插件，无需其他操作。 |
+| `Run /reload-plugins to activate.` | 插件已安装但尚未生效 —— 要么激活会使 prompt cache 失效，要么激活尝试失败。 |
+
+在 v2.1.221 之前，任何安装都要等到你运行 `/reload-plugins` 或重启后才会在当前会话中生效。
 
 ### 启用 / 禁用（自动检测作用域）
 ```bash
@@ -688,6 +701,10 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 | `strictKnownMarketplaces` | 限制用户允许添加的市场 |
 | `allowedChannelPlugins` | 控制每个发布渠道允许使用哪些插件 |
 
+> **更友好的别名（v2.1.232）**：`additionalMarketplaces` 被接受为 `extraKnownMarketplaces` 的别名，`allowedMarketplaces` 为 `strictKnownMarketplaces` 的别名。**来源为 changelog** —— v2.1.232 的 changelog 公布了它们，但官方 settings 参考页面尚未列出。继续使用规范键名是安全的。
+
+> **owner 通配符（v2.1.223+）**：`"owner/*"` 条目可允许或阻止某个 GitHub owner 名下的所有市场仓库。**仅在 `strictKnownMarketplaces` 和 `blockedMarketplaces` 中被接受。** 在其他出现 `github` 源的地方 —— 包括 `extraKnownMarketplaces` 和 `/plugin marketplace add` —— `repo` 的值必须指向单个仓库。
+
 这些设置可以通过托管配置文件应用到组织级别，并且优先于用户级设置。
 
 ## 插件安全
@@ -747,7 +764,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 ```
 
 ## 要求
-- Claude Code 1.0+
+- Claude Code 2.1+
 - GitHub 访问权限
 - CodeQL（可选）
 ```
@@ -807,7 +824,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 
 2. **查看插件详情：**
    ```bash
-   /plugin info plugin-name
+   claude plugin details plugin-name
    ```
 
 3. **安装插件：**
@@ -830,13 +847,17 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 ### 列出已安装插件
 
 ```bash
-/plugin list --installed
+/plugin list             # 所有已安装插件
+/plugin list --enabled   # 仅已启用插件
+/plugin list --disabled  # 仅已禁用插件
 ```
 
 ### 更新插件
 
+使用 CLI 形式 —— 这是 [`plugin update`](https://code.claude.com/docs/en/plugins-reference) 中记录的形式，也是有可用更新时 Claude Code 自身提示你使用的形式：
+
 ```bash
-/plugin update plugin-name
+claude plugin update plugin-name
 ```
 
 ### 禁用 / 启用插件
@@ -899,7 +920,7 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 - 验证 `plugin.json` 中的路径与实际目录结构一致
 - 检查文件权限：`chmod +x scripts/`
 - 检查组件文件语法
-- 查看日志：`/plugin debug plugin-name`
+- 查看组件清单：`claude plugin details plugin-name`
 
 ### MCP 连接失败
 - 确认环境变量已正确设置
@@ -908,9 +929,9 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 - 查看 `mcp/` 目录中的 MCP 配置
 
 ### 安装后命令不可用
-- 确认插件已成功安装：`/plugin list --installed`
-- 检查插件是否已启用：`/plugin status plugin-name`
-- 重启 Claude Code：`exit` 后重新打开
+- 确认插件已成功安装：`/plugin list`
+- 检查插件是否已启用：`/plugin list --enabled`
+- 确认是否已生效 —— 参见[安装方式](#安装方式)中的安装摘要说明：`Plugin is now active.` 表示无需其他操作，`Run /reload-plugins to activate.` 表示运行该命令即可（无需重启）
 - 检查是否与现有命令冲突
 
 ### Hook 执行问题
@@ -928,3 +949,12 @@ claude --plugin-dir ./my-plugin --plugin-dir ./another-plugin
 - [MCP Server 参考](https://modelcontextprotocol.io/)
 - [Subagent 配置指南](../04-subagents/README.md)
 - [Hook 系统参考](../06-hooks/README.md)
+
+---
+
+**最后更新**: 2026 年 9 月 2 日
+**Claude Code 版本**: 2.1.257
+**来源**:
+- https://code.claude.com/docs/en/discover-plugins
+- https://code.claude.com/docs/en/plugins-reference
+- https://code.claude.com/docs/en/settings

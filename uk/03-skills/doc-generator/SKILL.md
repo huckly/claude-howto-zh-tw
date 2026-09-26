@@ -1,5 +1,5 @@
 ---
-name: api-documentation-generator
+name: doc-generator
 description: Генерація вичерпної, точної документації API з вихідного коду. Використовуйте при створенні або оновленні документації API, генерації специфікацій OpenAPI, або коли користувачі згадують документацію API, ендпоінти чи документацію.
 ---
 
@@ -18,7 +18,7 @@ description: Генерація вичерпної, точної докумен�
 
 ### Для кожного ендпоінту
 
-```markdown
+````markdown
 ## GET /api/v1/users/:id
 
 ### Опис
@@ -73,4 +73,4 @@ response = requests.get(
 )
 user = response.json()
 ```
-```
+````
