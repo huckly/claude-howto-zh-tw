@@ -142,34 +142,34 @@ description: Comprehensive Claude Code self-assessment and learning path advisor
 計算勾選總數並判斷等級。接著呈現：
 
 ```markdown
-## Claude Code 技能評估結果
+## Claude Code Skill Assessment Results
 
-### 你的等級：[Level 1：初學者 / Level 2：中階 / Level 3：進階]
+### Your Level: [Level 1: Beginner / Level 2: Intermediate / Level 3: Advanced]
 
-你勾選了 **N/8** 個項目。
+You checked **N/8** items.
 
-[根據等級給出的一句話勵志總結]
+[One-line motivational summary based on level]
 
-### 你的技能概況
+### Your Skill Profile
 
-| 領域 | 狀態 |
+| Area | Status |
 |------|--------|
-| 基本 CLI 與對話 | [已掌握/缺口] |
-| CLAUDE.md 與 Memory | [已掌握/缺口] |
-| Slash Commands（內建） | [已掌握/缺口] |
-| 自訂指令與 Skills | [已掌握/缺口] |
-| MCP 伺服器 | [已掌握/缺口] |
-| Hooks | [已掌握/缺口] |
-| Subagents | [已掌握/缺口] |
-| Print 模式與 CI/CD | [已掌握/缺口] |
+| Basic CLI & Conversations | [Checked/Gap] |
+| CLAUDE.md & Memory | [Checked/Gap] |
+| Slash Commands (built-in) | [Checked/Gap] |
+| Custom Commands & Skills | [Checked/Gap] |
+| MCP Servers | [Checked/Gap] |
+| Hooks | [Checked/Gap] |
+| Subagents | [Checked/Gap] |
+| Print Mode & CI/CD | [Checked/Gap] |
 
-### 已辨識的缺口
+### Identified Gaps
 
-[針對每個未勾選項目，提供一行說明該學什麼，並附上教學連結]
+[For each unchecked item, provide a 1-line description of what to learn and a link to the tutorial]
 
-### 你的個人化學習路徑
+### Your Personalized Learning Path
 
-[輸出該等級專屬的學習路徑 — 見 Step 4]
+[Output the level-specific learning path — see Step 4]
 ```
 
 #### 3B：深度評估
@@ -177,43 +177,43 @@ description: Comprehensive Claude Code self-assessment and learning path advisor
 根據 5 輪結果計算各主題分數。每個主題 0-2 分，但 Advanced Features（0-3）與 Checkpoints（0-1）除外。接著呈現：
 
 ```markdown
-## Claude Code 技能評估結果
+## Claude Code Skill Assessment Results
 
-### 整體等級：[Level 1 / Level 2 / Level 3]
+### Overall Level: [Level 1 / Level 2 / Level 3]
 
-**總分：N/20 分**
+**Total Score: N/20 points**
 
-[一句話勵志總結]
+[One-line motivational summary]
 
-### 你的技能概況
+### Your Skill Profile
 
-| 功能領域 | 分數 | 精熟度 | 狀態 |
+| Feature Area | Score | Mastery | Status |
 |-------------|-------|---------|--------|
-| Slash Commands | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| Memory | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| Skills | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| Hooks | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| MCP | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| Subagents | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| Checkpoints | N/1 | [無/熟練] | [學習/已精通] |
-| Advanced Features | N/3 | [無/基礎/熟練] | [學習/複習/已精通] |
-| Plugins | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
-| CLI | N/2 | [無/基礎/熟練] | [學習/複習/已精通] |
+| Slash Commands | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| Memory | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| Skills | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| Hooks | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| MCP | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| Subagents | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| Checkpoints | N/1 | [None/Proficient] | [Learn/Mastered] |
+| Advanced Features | N/3 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| Plugins | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
+| CLI | N/2 | [None/Basic/Proficient] | [Learn/Review/Mastered] |
 
-**精熟度對照：** 0 = 無，1 = 基礎，2 = 熟練
+**Mastery key:** 0 = None, 1 = Basic, 2 = Proficient
 
-### 強項領域
-[列出分數 2/2 的主題 — 這些已精通]
+### Strength Areas
+[List topics with score 2/2 — these are mastered]
 
-### 優先缺口（接下來學習）
-[列出分數 0 的主題 — 這些需優先處理，依相依關係排序]
+### Priority Gaps (Learn Next)
+[List topics with score 0 — these need attention first, ordered by dependency]
 
-### 複習領域
-[列出分數 1/2 的主題 — 已懂基礎但尚未用過進階功能]
+### Review Areas
+[List topics with score 1/2 — basics known but advanced features not yet used]
 
-### 你的個人化學習路徑
+### Your Personalized Learning Path
 
-[輸出缺口專屬的學習路徑 — 見 Step 4]
+[Output gap-specific learning path — see Step 4]
 ```
 
 **深度評估的整體等級計算：**
@@ -245,35 +245,35 @@ description: Comprehensive Claude Code self-assessment and learning path advisor
 #### 路徑輸出格式
 
 ```markdown
-### 你的個人化學習路徑
+### Your Personalized Learning Path
 
-**預估時間**：約 N 小時（已依你目前技能調整）
+**Estimated time**: ~N hours (adjusted for your current skills)
 
-#### 階段 1：[階段名稱]（約 N 小時）
-[僅當這些領域有缺口時列出]
+#### Phase 1: [Phase Name] (~N hours)
+[Only if they have gaps in these areas]
 
-**[主題名稱]** — [從頭學起 / 深入進階功能]
-- 教學：[教學目錄連結]
-- 重點：[他們需要的具體章節/概念]
-- 關鍵練習：[一項具體練習]
-- 完成的判斷標準：[具體成功條件]
+**[Topic Name]** — [Learn from scratch / Deep dive into advanced features]
+- Tutorial: [link to tutorial directory]
+- Focus on: [specific sections/concepts they need]
+- Key exercise: [one concrete exercise to do]
+- You'll know it's done when: [specific success criterion]
 
-**[主題名稱]** — ...
+**[Topic Name]** — ...
 
 ---
 
-#### 階段 2：[階段名稱]（約 N 小時）
+#### Phase 2: [Phase Name] (~N hours)
 ...
 
 ---
 
-### 建議實作專案
+### Recommended Practice Projects
 
-根據你的缺口，試試這些真實情境練習來鞏固所學：
+Based on your gaps, try these real-world exercises to solidify your learning:
 
-1. **[專案名稱]**：[結合 2-3 個缺口主題的一行說明]
-2. **[專案名稱]**：[一行說明]
-3. **[專案名稱]**：[一行說明]
+1. **[Project name]**: [1-line description combining 2-3 gap topics]
+2. **[Project name]**: [1-line description]
+3. **[Project name]**: [1-line description]
 ```
 
 #### 主題專屬建議
