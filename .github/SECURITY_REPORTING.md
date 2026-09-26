@@ -30,7 +30,7 @@
 
 如果您在依賴項中發現漏洞：
 
-1. 前往：https://github.com/luongnv89/claude-howto/security/dependabot/alerts
+1. 前往：https://github.com/luongnv89/claude-howto/security/advisories
 2. 檢視警報
 3. 建立包含修復的 pull request
 4. 標記 `security` 標籤
